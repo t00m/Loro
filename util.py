@@ -1,3 +1,7 @@
+import os
+import re
+import json
+import hashlib
 
 def json_load(filepath: str) -> {}:
     """Load into a dictionary a file in json format"""
@@ -15,7 +19,6 @@ def get_hash(text: str) -> str:
     m = hashlib.sha256()
     m.update(text.encode())
     return m.hexdigest()
-
 
 def clean_text(text, for_embedding=False):
     """
@@ -35,11 +38,11 @@ def clean_text(text, for_embedding=False):
         # Keep punctuation
         RE_ASCII = re.compile(r"[^A-Za-zÀ-ž,.!? ]", re.IGNORECASE)
         RE_SINGLECHAR = re.compile(r"\b[A-Za-zÀ-ž,.!?]\b", re.IGNORECASE)
-
     text = re.sub(RE_TAGS, " ", text)
     text = re.sub(RE_ASCII, " ", text)
     text = re.sub(RE_SINGLECHAR, " ", text)
     text = re.sub(RE_WSPACE, " ", text)
+    return text.strip()
 
     # ~ word_tokens = word_tokenize(text)
     # ~ words_tokens_lower = [word.lower() for word in word_tokens]
