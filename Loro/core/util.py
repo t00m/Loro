@@ -57,3 +57,13 @@ def clean_text(text, for_embedding=False):
 
     # ~ text_clean = " ".join(words_filtered)
     # ~ return text_clean
+
+def contains_numbers(word: str) -> bool:
+    pattern = r"\d+"  # Match one or more digits
+    return bool(re.search(pattern, word))
+
+def validate_word(word: str) -> bool:
+    text = clean_text(word)
+
+    if len(text) > 1 and not contains_numbers(text):
+        return True

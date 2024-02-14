@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor as Executor
 
 from Loro.extractors import whatsapp
 from Loro.services.nlp.spacy import tokenize_sentence
+from Loro.core.util import validate_word
 
 def sentence_processed(future):
         time.sleep(random.random())
@@ -18,14 +19,21 @@ def sentence_processed(future):
 
 def tokenize(data):
         (sentence, num) = data
-        tokens = tokenize_sentence(sentence)
+        tokens = set()
+        result = tokenize_sentence(sentence)
+        for word in result:
+            valid = validate_word(word.text)
+            if valid:
+                tokens.add(word)
         return (num, tokens)
 
 def process_sentences(sentences: list) -> None:
     jobs = []
     jobcount = 0
     num = 1
-    with Executor(max_workers=10) as exe:
+    all_tokens_text = set()
+    all_tokens = set()
+    with Executor(max_workers=40) as exe:
         for sentence in sentences:
             data = (sentence, num)
             job = exe.submit(tokenize, data)
@@ -38,7 +46,13 @@ def process_sentences(sentences: list) -> None:
             for job in jobs:
                 jobid, tokens = job.result()
                 print("Job[%d/%d]: %d tokens processed" % (jobid, num - 1, len(tokens)))
+                for token in tokens:
+                    if token.text not in all_tokens_text:
+                        all_tokens_text.add(token.text)
+                        all_tokens.add(token)
                 jobcount += 1
+    for token in all_tokens:
+        print("%s > Lemma [%s]" % (token.text, token.lemma_))
 
 def main():
     chat = whatsapp.get_messages(sys.argv[1])
