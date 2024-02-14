@@ -58,9 +58,9 @@ setup(
     license=ENV['APP']['license'],
     packages=[
                 'Loro',
-                # ~ 'Loro.backend',
-                # ~ 'Loro.frontend',
-                # ~ 'Loro.frontend.console',
+                'Loro.core',
+                'Loro.extractors',
+                'Loro.services',
                 # ~ 'Loro.frontend.desktop',
                 # ~ 'Loro.frontend.desktop.widgets'
             ],

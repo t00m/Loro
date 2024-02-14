@@ -1,6 +1,6 @@
 import sys
-import whatsapp
-from nlp.ll_spacy import tokenize_sentence
+from Loro.extractors import whatsapp
+from Loro.services.nlp.spacy import tokenize_sentence
 
 chat = whatsapp.get_messages(sys.argv[1])
 for n in chat:

@@ -3,7 +3,8 @@ import re
 import sys
 import pprint
 from datetime import datetime
-from util import clean_text
+
+from Loro.core.util import clean_text
 
 pattern = '%d/%m/%Y, %H:%M'
 
