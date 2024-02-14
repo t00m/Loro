@@ -12,11 +12,10 @@ import os
 import glob
 from setuptools import setup
 
-from Loro.backend.env import ENV
+from Loro.env import ENV
 
 with open('README.adoc', 'r') as f:
     LONG_DESCRIPTION = f.read()
-
 
 def add_data(root_data):
     """Add data files from a given directory."""
@@ -40,14 +39,16 @@ def add_data(root_data):
 
     return dir_files
 
-DATA_FILES = add_data('Loro/data')
-DATA_FILES += ['README.adoc']
-DATA_FILES +=[('share/applications', ['Loro/data/resources/com.github.t00m.Loro.desktop'])]
-DATA_FILES +=[('share/icons/hicolor/48x48/apps/', ['Loro/data/icons/com.github.t00m.Loro.svg'])]
+DATA_FILES = []
+# ~ DATA_FILES = add_data('Loro/data')
+# ~ DATA_FILES += ['README.adoc']
+# ~ DATA_FILES +=[('share/applications', ['Loro/data/resources/com.github.t00m.Loro.desktop'])]
+# ~ DATA_FILES +=[('share/icons/hicolor/48x48/apps/', ['Loro/data/icons/com.github.t00m.Loro.svg'])]
 
 setup(
     name=ENV['APP']['shortname'],
-    version=open('Loro/data/docs/VERSION', 'r').read().strip(),
+    # ~ version=open('Loro/data/docs/VERSION', 'r').read().strip(),
+    version='0.0.1',
     author=ENV['APP']['author'],
     author_email=ENV['APP']['author_email'],
     url=ENV['APP']['website'],
@@ -57,11 +58,11 @@ setup(
     license=ENV['APP']['license'],
     packages=[
                 'Loro',
-                'Loro.backend',
-                'Loro.frontend',
-                'Loro.frontend.console',
-                'Loro.frontend.desktop',
-                'Loro.frontend.desktop.widgets'
+                # ~ 'Loro.backend',
+                # ~ 'Loro.frontend',
+                # ~ 'Loro.frontend.console',
+                # ~ 'Loro.frontend.desktop',
+                # ~ 'Loro.frontend.desktop.widgets'
             ],
     # distutils does not support install_requires, but pip needs it to be
     # able to automatically install dependencies
