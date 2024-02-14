@@ -61,6 +61,7 @@ setup(
                 'Loro.core',
                 'Loro.extractors',
                 'Loro.services',
+                'Loro.services.nlp',
                 # ~ 'Loro.frontend.desktop',
                 # ~ 'Loro.frontend.desktop.widgets'
             ],
