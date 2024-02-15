@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>com.github.t00m.Loro</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>Loro</name>
+  <summary>Listen to ambient sounds</summary>
+  <description>
+    <p>Improve focus and increase your productivity by listening to different ambient sounds</p>
+    <p>Also can help you to fall asleep in a noisy environment.</p>
+    <p>Features:</p>
+    <ul>
+      <li>Save presets</li>
+      <li>Add custom sounds</li>
+      <li>Auto start in background</li>
+      <li>MPRIS integration</li>
+    </ul>
+    <p>Included Sounds in the App:</p>
+    <ul>
+      <li>Birds</li>
+      <li>Boat</li>
+      <li>City</li>
+      <li>Coffee Shop</li>
+      <li>Fireplace</li>
+      <li>Pink Noise</li>
+      <li>Rain</li>
+      <li>Summer Night</li>
+      <li>Storm</li>
+      <li>Stream</li>
+      <li>Train</li>
+      <li>Waves</li>
+      <li>White Noise</li>
+      <li>Wind</li>
+    </ul>
+  </description>
+  <url type="homepage">https://github.com/t00m/Loro</url>
+  <url type="bugtracker">https://github.com/t00m/Loro/issues</url>
+  <url type="translate">https://hosted.weblate.org/engage/loro/</url>
+  <url type="donation">https://t00m.com/donate/</url>
+  <url type="vcs-browser">https://github.com/t00m/Loro</url>
+  <!-- developer_name tag deprecated with Appstream 1.0 -->
+  <developer_name translatable="no">Tomás Vírseda</developer_name>
+  <developer id="github.com">
+      <name translatable="no">Tomás Vírseda</name>
+  </developer>
+  <update_contact>tomasvirseda@gmail.com</update_contact>
+  <content_rating type="oars-1.1" />
+
+  <launchable type="desktop-id">com.github.t00m.Loro.desktop</launchable>
+  <translation type="gettext">loro</translation>
+
+  <screenshots>
+    <screenshot type="default">
+      <image type="source">https://raw.githubusercontent.com/t00m/loro/main/brand/screenshot.png</image>
+      <caption>The default screen in light theme</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source">https://raw.githubusercontent.com/t00m/loro/main/brand/screenshot.png</image>
+      <caption>The default screen in dark theme</caption>
+    </screenshot>
+  </screenshots>
+
+  <releases>
+    <release version="0.1.0" date="2024-04-01">
+      <description translatable="no">
+        <p>Initial release.</p>
+      </description>
+    </release>
+  </releases>
+</component>

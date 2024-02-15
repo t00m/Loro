@@ -1,0 +1,17 @@
+using Gtk 4.0;
+using Adw 1;
+
+Adw.AboutWindow about {
+  destroy-with-parent: true;
+  application-name: "Loro";
+  comments: _("Learn a new language");
+  copyright: _("Copyright 2024 Tomás Vírseda");
+  developer-name: _("Tomás Vírseda");
+  website: "https://github.com/t00m/Loro/";
+  issue-url: "https://github.com/t00m/Loro/issues";
+  application-icon: "com.github.t00m.Loro";
+  license-type: gpl_3_0;
+
+  /* Translators: Replace me with your names, You can make a mailto link: translator-name <user@domain.org> */
+  translator-credits: C_("Add your names here, do not remove previous names!", "translator-credits");
+}

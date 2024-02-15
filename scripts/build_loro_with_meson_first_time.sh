@@ -1,0 +1,1 @@
+meson builddir --prefix=~/.local
