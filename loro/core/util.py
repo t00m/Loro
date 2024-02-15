@@ -26,9 +26,6 @@ def clean_text(text, for_embedding=False):
         - Keep only ASCII + European Chars and whitespace, no digits
         - remove single letter chars
         - convert all whitespaces (tabs etc.) to single wspace
-        if not for embedding (but e.g. tdf-idf):
-        - all lowercase
-        - remove stopwords, punctuation and stemm
     """
     RE_WSPACE = re.compile(r"\s+", re.IGNORECASE)
     RE_TAGS = re.compile(r"<[^>]+>")
@@ -42,28 +39,32 @@ def clean_text(text, for_embedding=False):
     text = re.sub(RE_ASCII, " ", text)
     text = re.sub(RE_SINGLECHAR, " ", text)
     text = re.sub(RE_WSPACE, " ", text)
+
     return text.strip()
 
-    # ~ word_tokens = word_tokenize(text)
-    # ~ words_tokens_lower = [word.lower() for word in word_tokens]
+def is_number(word: str) -> bool:
+    RE_NUMBERS = r"\d+"  # Match one or more digits
+    return  bool(re.search(RE_NUMBERS, word))
 
-    # ~ if for_embedding:
-        # ~ # no stemming, lowering and punctuation / stop words removal
-        # ~ words_filtered = word_tokens
-    # ~ else:
-        # ~ words_filtered = [
-            # ~ stemmer.stem(word) for word in words_tokens_lower if word not in stop_words
-        # ~ ]
+def is_url(word: str) -> bool:
+    RE_URL = re.compile(r"http\S+", re.IGNORECASE)
+    return bool(re.search(RE_URL, word))
 
-    # ~ text_clean = " ".join(words_filtered)
-    # ~ return text_clean
+def is_tag(word: str) -> bool:
+    RE_TAGS = re.compile(r"<[^>]+>", re.IGNORECASE)
+    return bool(re.search(RE_TAGS, word))
 
-def contains_numbers(word: str) -> bool:
-    pattern = r"\d+"  # Match one or more digits
-    return bool(re.search(pattern, word))
+def is_alpha(word: str) -> bool:
+    RE_ASCII = re.compile(r"[^A-Za-zÀ-ž]", re.IGNORECASE)
+    alpha = not bool(re.search(RE_ASCII, word))
+    return alpha
 
-def validate_word(word: str) -> bool:
-    text = clean_text(word)
-
-    if len(text) > 1 and not contains_numbers(text):
-        return True
+def is_valid_word(word: str) -> bool:
+    alpha = is_alpha(word)
+    lenghty = len(word.strip()) > 1
+    nums = is_number(word)
+    tags = is_tag(word)
+    urls = is_url(word)
+    valid = alpha and lenghty and not nums and not tags and not urls
+    # ~ print ("Word: %s [%s] > lengthy? %s, alpha? %s, not numbers? %s, not tag? %s, not url? %s" % (word, valid, lenghty, alpha, not nums, not tags, not urls))
+    return valid

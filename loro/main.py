@@ -4,9 +4,10 @@ import random
 import threading
 from concurrent.futures import ThreadPoolExecutor as Executor
 
-from Loro.extractors import whatsapp
-from Loro.services.nlp.spacy import tokenize_sentence
-from Loro.core.util import validate_word
+from loro.extractors import whatsapp
+from loro.services.nlp.spacy import tokenize_sentence
+from loro.services.nlp.spacy import get_glossary_term_explained
+from loro.core.util import is_valid_word
 
 def sentence_processed(future):
         time.sleep(random.random())
@@ -20,11 +21,28 @@ def sentence_processed(future):
 def tokenize(data):
         (sentence, num) = data
         tokens = set()
-        result = tokenize_sentence(sentence)
-        for word in result:
-            valid = validate_word(word.text)
-            if valid:
-                tokens.add(word)
+        entities = set()
+        result = tokenize_sentence(sentence.lower())
+        # Named Entity Recognition (NER):
+        # Identifying named entities like persons, organizations, or locations.
+        for ent in result.ents:
+            entities.add(ent.text)
+            # ~ print(ent.text, ent.label_)
+
+        # Sentence Boundary Detection:
+        # Splitting text into sentences.
+        # Not useful as sentences are parsed individually.
+        # ~ for sent in result.sents:
+            # ~ print(sent.text)
+
+        for token in result:
+            if token.text not in entities:
+                is_valid = is_valid_word(token.text)
+                if is_valid:
+                    tokens.add(token)
+            # ~ else:
+                # ~ print("Token '%s' is an entity. Skipped" % token.text)
+
         return (num, tokens)
 
 def process_sentences(sentences: list) -> None:
@@ -45,19 +63,28 @@ def process_sentences(sentences: list) -> None:
             print("Created %d jobs" % (num - 1))
             for job in jobs:
                 jobid, tokens = job.result()
-                print("Job[%d/%d]: %d tokens processed" % (jobid, num - 1, len(tokens)))
+                # ~ print("Job[%d/%d]: %d tokens processed" % (jobid, num - 1, len(tokens)))
                 for token in tokens:
                     if token.text not in all_tokens_text:
                         all_tokens_text.add(token.text)
                         all_tokens.add(token)
                 jobcount += 1
+    print("Tokens")
     for token in all_tokens:
-        print("%s > Lemma [%s]" % (token.text, token.lemma_))
+        pos = get_glossary_term_explained(token.pos_)
+        print("%s > Lemma [%s] POS [%s (%s)]" % (token.text, token.lemma_, pos, token.pos_))
+def main(version):
+    print("Loro %s" % version)
+    try:
+        filepath = sys.argv[1]
+    except IndexError:
+        print("Error: input file not found")
+        exit(-1)
 
-def main():
     chat = whatsapp.get_messages(sys.argv[1])
     sentences = (chat.values())
     process_sentences(sentences)
+
 
     # ~ for n in chat:
         # ~ sentence = chat[n]

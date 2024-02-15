@@ -48,7 +48,10 @@ def get_glossary_term_explained(term: str) -> str:
 def tokenize_sentence(sentence: str) -> []:
     return nlp(sentence)
 
-nlp = load_spacy("de_core_news_sm") # Load German spaCy model
+# ~ nlp = load_spacy("de_core_news_sm") # Load German spaCy model
+nlp = load_spacy("de_core_news_lg") # Load German spaCy model
+# ~ nlp.add_pipe("syllables", after="tagger")
+# ~ print(nlp.pipe_names)
 
 # ~ univ = {}
 # ~ for nc in chat:
