@@ -1,0 +1,27 @@
+Source: loro
+Section: utils
+Priority: optional
+Maintainer: Tomás Vírseda <tomasvirseda@gmail.com>
+Build-Depends: debhelper-compat(=10),
+    desktop-file-utils,
+    gettext,
+    meson (>= 0.50),
+    pkg-config,
+    libglib2.0-dev,
+    libadwaita-1-dev,
+    appstream
+Standards-Version: 4.5.0
+Rules-Requires-Root: no
+Homepage: https://github.com/t00m/Loro
+Vcs-Browser: https://github.com/t00m/Loro
+Vcs-Git: https://github.com/t00m/Loro.git
+
+Package: loro
+Architecture: all
+Depends: ${misc:Depends},
+    gir1.2-adw-1,
+    gir1.2-gst-plugins-bad-1.0,
+    python3
+Description: Learn a new language
+ Loro helps to learn a new language by focusing only in those inputs
+ you use to feed the app.
