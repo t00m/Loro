@@ -7,7 +7,12 @@ from concurrent.futures import ThreadPoolExecutor as Executor
 from loro.extractors import whatsapp
 from loro.services.nlp.spacy import tokenize_sentence
 from loro.services.nlp.spacy import get_glossary_term_explained
+from loro.services.nlp.spacy import load_model
 from loro.core.util import is_valid_word
+from loro.core.util import get_user_documents_dir
+from loro.core.util import setup_project_dirs
+from loro.core.env import LORO_USER_PROJECTS_DIR
+from loro.core.env import ENV
 
 def sentence_processed(future):
         time.sleep(random.random())
@@ -73,8 +78,18 @@ def process_sentences(sentences: list) -> None:
     for token in all_tokens:
         pos = get_glossary_term_explained(token.pos_)
         print("%s > Lemma [%s] POS [%s (%s)]" % (token.text, token.lemma_, pos, token.pos_))
+
 def main(version):
+    workspace = LORO_USER_PROJECTS_DIR
+    source, target = ENV['Projects']['Default']['Languages']
+    model_type = ENV['Languages'][source]['model']['default']
+    model_name = ENV['Languages'][source]['model'][model_type]
     print("Loro %s" % version)
+    print("User workspace: %s" % workspace)
+    print("Loading model '%s' for language '%s'" % (model_name, source))
+    load_model(model_name)
+    setup_project_dirs(workspace, source, target)
+
     try:
         filepath = sys.argv[1]
     except IndexError:

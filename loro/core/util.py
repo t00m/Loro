@@ -2,6 +2,23 @@ import os
 import re
 import json
 import hashlib
+import subprocess
+
+def get_user_documents_dir():
+    return subprocess.check_output(["xdg-user-dir", "DOCUMENTS"], universal_newlines=True).strip()
+
+def setup_project_dirs(workspace: str, source: str, target: str) -> None:
+    dir_project_source = os.path.join(workspace, source)
+    dir_project_source_config = os.path.join(workspace, source, '.config')
+    dir_project_source_inputs = os.path.join(workspace, source, 'inputs')
+    dir_project_target = os.path.join(workspace, source, target)
+    for directory in [  dir_project_source,
+                        dir_project_source_config,
+                        dir_project_source_inputs,
+                        dir_project_target
+                     ]:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
 
 def json_load(filepath: str) -> {}:
     """Load into a dictionary a file in json format"""

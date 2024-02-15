@@ -24,7 +24,6 @@ configure_file(
 
 # Python sources
 sources = [
-  'env.py',
   'main.py'
 ]
 
