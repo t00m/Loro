@@ -16,7 +16,7 @@ def startswith_date(text: str) -> bool:
         is_date = False
     return is_date
 
-def get_messages(filepath: str) -> []:
+def get_messages(filepath: str) -> {}:
     lines = open(filepath, 'r').readlines()
     chat = {}
     nc = 0
@@ -36,6 +36,12 @@ def get_messages(filepath: str) -> []:
             except:
                 pass
     return chat
+
+def save_sentences(filepath: str, chat: {}) -> None:
+    sentences = chat.values()
+    with open(filepath, 'w') as fout:
+        fout.write('\n'.join(sentences))
+
 
     # ~ for nc in chat:
         # ~ print("%d > %s" % (nc, chat[nc]))

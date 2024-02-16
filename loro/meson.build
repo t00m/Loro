@@ -24,7 +24,8 @@ configure_file(
 
 # Python sources
 sources = [
-  'main.py'
+  'main.py',
+  'workflow.py'
 ]
 
 install_data(sources, install_dir: moduledir)

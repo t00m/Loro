@@ -1,5 +1,6 @@
 import os
 import re
+import glob
 import json
 import hashlib
 import subprocess
@@ -19,6 +20,28 @@ def setup_project_dirs(workspace: str, source: str, target: str) -> None:
                      ]:
         if not os.path.exists(directory):
             os.makedirs(directory)
+
+def get_project_input_dir(workspace: str, source: str):
+    return os.path.join(workspace, source, 'inputs')
+
+def get_inputs(workspace: str, source: str):
+    input_dir = get_project_input_dir(workspace, source)
+    return glob.glob(os.path.join(input_dir, '*'))
+
+def get_metadata_from_filepath(filepath:str) -> ():
+    basename = os.path.basename(filepath)
+    dot = basename.rfind('.')
+    if dot > 1:
+        basename = basename[:dot]
+    seq = basename.rfind('_')
+    if seq > 1:
+        basename = basename[:seq]
+    try:
+        topic, subtopic = basename.split('-')
+    except:
+        topic = 'unknown'
+        subtopic = 'unknown'
+    return topic, subtopic
 
 def json_load(filepath: str) -> {}:
     """Load into a dictionary a file in json format"""

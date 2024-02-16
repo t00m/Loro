@@ -15,6 +15,7 @@ from spacy.lang.de.examples import sentences
 from spacy import Language
 from spacy.cli import download
 
+nlp = None
 
 def load_spacy(model_name: str, **kwargs) -> Language:
     """Load a spaCy model, download it if it has not been installed yet.
@@ -46,7 +47,9 @@ def get_glossary_term_explained(term: str) -> str:
         return ''
 
 def tokenize_sentence(sentence: str) -> []:
+    global nlp
     return nlp(sentence)
 
 def load_model(model: str) -> None:
+    global nlp
     nlp = load_spacy(model)
