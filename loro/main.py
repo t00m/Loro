@@ -20,9 +20,6 @@ def main(version):
     workflow.init(model_name)
 
     for filepath in get_inputs(workspace, source):
+        log.info("Language '%s' > Processing input file '%s'", source, os.path.basename(filepath))
         workflow.process(workspace, source, filepath)
-        # ~ sentences = open(filepath, 'r').readlines()
-        # ~ log.info("Processing '%s' with %d sentences", os.path.basename(filepath), len(sentences))
-        # ~ workflow.process_sentences(sentences)
-    # ~ log.info("Done")
 
