@@ -30,9 +30,9 @@ class Dictionary:
         # ~ self.resources['subtopics'] = { 'file': os.path.join(configdir, 'subtopics.json'), 'dict': self.subtopics }
         # ~ pprint.pprint(resources)
 
-        self.load_dictionary()
+        self.__load_dictionary()
 
-    def load_dictionary(self):
+    def __load_dictionary(self):
         for thisfile, thisdict in [
                                     (self.fsents, self.sentences),
                                     (self.ftopics, self.topics),
@@ -83,7 +83,7 @@ class Dictionary:
             self.subtopics[subtopic] = sids
         return added
 
-    def save_dictionary(self):
+    def __save_dictionary(self):
         for thisfile, thisdict in [
                                     (self.fsents, self.sentences),
                                     (self.ftopics, self.topics),
@@ -94,5 +94,5 @@ class Dictionary:
 
     def __del__(self):
         self.log.info("%d sentences, %d topics, %d subtopics", len(self.sentences), len(self.topics), len(self.subtopics))
-        self.save_dictionary()
+        self.__save_dictionary()
         self.log.info("Dictionary class destroyed")
