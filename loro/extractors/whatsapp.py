@@ -8,7 +8,7 @@ from loro.core.util import clean_text
 
 pattern = '%d/%m/%Y, %H:%M'
 
-def startswith_date(text: str) -> bool:
+def _startswith_date(text: str) -> bool:
     try:
         adate = datetime.strptime(text[:17], pattern)
         is_date = True
@@ -21,7 +21,7 @@ def get_messages(filepath: str) -> {}:
     chat = {}
     nc = 0
     for line in lines:
-        if startswith_date(line):
+        if _startswith_date(line):
             nc += 1
             sep = line.find(':', 17) + 2
             if sep > 1:
