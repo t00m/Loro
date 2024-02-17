@@ -17,6 +17,5 @@ def main(version):
     workflow.init(model_name)
 
     for filepath in get_inputs(source):
-        log.info("Language '%s' > Processing input file '%s'", source, os.path.basename(filepath))
         workflow.start(filepath)
 

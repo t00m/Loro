@@ -32,7 +32,7 @@ def process_sentence(data):
     # ~ log.debug("Job[%d] started", num)
     metadata = {}
     metadata['sid'] = get_hash(sentence)
-    metadata['sentence'] = sentence
+    metadata['sentence'] = sentence.strip()
     metadata['tokens'] = set()
     metadata['entities'] = set()
 
@@ -55,7 +55,7 @@ def process_input(sentences: []) -> []:
     workbook = {}
     jobs = []
     jid = 1
-    log.info("Sent %d sentences", len(sentences))
+    log.info("\tGot %d sentences", len(sentences))
     with Executor(max_workers=40) as exe:
         for sentence in sentences:
             data = (sentence, jid)
@@ -67,7 +67,7 @@ def process_input(sentences: []) -> []:
         if jid-1 > 0:
             for job in jobs:
                 jid, metadata = job.result()
-                log.debug("Job[%d] finished: %d tokens processed", jid, len(metadata['tokens']))
+                log.debug("\tJob[%d] finished: %d tokens processed", jid, len(metadata['tokens']))
                 sid = metadata['sid']
                 workbook[sid] = {}
                 workbook[sid]['sentence'] = metadata['sentence']
@@ -76,6 +76,9 @@ def process_input(sentences: []) -> []:
     return workbook
 
 def process_workbook(topic: str, subtopic: str, workbook: {}):
+    log.info("\tProcessing workbook")
+    log.info("\t\tTopic: %s", topic)
+    log.info("\t\tSubtopic: %s", subtopic)
     # Save topic
     dictionary.save_topic(topic, workbook)
 
@@ -83,12 +86,19 @@ def process_workbook(topic: str, subtopic: str, workbook: {}):
     dictionary.save_subtopic(subtopic, workbook)
 
     # Save sentences
-    n = 0
+    nsents = 0
     for sid in workbook:
         saved = dictionary.save_sentence(sid, workbook[sid]['sentence'])
         if saved:
-            n += 1
-    log.info("Saved %d sentences", n)
+            nsents += 1
+            # ~ log.info(workbook[sid]['sentence'])
+            # Save tokens, lemmas and pos tags
+            # ~ for token in workbook[sid]['tokens']:
+                # ~ log.info("\t%s", token.text)
+    log.info("\t\tSaved %d sentences", nsents)
+    log.info("\tWorkbook processed")
+
+
         # ~ for token in sentence:
             # ~ save_token_and_reference_to_sentence
     # ~ log.info("Tokens generated: %d", len(all_tokens))
@@ -99,8 +109,10 @@ def process_workbook(topic: str, subtopic: str, workbook: {}):
     pass
 
 def start(filepath: str):
+    log.info("Processing input file '%s'", os.path.basename(filepath))
     topic, subtopic = get_metadata_from_filepath(filepath)
     sentences = open(filepath, 'r').readlines()
     workbook = process_input(sentences)
-    log.info("Useful sentences: %d", len(workbook.keys()))
+    # ~ log.info("Useful sentences: %d", len(workbook.keys()))
     process_workbook(topic, subtopic, workbook)
+    log.info("End processing input file '%s'", os.path.basename(filepath))
