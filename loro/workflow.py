@@ -77,10 +77,10 @@ def process_input(sentences: []) -> []:
 
 def process_workbook(topic: str, subtopic: str, workbook: {}):
     # Save topic
-    # ~ dictionary.save_topic(topic, workbook)
+    dictionary.save_topic(topic, workbook)
 
     # Sabe subtopic
-    # ~ dictionary.save_subtopic(subtopic, workbook)
+    dictionary.save_subtopic(subtopic, workbook)
 
     # Save sentences
     n = 0
