@@ -1,0 +1,5 @@
+- Duden - Grammar links
+    https://github.com/radomirbosak/duden/issues/156
+        For nouns: https://www.duden.de/deklination/substantive/Hase
+        For adjectives: https://www.duden.de/deklination/adjektive/schoen
+        For verbs: https://www.duden.de/konjugation/laufen
