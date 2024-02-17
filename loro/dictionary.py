@@ -2,77 +2,97 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+import pprint
 from loro.core.env import ENV
+from loro.core.log import get_logger
 from loro.core.util import json_load, json_save
 from loro.core.util import get_project_config_dir
 
-def save_sentence(sid: str, sentence:str) -> bool:
-    saved = False
-    source, target = ENV['Projects']['Default']['Languages']
-    fsents = os.path.join(get_project_config_dir(source), 'sentences.json')
-    if os.path.exists(fsents):
-        sentences = json_load(fsents)
-        if not sid in sentences:
-            sentences[sid] = sentence
-            saved = True
-    else:
-        sentences = {}
-        sentences[sid] = sentence
-        saved = True
-    if saved:
-        json_save(fsents, sentences)
-    return saved
+class Dictionary:
+    def __init__(self):
+        self.log = get_logger('Dictionary')
+        self.source, self.target = ENV['Projects']['Default']['Languages']
+        configdir = get_project_config_dir(self.source)
 
-def save_topic(topic: str, workbook: {}) -> None:
-    changes = False
-    source, target = ENV['Projects']['Default']['Languages']
-    ftopics = os.path.join(get_project_config_dir(source), 'topics.json')
-    if os.path.exists(ftopics):
-        topics = json_load(ftopics)
-        if not topic in topics:
-            topics[topic] = list(workbook.keys())
-            changes = True
+         # Dictionary in-memory dicts
+        self.sentences = {}
+        self.topics = {}
+        self.subtopics = {}
+
+        # Dictionary configuration files
+        self.fsents = os.path.join(get_project_config_dir(self.source), 'sentences.json')
+        self.ftopics = os.path.join(get_project_config_dir(self.source), 'topics.json')
+        self.fsubtopics = os.path.join(get_project_config_dir(self.source), 'subtopics.json')
+
+        # ~ self.resources = {}
+        # ~ self.resources['sentences'] = {'file': os.path.join(configdir, 'sentences.json'), 'dict': self.sentences }
+        # ~ self.resources['topics'] = { 'file': os.path.join(configdir, 'topics.json'), 'dict': self.topics }
+        # ~ self.resources['subtopics'] = { 'file': os.path.join(configdir, 'subtopics.json'), 'dict': self.subtopics }
+        # ~ pprint.pprint(resources)
+
+        self.load_dictionary()
+
+    def load_dictionary(self):
+        for thisfile, thisdict in [
+                                    (self.fsents, self.sentences),
+                                    (self.ftopics, self.topics),
+                                    (self.fsubtopics, self.subtopics)
+                                ]:
+            if os.path.exists(thisfile):
+                thisdict = json_load(thisfile)
+            else:
+                json_save(thisfile, thisdict)
+        self.log.info("Dictionary loaded")
+
+    def add_sentence(self, sid: str, sentence:str) -> bool:
+        added = False
+        if not sid in self.sentences:
+            self.sentences[sid] = sentence
+            added = True
+        return added
+
+    def add_topic(self, topic: str, workbook: {}) -> None:
+        added = False
+        if not topic in self.topics:
+            self.topics[topic] = list(workbook.keys())
+            added = True
         else:
             newsids = []
             for sid in workbook.keys():
-                sids = topics[topic]
+                sids = self.topics[topic]
                 if not sid in sids:
                     newsids.append(sid)
-                    changes = True
+                    added = True
             sids.extend(newsids)
-            topics[topic] = sids
-    else:
-        topics = {}
-        topics[topic] = list(workbook.keys())
-        changes = True
+            self.topics[topic] = sids
+        return added
 
-    if changes:
-        json_save(ftopics, topics)
-
-
-def save_subtopic(subtopic: str, workbook: {}) -> None:
-    changes = False
-    source, target = ENV['Projects']['Default']['Languages']
-    fsubtopics = os.path.join(get_project_config_dir(source), 'subtopics.json')
-    if os.path.exists(fsubtopics):
-        subtopics = json_load(fsubtopics)
-        if not subtopic in subtopics:
-            subtopics[subtopic] = list(workbook.keys())
-            changes = True
+    def add_subtopic(self, subtopic: str, workbook: {}) -> None:
+        added = False
+        if not subtopic in self.subtopics:
+            self.subtopics[subtopic] = list(workbook.keys())
+            added = True
         else:
             newsids = []
             for sid in workbook.keys():
-                sids = subtopics[subtopic]
+                sids = self.subtopics[subtopic]
                 if not sid in sids:
                     newsids.append(sid)
-                    changes = True
+                    added = True
             sids.extend(newsids)
-            subtopics[subtopic] = sids
-    else:
-        subtopics = {}
-        subtopics[subtopic] = list(workbook.keys())
-        changes = True
+            self.subtopics[subtopic] = sids
+        return added
 
-    if changes:
-        json_save(fsubtopics, subtopics)
+    def save_dictionary(self):
+        for thisfile, thisdict in [
+                                    (self.fsents, self.sentences),
+                                    (self.ftopics, self.topics),
+                                    (self.fsubtopics, self.subtopics)
+                                ]:
+            json_save(thisfile, thisdict)
+        self.log.info("Dictionary saved")
+
+    def __del__(self):
+        self.log.info("%d sentences, %d topics, %d subtopics", len(self.sentences), len(self.topics), len(self.subtopics))
+        self.save_dictionary()
+        self.log.info("Dictionary class destroyed")

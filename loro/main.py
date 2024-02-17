@@ -4,7 +4,8 @@ from loro.core.log import get_logger
 from loro.core.env import ENV
 from loro.core.util import setup_project_dirs
 from loro.core.util import get_inputs
-from loro import workflow
+# ~ from loro import workflow
+from loro.workflow import Workflow
 
 def main(version):
     log = get_logger('main')
@@ -13,8 +14,9 @@ def main(version):
     model_type = ENV['Languages'][source]['model']['default']
     model_name = ENV['Languages'][source]['model'][model_type]
     setup_project_dirs(source, target)
-    log.info("Loading model '%s' for language '%s'", model_name, source)
-    workflow.init(model_name)
+    # ~ log.info("Loading model '%s' for language '%s'", model_name, source)
+    workflow = Workflow(model_name)
+    # ~ workflow.init(model_name)
 
     for filepath in get_inputs(source):
         workflow.start(filepath)
