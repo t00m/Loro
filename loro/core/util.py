@@ -5,27 +5,37 @@ import json
 import hashlib
 import subprocess
 
-def get_user_documents_dir():
-    return subprocess.check_output(["xdg-user-dir", "DOCUMENTS"], universal_newlines=True).strip()
+from loro.core.constants import LORO_USER_DIR
+from loro.core.constants import LORO_USER_PROJECTS_DIR
+from loro.core.constants import LORO_USER_CONFIG_DIR
 
-def setup_project_dirs(workspace: str, source: str, target: str) -> None:
-    dir_project_source = os.path.join(workspace, source)
-    dir_project_source_config = os.path.join(workspace, source, '.config')
-    dir_project_source_inputs = os.path.join(workspace, source, 'inputs')
-    dir_project_target = os.path.join(workspace, source, target)
-    for directory in [  dir_project_source,
+def setup_project_dirs(source: str, target: str) -> None:
+    dir_project_source = os.path.join(LORO_USER_PROJECTS_DIR, source)
+    dir_project_source_config = os.path.join(dir_project_source, '.config')
+    dir_project_source_input = os.path.join(dir_project_source, 'input')
+    dir_project_source_output = os.path.join(dir_project_source, 'output')
+    dir_project_target = os.path.join(dir_project_source, 'output', target)
+    for directory in [
+                        LORO_USER_DIR,
+                        LORO_USER_PROJECTS_DIR,
+                        LORO_USER_CONFIG_DIR,
+                        dir_project_source,
                         dir_project_source_config,
-                        dir_project_source_inputs,
-                        dir_project_target
+                        dir_project_source_input,
+                        dir_project_source_output,
+                        dir_project_target,
                      ]:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-def get_project_input_dir(workspace: str, source: str):
-    return os.path.join(workspace, source, 'inputs')
+def get_project_input_dir(source: str):
+    return os.path.join(LORO_USER_PROJECTS_DIR, source, 'input')
 
-def get_inputs(workspace: str, source: str):
-    input_dir = get_project_input_dir(workspace, source)
+def get_project_config_dir(source: str):
+    return os.path.join(LORO_USER_PROJECTS_DIR, source, '.config')
+
+def get_inputs(source: str):
+    input_dir = get_project_input_dir(source)
     return glob.glob(os.path.join(input_dir, '*'))
 
 def get_metadata_from_filepath(filepath:str) -> ():

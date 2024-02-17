@@ -10,24 +10,9 @@ Environment module.
 """
 
 import os
-from os.path import abspath
-import sys
-from gettext import gettext as _
 
-from loro.core.util import get_user_documents_dir
+from loro.core.constants import LORO_USER_CNF
 from loro.core.util import json_load, json_save
-
-LORO_USER_DIR = os.path.join(get_user_documents_dir(), 'Loro')
-LORO_USER_PROJECTS_DIR = os.path.join(get_user_documents_dir(), 'Loro', 'Projects')
-LORO_USER_CONFIG_DIR = os.path.join(get_user_documents_dir(), 'Loro', '.config')
-LORO_USER_CNF = os.path.join(LORO_USER_CONFIG_DIR, 'loro.conf')
-
-for directory in [  LORO_USER_DIR,
-                    LORO_USER_PROJECTS_DIR,
-                    LORO_USER_CONFIG_DIR
-                 ]:
-    if not os.path.exists(directory):
-        os.makedirs(directory)
 
 try:
     # Load user config
@@ -46,5 +31,5 @@ except:
     ENV['Projects']['Available'] = {}
     ENV['Projects']['Available']['Languages'] = [('de', 'es'), ('en', 'es')]
 
-    json_save(LORO_USER_CNF, ENV)
+    # ~ json_save(LORO_USER_CNF, ENV)
 
