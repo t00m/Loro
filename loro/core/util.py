@@ -62,7 +62,7 @@ def json_load(filepath: str) -> {}:
 def json_save(filepath: str, adict: {}) -> {}:
     """Save dictionary into a file in json format"""
     with open(filepath, 'w') as fout:
-        json.dump(adict, fout, sort_keys=True, indent=4)
+        json.dump(adict, fout, sort_keys=True, indent=4, ensure_ascii=False)
 
 def get_hash(text: str) -> str:
     """Get the SHA256 hash for a given text"""
