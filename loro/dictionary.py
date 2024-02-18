@@ -26,6 +26,7 @@ class Dictionary:
 
         # Initialize stats
         self.stats = {}
+        self.posset = set()
         for key in get_glossary_keys():
             self.stats[key] = {}
 
@@ -74,7 +75,10 @@ class Dictionary:
                                 ]:
             json_save(thisfile, thisdict)
         self.log.info("Dictionary saved")
-        pprint.pprint(self.stats)
+        for key in self.posset:
+            print("POS TAG: %s" % key)
+            pprint.pprint(sorted(self.stats[key].items(), key=lambda p:p[1], reverse=True))
+        # ~ pprint.pprint(self.stats)
 
     def add_sentence(self, sid: str, sentence:str) -> bool:
         added = False
@@ -138,10 +142,11 @@ class Dictionary:
         # P-O-S (Part Of Speech) tagging and stats
         ## Stats
         try:
-            num = self.stats[token.pos_][token.text]
-            self.stats[token.pos_][token.text] = num + 1
+            num = self.stats[token.pos_][token.lemma_]
+            self.stats[token.pos_][token.lemma_] = num + 1
         except:
-            self.stats[token.pos_][token.text] = 1
+            self.stats[token.pos_][token.lemma_] = 1
+        self.posset.add(token.pos_)
 
         try:
             tokens = self.pos[token.pos_]
