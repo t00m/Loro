@@ -44,7 +44,7 @@ class Workflow:
             for sentence in sentences:
                 data = (sentence, jid)
                 job = exe.submit(self.process_sentence, data)
-                # ~ job.add_done_callback(self.sentence_processed) # Not needed
+                # ~ job.add_done_callback(self.__sentence_processed) # Not needed
                 jobs.append(job)
                 jid += 1
 
@@ -73,7 +73,7 @@ class Workflow:
 
         # Named Entity Recognition (NER):
         for ent in result.ents:
-            metadata['entities'].add(ent)
+            metadata['entities'].add(ent.text)
 
         # Tokens
         for token in result:
@@ -99,27 +99,22 @@ class Workflow:
             saved = self.dictionary.add_sentence(sid, workbook[sid]['sentence'])
             if saved:
                 nsents += 1
-                # ~ log.info(workbook[sid]['sentence'])
+
                 # Save tokens, lemmas and pos tags
-                # ~ for token in workbook[sid]['tokens']:
-                    # ~ log.info("\t%s", token.text)
+                for token in workbook[sid]['tokens']:
+                    self.dictionary.add_token(token, sid, workbook)
+
+
         self.log.info("\t\tSaved %d sentences", nsents)
         self.log.info("\tWorkbook processed")
-        # ~ for token in sentence:
-            # ~ save_token_and_reference_to_sentence
-        # ~ log.info("Tokens generated: %d", len(all_tokens))
-        # ~ for token in all_tokens:
-            # ~ pos = get_glossary_term_explained(token.pos_)
-            # ~ print("%s > Lemma [%s] POS [%s (%s)]" % (token.text, token.lemma_, pos, token.pos_))
-        # ~ print(workbook)
-        # ~ pass
 
-# ~ def sentence_processed(self.future):
-    # ~ time.sleep(random.random())
-    # ~ cur_thread = threading.current_thread().name
-    # ~ x = future.result()
-    # ~ if cur_thread != x:
-        # ~ return x
+
+    def __sentence_processed(self, future):
+        time.sleep(random.random())
+        cur_thread = threading.current_thread().name
+        x = future.result()
+        if cur_thread != x:
+            return x
 
 
 
