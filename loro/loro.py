@@ -9,32 +9,37 @@ import signal
 import locale
 import gettext
 
-APP_DATA = {}
-APP_DATA['APP_ID'] = '@APP_ID@'
-APP_DATA['VERSION'] = '@VERSION@'
-APP_DATA['pkgdatadir'] = '@pkgdatadir@'
-APP_DATA['localedir'] = '@localedir@'
+sys.path.insert(1, '@pkgdatadir@')
 
-sys.path.insert(1, APP_DATA['pkgdatadir'])
+from loro.core.env import ENV
+
+ENV['APP'] = {}
+ENV['APP']['ID'] = '@APP_ID@'
+ENV['APP']['VERSION'] = '@VERSION@'
+ENV['APP']['PGKDATADIR'] = '@pkgdatadir@'
+ENV['APP']['LOCALEDIR'] = '@localedir@'
+
 signal.signal(signal.SIGINT, signal.SIG_DFL)
-gettext.install('loro', APP_DATA['localedir'])
+gettext.install('loro', ENV['APP']['LOCALEDIR'])
 
 try:
-  locale.bindtextdomain('loro', APP_DATA['localedir'])
+  locale.bindtextdomain('loro', ENV['APP']['LOCALEDIR'])
   locale.textdomain('loro')
 except:
   print('Cannot set locale.')
 try:
-  gettext.bindtextdomain('loro', APP_DATA['localedir'])
+  gettext.bindtextdomain('loro', ENV['APP']['LOCALEDIR'])
   gettext.textdomain('loro')
 except:
   print('Cannot load translations.')
 
+
+
 if __name__ == '__main__':
     import gi
     from gi.repository import Gio
-    resource = Gio.Resource.load(os.path.join(APP_DATA['pkgdatadir'], 'loro.gresource'))
+    resource = Gio.Resource.load(os.path.join(ENV['APP']['PGKDATADIR'], 'loro.gresource'))
     resource._register()
 
     from loro import main
-    sys.exit(main.main(APP_DATA))
+    sys.exit(main.main())

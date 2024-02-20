@@ -4,15 +4,14 @@ import signal
 import locale
 import gettext
 
-from loro.core.log import get_logger
 from loro.core.env import ENV
+from loro.core.log import get_logger
 from loro.core.util import setup_project_dirs
 from loro.core.util import get_inputs
 
-def main(APP_DATA):
-    ENV['APP_DATA'] = APP_DATA
+def main():
     log = get_logger('main')
-    log.info("%s %s", ENV['APP_DATA']['APP_ID'], ENV['APP_DATA']['VERSION'])
+    log.info("%s %s", ENV['APP']['ID'], ENV['APP']['VERSION'])
     # ~ log.info("Prefix: %s", PREFIX)
     # ~ log.info("Profile: %s", PROFILE)
     source, target = ENV['Projects']['Default']['Languages']

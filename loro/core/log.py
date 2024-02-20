@@ -8,12 +8,13 @@
 """
 
 import logging
+from rich.logging import RichHandler
 
 def get_logger(name):
     """Returns a new logger with a custom pattern.
     @param name: logger name
     """
-    logging.basicConfig(level=logging.INFO, format="%(levelname)7s | %(name)10s | %(lineno)4d | %(asctime)s | %(message)s")
+    logging.basicConfig(level='NOTSET', format="%(message)s", handlers=[RichHandler()])
     log = logging.getLogger(name)
     log.setLevel(logging.INFO)
     return log
