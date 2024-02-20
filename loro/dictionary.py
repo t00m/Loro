@@ -14,7 +14,7 @@ class Dictionary:
     def __init__(self):
         self.log = get_logger('Dictionary')
         self.source, self.target = ENV['Projects']['Default']['Languages']
-        configdir = get_project_config_dir(self.source)
+        configdir = get_project_config_dir(self.source, self.target)
 
          # Dictionary in-memory dicts
         self.sentences = {}
@@ -32,13 +32,13 @@ class Dictionary:
             self.stats[key] = {}
 
         # Dictionary configuration files
-        self.fsents = os.path.join(get_project_config_dir(self.source), 'sentences.json')
-        self.ftopics = os.path.join(get_project_config_dir(self.source), 'topics.json')
-        self.fsubtopics = os.path.join(get_project_config_dir(self.source), 'subtopics.json')
-        self.ftokens = os.path.join(get_project_config_dir(self.source), 'tokens.json')
-        self.flemmas = os.path.join(get_project_config_dir(self.source), 'lemmas.json')
-        self.fpos = os.path.join(get_project_config_dir(self.source), 'pos.json')
-        self.fents = os.path.join(get_project_config_dir(self.source), 'entities.json')
+        self.fsents = os.path.join(get_project_config_dir(self.source, self.target), 'sentences.json')
+        self.ftopics = os.path.join(get_project_config_dir(self.source, self.target), 'topics.json')
+        self.fsubtopics = os.path.join(get_project_config_dir(self.source, self.target), 'subtopics.json')
+        self.ftokens = os.path.join(get_project_config_dir(self.source, self.target), 'tokens.json')
+        self.flemmas = os.path.join(get_project_config_dir(self.source, self.target), 'lemmas.json')
+        self.fpos = os.path.join(get_project_config_dir(self.source, self.target), 'pos.json')
+        self.fents = os.path.join(get_project_config_dir(self.source, self.target), 'entities.json')
 
         # ~ self.resources = {}
         # ~ self.resources['sentences'] = {'file': os.path.join(configdir, 'sentences.json'), 'dict': self.sentences }

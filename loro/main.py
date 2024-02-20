@@ -38,6 +38,6 @@ def main(APP_ID, VERSION):
     workflow = Workflow(model_name)
     # ~ workflow.init(model_name)
 
-    for filepath in get_inputs(source):
+    for filepath in get_inputs(source, target):
         workflow.start(filepath)
 
