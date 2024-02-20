@@ -8,6 +8,7 @@ from loro.core.log import get_logger
 from loro.core.util import json_load, json_save
 from loro.core.util import get_project_config_dir
 from loro.services.nlp.spacy import get_glossary_keys
+from loro.builders.excel import create_excel
 
 class Dictionary:
     def __init__(self):
@@ -75,9 +76,10 @@ class Dictionary:
                                 ]:
             json_save(thisfile, thisdict)
         self.log.info("Dictionary saved")
-        for key in self.posset:
-            print("POS TAG: %s" % key)
-            pprint.pprint(sorted(self.stats[key].items(), key=lambda p:p[1], reverse=True))
+        create_excel(self.stats, self.posset)
+        # ~ for key in self.posset:
+            # ~ print("POS TAG: %s" % key)
+            # ~ pprint.pprint(sorted(self.stats[key].items(), key=lambda p:p[1], reverse=True))
         # ~ pprint.pprint(self.stats)
 
     def add_sentence(self, sid: str, sentence:str) -> bool:

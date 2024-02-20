@@ -38,6 +38,9 @@ def get_inputs(source: str):
     input_dir = get_project_input_dir(source)
     return glob.glob(os.path.join(input_dir, '*'))
 
+# ~ def get_project_output_dir(source: str):
+    # ~ return os.path.join(LORO_USER_PROJECTS_DIR, source, target'input')
+
 def get_metadata_from_filepath(filepath:str) -> ():
     basename = os.path.basename(filepath)
     dot = basename.rfind('.')
