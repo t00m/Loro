@@ -52,5 +52,8 @@ def create_excel(stats, posset):
                 length = max(len(as_text(cell.value)) for cell in column_cells)
                 ws.column_dimensions[openpyxl.utils.get_column_letter(column_cells[0].column)].width = length
 
-    wb.save("/tmp/topdict.xlsx")
+    try:
+        wb.save("/tmp/topdict.xlsx")
+    except IndexError:
+        print("No excel workbook created")
 
