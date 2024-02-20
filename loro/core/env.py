@@ -29,7 +29,7 @@ except:
     ENV['Projects']['Default'] = {}
     ENV['Projects']['Default']['Languages'] = ('de', 'en')
     ENV['Projects']['Available'] = {}
-    ENV['Projects']['Available']['Languages'] = [('de', 'es'), ('en', 'es')]
+    ENV['Projects']['Available']['Languages'] = [('de', 'en'), ('de', 'es'), ('en', 'es')]
 
     # ~ json_save(LORO_USER_CNF, ENV)
 

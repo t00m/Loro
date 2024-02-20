@@ -4,6 +4,7 @@
 # Description: This script cleans up EWAs_Performance_overview excel
 
 import sys
+import pprint
 
 import openpyxl
 from openpyxl.styles import colors
@@ -20,6 +21,7 @@ from openpyxl.worksheet.filters import (
     )
 
 from loro.services.nlp.spacy import get_glossary_term_explained
+from loro.core.env import ENV
 
 def as_text(value):
     if value is None:
@@ -56,4 +58,4 @@ def create_excel(stats, posset):
         wb.save("/tmp/topdict.xlsx")
     except IndexError:
         print("No excel workbook created")
-
+    pprint.pprint(ENV)

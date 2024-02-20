@@ -1,4 +1,4 @@
-#~ subdir('resources')
+subdir('resources')
 
 desktop_file = i18n.merge_file(
   input: 'com.github.t00m.Loro.desktop.in',

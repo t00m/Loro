@@ -1,5 +1,5 @@
 configure_file(
-  input: 'loro.in',
+  input: 'loro.py',
   output: 'loro',
   configuration: conf,
   install: true,
