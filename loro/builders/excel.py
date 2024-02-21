@@ -58,4 +58,4 @@ def create_excel(stats, posset):
         wb.save("/tmp/topdict.xlsx")
     except IndexError:
         print("No excel workbook created")
-    pprint.pprint(ENV)
+

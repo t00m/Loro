@@ -11,20 +11,20 @@ from loro.core.util import get_inputs
 
 def main():
     log = get_logger('main')
-    log.info("%s %s", ENV['APP']['ID'], ENV['APP']['VERSION'])
-    # ~ log.info("Prefix: %s", PREFIX)
-    # ~ log.info("Profile: %s", PROFILE)
     source, target = ENV['Projects']['Default']['Languages']
     model_type = ENV['Languages'][source]['model']['default']
     model_name = ENV['Languages'][source]['model'][model_type]
+    log.info("%s %s", ENV['APP']['ID'], ENV['APP']['VERSION'])
+    log.info("Source language: %s", source)
+    log.info("Target language: %s", target)
     setup_project_dirs(source, target)
-    # ~ log.info("Loading model '%s' for language '%s'", model_name, source)
-    # ~ workflow.init(model_name)
+    log.info("Loading model '%s' for language '%s'", model_name, source)
 
     inputs = get_inputs(source, target)
     if len(inputs) > 0:
         from loro.workflow import Workflow
         workflow = Workflow(model_name)
-        for filepath in inputs:
+        log.info("Processing %d files", len(inputs))
+        for filepath in sorted(inputs):
             workflow.start(filepath)
 

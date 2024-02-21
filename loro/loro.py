@@ -9,6 +9,9 @@ import signal
 import locale
 import gettext
 
+from rich.traceback import install
+install(show_locals=True)
+
 sys.path.insert(1, '@pkgdatadir@')
 
 from loro.core.env import ENV

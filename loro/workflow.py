@@ -4,6 +4,8 @@ import time
 import random
 import threading
 from concurrent.futures import ThreadPoolExecutor as Executor
+from rich.progress import Progress
+from rich.progress import track
 
 from loro.extractors import whatsapp
 from loro.services.nlp.spacy import tokenize_sentence
@@ -22,36 +24,41 @@ class Workflow:
         load_model(model_name)
         self.log.info("Model '%s' loaded", model_name)
         self.dictionary = Dictionary()
+        self.progress = None
 
     def __del__(self):
-      self.log.info("Workflow class destroyed")
+        pass
+      # ~ self.log.info("Workflow class destroyed")
 
     def start(self, filepath: str):
-        self.log.info("Processing input file '%s'", os.path.basename(filepath))
-        topic, subtopic = get_metadata_from_filepath(filepath)
-        sentences = open(filepath, 'r').readlines()
-        workbook = self.process_input(sentences)
-        self.log.info("\tUseful sentences: %d", len(workbook.keys()))
-        self.process_workbook(topic, subtopic, workbook)
-        self.log.info("End processing input file '%s'", os.path.basename(filepath))
+        # ~ self.log.info("Processing input file '%s'", os.path.basename(filepath))
+        with Progress() as self.progress:
+            topic, subtopic = get_metadata_from_filepath(filepath)
+            sentences = open(filepath, 'r').readlines()
+            task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
+            workbook = self.process_input(sentences, task)
+            # ~ self.log.info("\tUseful sentences: %d", len(workbook.keys()))
+            self.process_workbook(topic, subtopic, workbook)
+            # ~ self.log.info("End processing input file '%s'", os.path.basename(filepath))
 
-    def process_input(self, sentences: []) -> {}:
+    def process_input(self, sentences: [], task) -> {}:
         workbook = {}
         jobs = []
         jid = 1
-        self.log.info("\tGot %d sentences", len(sentences))
-        with Executor(max_workers=40) as exe:
+        # ~ self.log.info("\tGot %d sentences", len(sentences))
+        MAX_WORKERS = 40
+        with Executor(max_workers=MAX_WORKERS) as exe:
             for sentence in sentences:
-                data = (sentence, jid)
+                data = (sentence, jid, task)
                 job = exe.submit(self.process_sentence, data)
-                # ~ job.add_done_callback(self.__sentence_processed) # Not needed
+                job.add_done_callback(self.__sentence_processed) # Not needed
                 jobs.append(job)
                 jid += 1
 
             if jid-1 > 0:
                 for job in jobs:
-                    jid, metadata = job.result()
-                    self.log.debug("\tJob[%d] finished: %d tokens processed", jid, len(metadata['tokens']))
+                    jid, metadata, task = job.result()
+                    # ~ self.log.debug("\tJob[%d] finished: %d tokens processed", jid, len(metadata['tokens']))
                     sid = metadata['sid']
                     workbook[sid] = {}
                     workbook[sid]['sentence'] = metadata['sentence']
@@ -60,7 +67,7 @@ class Workflow:
         return workbook
 
     def process_sentence(self, data: tuple) -> tuple:
-        (sentence, jid) = data
+        (sentence, jid, task) = data
         # ~ log.debug("Job[%d] started", jid)
         metadata = {}
         metadata['sid'] = get_hash(sentence)
@@ -81,12 +88,12 @@ class Workflow:
                 if is_valid_word(token.text):
                     metadata['tokens'].add(token)
 
-        return (jid, metadata)
+        return (jid, metadata, task)
 
     def process_workbook(self, topic: str, subtopic: str, workbook: {}):
-        self.log.info("\tProcessing workbook")
-        self.log.info("\t\tTopic: %s", topic)
-        self.log.info("\t\tSubtopic: %s", subtopic)
+        # ~ self.log.info("\tProcessing workbook")
+        # ~ self.log.info("\t\tTopic: %s", topic)
+        # ~ self.log.info("\t\tSubtopic: %s", subtopic)
         # Save topic
         self.dictionary.add_topic(topic, workbook)
 
@@ -105,14 +112,16 @@ class Workflow:
                     self.dictionary.add_token(token, sid, workbook)
 
 
-        self.log.info("\t\tSaved %d sentences", nsents)
-        self.log.info("\tWorkbook processed")
-
+        # ~ self.log.info("\t\tSaved %d sentences", nsents)
+        # ~ self.log.info("\tWorkbook processed")
 
     def __sentence_processed(self, future):
         time.sleep(random.random())
         cur_thread = threading.current_thread().name
         x = future.result()
+        jid, metadata, task = x
+        self.progress.advance(task)
+        # ~ self.log.info("%d > %s", jid, metadata['sentence'])
         if cur_thread != x:
             return x
 

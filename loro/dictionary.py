@@ -8,6 +8,7 @@ from loro.core.log import get_logger
 from loro.core.util import json_load, json_save
 from loro.core.util import get_project_config_dir
 from loro.services.nlp.spacy import get_glossary_keys
+from loro.services.nlp.spacy import get_glossary_term_explained
 from loro.builders.excel import create_excel
 
 class Dictionary:
@@ -62,7 +63,7 @@ class Dictionary:
                 thisdict = json_load(thisfile)
             else:
                 json_save(thisfile, thisdict)
-        self.log.info("Dictionary loaded")
+        # ~ self.log.info("Dictionary loaded")
 
     def __save_dictionary(self):
         for thisfile, thisdict in [
@@ -75,8 +76,11 @@ class Dictionary:
                                     (self.fents, self.entities)
                                 ]:
             json_save(thisfile, thisdict)
-        self.log.info("Dictionary saved")
-        create_excel(self.stats, self.posset)
+        # ~ self.log.info("Dictionary saved")
+        for key in self.posset:
+            postag = get_glossary_term_explained(key).title()
+            self.log.info("%s: %d", postag, len(self.stats[key]))
+        # ~ create_excel(self.stats, self.posset)
         # ~ for key in self.posset:
             # ~ print("POS TAG: %s" % key)
             # ~ pprint.pprint(sorted(self.stats[key].items(), key=lambda p:p[1], reverse=True))
@@ -174,4 +178,4 @@ class Dictionary:
         # ~ print(self.tokens)
         # ~ print(type(self.tokens))
         self.__save_dictionary()
-        self.log.info("Dictionary class destroyed")
+        # ~ self.log.info("Dictionary class destroyed")
