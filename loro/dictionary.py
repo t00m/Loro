@@ -11,6 +11,7 @@ from loro.services.nlp.spacy import get_glossary_keys
 from loro.services.nlp.spacy import get_glossary_term_explained
 from loro.builders.excel import create_excel
 
+
 class Dictionary:
     def __init__(self):
         self.log = get_logger('Dictionary')
@@ -25,6 +26,9 @@ class Dictionary:
         self.lemmas = {}
         self.pos = {}
         self.entities = {}
+
+        self.user_tokens = {}
+        self.__load_user_tokens()
 
         # Initialize stats
         self.stats = {}
@@ -47,7 +51,18 @@ class Dictionary:
         # ~ self.resources['subtopics'] = { 'file': os.path.join(configdir, 'subtopics.json'), 'dict': self.subtopics }
         # ~ pprint.pprint(resources)
 
+        # Load (or create) personal dictionary for current project
         self.__load_dictionary()
+
+    def __load_user_tokens(self):
+        fusertokens = os.path.join(get_project_config_dir(self.source, self.target), 'user_tokens_%s_%s.json' % (self.source, self.target))
+        try:
+            self.user_tokens = json_load(fusertokens)
+            self.log.info("Project user tokens loaded")
+        except FileNotFoundError:
+            self.user_tokens = {}
+            json_save(fusertokens, self.user_tokens)
+            self.log.info("Project user tokens loaded (new)")
 
     def __load_dictionary(self):
         for thisfile, thisdict in [
@@ -80,6 +95,8 @@ class Dictionary:
         for key in self.posset:
             postag = get_glossary_term_explained(key).title()
             self.log.info("%s: %d", postag, len(self.stats[key]))
+            if key == 'PROPN':
+                self.log.info(self.stats[key])
         # ~ create_excel(self.stats, self.posset)
         # ~ for key in self.posset:
             # ~ print("POS TAG: %s" % key)
