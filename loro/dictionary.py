@@ -64,6 +64,11 @@ class Dictionary:
             json_save(fusertokens, self.user_tokens)
             self.log.info("Project user tokens loaded (new)")
 
+    def __save_user_tokens(self):
+        fusertokens = os.path.join(get_project_config_dir(self.source, self.target), 'user_tokens_%s_%s.json' % (self.source, self.target))
+        json_save(fusertokens, self.user_tokens)
+        self.log.info("Project user tokens saved")
+
     def __load_dictionary(self):
         for thisfile, thisdict in [
                                     (self.fsents, self.sentences),
@@ -126,6 +131,9 @@ class Dictionary:
             self.topics[topic] = sids
         return added
 
+    def get_topics(self):
+        return sorted(list(self.topics.keys()))
+
     def add_subtopic(self, subtopic: str, workbook: {}) -> bool:
         added = False
         if not subtopic in self.subtopics:
@@ -142,21 +150,31 @@ class Dictionary:
             self.subtopics[subtopic] = sids
         return added
 
+    def get_subtopics(self):
+        return sorted(list(self.subtopics.keys()))
+
+    def get_token(self, token) -> bool:
+        if token.text in self.user_tokens:
+            return self.user_tokens[token.text]
+        else:
+            return None
+        # ~ self.tokens[token.text] = self.user_tokens[token.text]
+
     def add_token(self, token: str, sid: str, workbook: {}):
         try:
-            sids = self.tokens[token.text]['sentences']
+            sids = self.user_tokens[token.text]['sentences']
             sids.append(sid)
-            self.tokens[token.text]['sentences'] = sids
+            self.user_tokens[token.text]['sentences'] = sids
         except:
-            self.tokens[token.text] = {}
-            self.tokens[token.text]['sentences'] = [sid]
-            self.tokens[token.text]['lemma'] = token.lemma_
-            self.tokens[token.text]['pos'] = token.pos_
-            self.tokens[token.text]['entities'] = workbook[sid]['entities']
+            self.user_tokens[token.text] = {}
+            self.user_tokens[token.text]['sentences'] = [sid]
+            self.user_tokens[token.text]['lemma'] = token.lemma_
+            self.user_tokens[token.text]['pos'] = token.pos_
+            self.user_tokens[token.text]['entities'] = workbook[sid]['entities']
 
         try:
             tokens = self.lemmas[token.lemma_]
-            if token.text_ not in tokens:
+            if token.text not in tokens:
                 tokens.append(token.text)
                 self.lemmas[token.lemma_] = tokens
         except:
@@ -195,4 +213,5 @@ class Dictionary:
         # ~ print(self.tokens)
         # ~ print(type(self.tokens))
         self.__save_dictionary()
+        self.__save_user_tokens()
         # ~ self.log.info("Dictionary class destroyed")

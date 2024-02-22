@@ -40,6 +40,7 @@ class Workflow:
             # ~ self.log.info("\tUseful sentences: %d", len(workbook.keys()))
             self.process_workbook(topic, subtopic, workbook)
             # ~ self.log.info("End processing input file '%s'", os.path.basename(filepath))
+            # ~ self.log.info("Topics: %s\nSubtopics: %s", ', '.join(self.dictionary.get_topics()), ', '.join(self.dictionary.get_subtopics()))
 
     def process_input(self, sentences: [], task) -> {}:
         workbook = {}
@@ -87,6 +88,7 @@ class Workflow:
             if token.text not in metadata['tokens']:
                 if is_valid_word(token.text):
                     metadata['tokens'].add(token)
+                    # ~ self.log.debug("Token: %s (%s)", token.text, type(token))
 
         return (jid, metadata, task)
 
