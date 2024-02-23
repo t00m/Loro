@@ -5,9 +5,12 @@
 
 import os
 import sys
+import math
 import signal
 import locale
 import gettext
+import argparse
+import multiprocessing
 
 from rich.traceback import install
 install(show_locals=True)
@@ -36,7 +39,14 @@ try:
 except:
   print('Cannot load translations.')
 
-
+def get_default_workers():
+    """Calculate default number or workers.
+    Workers = Number of CPU / 2
+    Minimum workers = 1
+    """
+    ncpu = multiprocessing.cpu_count()
+    workers = ncpu/2
+    return math.ceil(workers)
 
 if __name__ == '__main__':
     import gi
@@ -45,4 +55,25 @@ if __name__ == '__main__':
     resource._register()
 
     from loro import main
-    sys.exit(main.main())
+
+
+    # ~ """Set up application arguments and execute."""
+    # ~ extra_usage = """"""
+    # ~ parser = argparse.ArgumentParser(
+        # ~ prog='loro',
+        # ~ description='%s v%s\nApplication for helping to study another language' % ENV['APP']['ID'], ENV['APP']['VERSION'],
+        # ~ epilog=extra_usage,
+        # ~ formatter_class=argparse.RawDescriptionHelpFormatter)
+
+    WORKERS = get_default_workers()
+
+    # Loro arguments
+    parser = argparse.ArgumentParser(add_help=False)
+    loro_options = parser.add_argument_group('Loro Options')
+    loro_options.add_argument('-s', '--source', help='Source language (2 letters)', action='store', dest='SOURCE')
+    loro_options.add_argument('-t', '--target', help='Target language (2 letters)', action='store', dest='TARGET')
+    loro_options.add_argument('-w', help='Number of workers. Default is CPUs available/2. Default number of workers in this machine: %d' % WORKERS, type=int, action='store', dest='WORKERS', default=int(WORKERS))
+    loro_options.add_argument('-L', help='Control output verbosity. Default set to INFO', dest='LOGLEVEL', action='store', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], default='INFO')
+    loro_options.add_argument('-v', help='Show current version', action='version', version='%s %s' % (ENV['APP']['ID'], ENV['APP']['VERSION']))
+    params = parser.parse_args()
+    sys.exit(main.main(params))
