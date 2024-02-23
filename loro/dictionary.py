@@ -170,6 +170,7 @@ class Dictionary:
             self.user_tokens[token.text]['sentences'] = [sid]
             self.user_tokens[token.text]['lemma'] = token.lemma_
             self.user_tokens[token.text]['pos'] = token.pos_
+            self.user_tokens[token.text]['gender'] = token.morph.get('gender')
             self.user_tokens[token.text]['entities'] = workbook[sid]['entities']
 
         try:
