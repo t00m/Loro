@@ -18,10 +18,10 @@ def main(params: argparse.Namespace):
     target = params.TARGET
     if source is None or target is None:
         source, target = ENV['Projects']['Default']['Languages']
+        log.info("Get source ('%s') and target ('%s') languages from config", source, target)
     else:
         ENV['Projects']['Default']['Languages'] = (source, target)
-    log.info("Source language: '%s'", source)
-    log.info("Target language: '%s'", target)
+        log.info("Set source ('%s') and target ('%s') languages in runtime", source, target)
 
     if source == target:
         log.error("Source and target languages can't be the same")

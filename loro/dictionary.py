@@ -3,6 +3,9 @@
 
 import os
 import pprint
+
+from spacy.tokens import Token
+
 from loro.core.env import ENV
 from loro.core.log import get_logger
 from loro.core.util import json_load, json_save
@@ -100,8 +103,8 @@ class Dictionary:
         for key in self.posset:
             postag = get_glossary_term_explained(key).title()
             self.log.info("%s: %d", postag, len(self.stats[key]))
-            if key == 'PROPN':
-                self.log.info(self.stats[key])
+            # ~ if key == 'PROPN':
+                # ~ self.log.info(self.stats[key])
         # ~ create_excel(self.stats, self.posset)
         # ~ for key in self.posset:
             # ~ print("POS TAG: %s" % key)
@@ -160,7 +163,10 @@ class Dictionary:
             return None
         # ~ self.tokens[token.text] = self.user_tokens[token.text]
 
-    def add_token(self, token: str, sid: str, workbook: {}):
+    def get_token(name: str) -> {}:
+        return self.user_tokens[name]
+
+    def add_token(self, token: Token, sid: str):
         try:
             sids = self.user_tokens[token.text]['sentences']
             sids.append(sid)
@@ -171,7 +177,6 @@ class Dictionary:
             self.user_tokens[token.text]['lemma'] = token.lemma_
             self.user_tokens[token.text]['pos'] = token.pos_
             self.user_tokens[token.text]['gender'] = token.morph.get('gender')
-            self.user_tokens[token.text]['entities'] = workbook[sid]['entities']
 
         try:
             tokens = self.lemmas[token.lemma_]
@@ -197,17 +202,6 @@ class Dictionary:
             self.pos[token.pos_] = tokens
         except:
             self.pos[token.pos_] = [token.text]
-
-        for entity in workbook[sid]['entities']:
-            try:
-                tokens = self.entities[entity]
-                if token.text not in tokens:
-                    tokens.append(token.text)
-                self.entities[entity] = tokens
-            except:
-                self.entities[entity] = [token.text]
-
-# ~ print("%s > Lemma [%s] POS [%s (%s)]" % (token.text, token.lemma_, pos, token.pos_))
 
     def __del__(self):
         self.log.info("%d sentences, %d topics, %d subtopics, %d tokens", len(self.sentences), len(self.topics), len(self.subtopics), len(self.tokens))
