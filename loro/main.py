@@ -8,6 +8,7 @@ import argparse
 from loro.core.env import ENV
 from loro.core.log import get_logger
 from loro.core.util import setup_project_dirs
+from loro.core.util import get_project_input_dir
 from loro.core.util import get_inputs
 
 def main(params: argparse.Namespace):
@@ -35,3 +36,6 @@ def main(params: argparse.Namespace):
             log.error("Source language '%s' not supported yet", source)
     else:
         log.warning("No input files found for source language '%s' and target language '%s'", source, target)
+        log.info("Based on the current configuration, you should place some text files in the following directory:")
+        directory = get_project_input_dir(source, target)
+        log.info("file://%s", directory)
