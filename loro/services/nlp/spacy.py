@@ -14,6 +14,7 @@ import spacy
 from spacy.lang.de.examples import sentences
 from spacy import Language
 from spacy.cli import download
+from spacy_langdetect import LanguageDetector
 
 nlp = None
 
@@ -36,6 +37,10 @@ def load_spacy(model_name: str, **kwargs) -> Language:
 
     return model_module.load(**kwargs)
 
+@Language.factory("language_detector")
+def get_lang_detector(nlp, name):
+   return LanguageDetector()
+
 def get_glossary_keys() -> {}.keys():
     # Universal POS tags (https://universaldependencies.org/u/pos/)
     return spacy.glossary.GLOSSARY.keys()
@@ -53,3 +58,8 @@ def tokenize_sentence(sentence: str) -> []:
 def load_model(model: str) -> None:
     global nlp
     nlp = load_spacy(model)
+    nlp.add_pipe('language_detector', last=True)
+
+def detect_language(text):
+    global nlp
+    return nlp(text)._.language
