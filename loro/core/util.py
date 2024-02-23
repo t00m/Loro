@@ -38,6 +38,13 @@ def get_inputs(source: str, target: str) -> []:
     input_dir = get_project_input_dir(source, target)
     return glob.glob(os.path.join(input_dir, '*'))
 
+def delete_project_config_files(source: str, target: str):
+    config_dir = get_project_config_dir(source, target)
+    config_files = glob.glob(os.path.join(config_dir, '*.json'))
+    for config_file in config_files:
+        os.remove(config_file)
+    return config_files
+
 # ~ def get_project_output_dir(source: str):
     # ~ return os.path.join(LORO_USER_PROJECTS_DIR, source, target'input')
 

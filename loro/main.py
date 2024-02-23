@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 import signal
 import locale
 import gettext
@@ -9,6 +10,7 @@ from loro.core.env import ENV
 from loro.core.log import get_logger
 from loro.core.util import setup_project_dirs
 from loro.core.util import get_project_input_dir
+from loro.core.util import delete_project_config_files
 from loro.core.util import get_inputs
 
 def main(params: argparse.Namespace):
@@ -26,6 +28,10 @@ def main(params: argparse.Namespace):
     if source == target:
         log.error("Source and target languages can't be the same")
         sys.exit(-1)
+
+    if params.RESET:
+        deleted_files = delete_project_config_files(source, target)
+        log.warning("Configuration reset (deleted %d config files)", len(deleted_files))
 
     setup_project_dirs(source, target)
     inputs = get_inputs(source, target)
