@@ -22,6 +22,11 @@ def main(params: argparse.Namespace):
         ENV['Projects']['Default']['Languages'] = (source, target)
     log.info("Source language: '%s'", source)
     log.info("Target language: '%s'", target)
+
+    if source == target:
+        log.error("Source and target languages can't be the same")
+        sys.exit(-1)
+
     setup_project_dirs(source, target)
     inputs = get_inputs(source, target)
 
