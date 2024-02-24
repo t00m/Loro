@@ -17,7 +17,8 @@ sources = [
 install_data(sources, install_dir: moduledir)
 
 # Subpackages
-install_subdir('core', install_dir: moduledir)
-install_subdir('extractors', install_dir: moduledir)
-install_subdir('services', install_dir: moduledir)
-install_subdir('builders', install_dir: moduledir)
+install_subdir('backend', install_dir: moduledir)
+#install_subdir('core', install_dir: moduledir)
+#install_subdir('extractors', install_dir: moduledir)
+#install_subdir('services', install_dir: moduledir)
+#install_subdir('builders', install_dir: moduledir)
