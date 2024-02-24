@@ -20,8 +20,8 @@ from openpyxl.worksheet.filters import (
     Filters,
     )
 
-from loro.services.nlp.spacy import get_glossary_term_explained
-from loro.core.env import ENV
+from loro.backend.core.env import ENV
+from loro.backend.services.nlp.spacy import get_glossary_term_explained
 
 def as_text(value):
     if value is None:

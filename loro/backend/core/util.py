@@ -5,9 +5,9 @@ import json
 import hashlib
 import subprocess
 
-from loro.core.constants import LORO_USER_DIR
-from loro.core.constants import LORO_USER_PROJECTS_DIR
-from loro.core.constants import LORO_USER_CONFIG_DIR
+from loro.backend.core.constants import LORO_USER_DIR
+from loro.backend.core.constants import LORO_USER_PROJECTS_DIR
+from loro.backend.core.constants import LORO_USER_CONFIG_DIR
 
 def setup_project_dirs(source: str, target: str) -> None:
     dir_project_source = os.path.join(LORO_USER_PROJECTS_DIR, source)

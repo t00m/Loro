@@ -7,18 +7,19 @@ from concurrent.futures import ThreadPoolExecutor as Executor
 from rich.progress import Progress
 from rich.progress import track
 
-from loro.extractors import whatsapp
-from loro.services.nlp.spacy import tokenize_sentence
-from loro.services.nlp.spacy import get_glossary_term_explained
-from loro.services.nlp.spacy import load_model
-from loro.services.nlp.spacy import detect_language
-from loro.core.util import is_valid_word
-from loro.core.util import get_metadata_from_filepath
-from loro.core.util import get_hash
-from loro.core.log import get_logger
+from loro.backend.core.env import ENV
+from loro.backend.extractors import whatsapp
+from loro.backend.services.nlp.spacy import tokenize_sentence
+from loro.backend.services.nlp.spacy import get_glossary_term_explained
+from loro.backend.services.nlp.spacy import load_model
+from loro.backend.services.nlp.spacy import detect_language
+from loro.backend.core.util import is_valid_word
+from loro.backend.core.util import get_metadata_from_filepath
+from loro.backend.core.util import get_hash
+from loro.backend.core.log import get_logger
 from loro import dictionary
 from loro.dictionary import Dictionary
-from loro.core.env import ENV
+
 
 class Workflow:
     def __init__(self):

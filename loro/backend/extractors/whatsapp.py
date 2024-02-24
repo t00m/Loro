@@ -4,7 +4,7 @@ import sys
 import pprint
 from datetime import datetime
 
-from loro.core.util import clean_text
+from loro.backend.core.util import clean_text
 
 pattern = '%d/%m/%Y, %H:%M'
 

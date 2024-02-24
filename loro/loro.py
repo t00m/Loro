@@ -17,7 +17,7 @@ install(show_locals=True)
 
 sys.path.insert(1, '@pkgdatadir@')
 
-from loro.core.env import ENV
+from loro.backend.core.env import ENV
 
 ENV['APP'] = {}
 ENV['APP']['ID'] = '@APP_ID@'
@@ -72,9 +72,9 @@ if __name__ == '__main__':
     loro_options = parser.add_argument_group('Loro Options')
     loro_options.add_argument('-s', '--source', help='Source language (2 letters)', action='store', dest='SOURCE')
     loro_options.add_argument('-t', '--target', help='Target language (2 letters)', action='store', dest='TARGET')
-    loro_options.add_argument('-w', help='Number of workers. Default is CPUs available/2. Default number of workers in this machine: %d' % WORKERS, type=int, action='store', dest='WORKERS', default=int(WORKERS))
-    loro_options.add_argument('-L', help='Control output verbosity. Default set to INFO', dest='LOGLEVEL', action='store', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], default='INFO')
-    loro_options.add_argument('-v', help='Show current version', action='version', version='%s %s' % (ENV['APP']['ID'], ENV['APP']['VERSION']))
+    loro_options.add_argument('-w', '--workers', help='Number of workers. Default is CPUs available/2. Default number of workers in this machine: %d' % WORKERS, type=int, action='store', dest='WORKERS', default=int(WORKERS))
+    loro_options.add_argument('-L', '--log', help='Control output verbosity. Default set to INFO', dest='LOGLEVEL', action='store', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], default='INFO')
+    loro_options.add_argument('-v', '--version', help='Show current version', action='version', version='%s %s' % (ENV['APP']['ID'], ENV['APP']['VERSION']))
     loro_options.add_argument('-r', '--reset', help="Warning! Delete configuration for source/target languages", action='store_true', dest='RESET', default=False)
     params = parser.parse_args()
     sys.exit(main.main(params))

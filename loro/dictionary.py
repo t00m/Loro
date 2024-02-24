@@ -6,13 +6,13 @@ import pprint
 
 from spacy.tokens import Token
 
-from loro.core.env import ENV
-from loro.core.log import get_logger
-from loro.core.util import json_load, json_save
-from loro.core.util import get_project_config_dir
-from loro.services.nlp.spacy import get_glossary_keys
-from loro.services.nlp.spacy import get_glossary_term_explained
-from loro.builders.excel import create_excel
+from loro.backend.core.env import ENV
+from loro.backend.core.log import get_logger
+from loro.backend.core.util import json_load, json_save
+from loro.backend.core.util import get_project_config_dir
+from loro.backend.services.nlp.spacy import get_glossary_keys
+from loro.backend.services.nlp.spacy import get_glossary_term_explained
+from loro.backend.builders.excel import create_excel
 
 
 class Dictionary:

@@ -11,8 +11,8 @@ Environment module.
 
 import os
 
-from loro.core.constants import LORO_USER_CNF
-from loro.core.util import json_load, json_save
+from loro.backend.core.constants import LORO_USER_CNF
+from loro.backend.core.util import json_load, json_save
 
 try:
     # Load user config
