@@ -12,8 +12,16 @@ import gettext
 import argparse
 import multiprocessing
 
+import gi
+from gi.repository import Gio
+gi.require_version("Gtk", "4.0")
+gi.require_version("Adw", "1")
+
+from gi.repository import Adw
+from gi.repository import Gtk
+
 from rich.traceback import install
-install(show_locals=True)
+# ~ install(show_locals=True)
 
 sys.path.insert(1, '@pkgdatadir@')
 
@@ -48,26 +56,42 @@ def get_default_workers():
     workers = ncpu/2
     return math.ceil(workers)
 
-if __name__ == '__main__':
-    import gi
-    from gi.repository import Gio
+def main() -> None:
     resource = Gio.Resource.load(os.path.join(ENV['APP']['PGKDATADIR'], 'loro.gresource'))
     resource._register()
+    sys.exit(Application().run(sys.argv))
 
-    from loro import main
+class Application(Adw.Application):
+    def __init__(self) -> None:
+        super().__init__(
+            application_id=ENV['APP']['ID'],
+            flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
+        )
+        self.set_resource_base_path("/com/github/t00m/Loro/")
 
+    def do_activate(self) -> None:
+        from loro.frontend.gui.widgets.window import Window
 
-    # ~ """Set up application arguments and execute."""
-    # ~ extra_usage = """"""
-    # ~ parser = argparse.ArgumentParser(
-        # ~ prog='loro',
-        # ~ description='%s v%s\nApplication for helping to study another language' % ENV['APP']['ID'], ENV['APP']['VERSION'],
-        # ~ epilog=extra_usage,
-        # ~ formatter_class=argparse.RawDescriptionHelpFormatter)
+        Window(application=self)
 
-    WORKERS = get_default_workers()
+        # ~ # Run tests
+        # ~ if PROFILE == "development":
+            # ~ from loro.tests.tests import run_tests
 
+            # ~ run_tests()
+
+if __name__ == "__main__":
     # Loro arguments
+    # ~ """Set up application arguments and execute."""
+    extra_usage = """"""
+    # ~ formatter_class=argparse.RawDescriptionHelpFormatter
+    parser = argparse.ArgumentParser(
+        prog='loro',
+        description='%s v%s\nApplication for helping to study another language' % (ENV['APP']['ID'], ENV['APP']['VERSION']),
+        epilog=extra_usage,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    WORKERS = get_default_workers()
     parser = argparse.ArgumentParser(add_help=False)
     loro_options = parser.add_argument_group('Loro Options')
     loro_options.add_argument('-s', '--source', help='Source language (2 letters)', action='store', dest='SOURCE')
@@ -77,4 +101,8 @@ if __name__ == '__main__':
     loro_options.add_argument('-v', '--version', help='Show current version', action='version', version='%s %s' % (ENV['APP']['ID'], ENV['APP']['VERSION']))
     loro_options.add_argument('-r', '--reset', help="Warning! Delete configuration for source/target languages", action='store_true', dest='RESET', default=False)
     params = parser.parse_args()
-    sys.exit(main.main(params))
+    main()
+
+
+
+

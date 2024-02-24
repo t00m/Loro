@@ -12,6 +12,7 @@ from loro.backend.core.util import setup_project_dirs
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import delete_project_config_files
 from loro.backend.core.util import get_inputs
+from loro.frontend import gui
 
 def main(params: argparse.Namespace):
     log = get_logger('main')
