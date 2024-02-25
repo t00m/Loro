@@ -30,7 +30,13 @@ class Window(Adw.ApplicationWindow):
         # ~ GSettings.bind("maximized", self, "maximized")
         # Setup theme
         # ~ Adw.StyleManager.get_default().set_color_scheme(GSettings.get("theme"))
-        self.set_content(Gtk.Button())
+
+        # ~ headerbar = self.add_widget('headerbar', Gtk.HeaderBar())
+        headerbar = Adw.HeaderBar()
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        box.append(headerbar)
+        # ~ self.set_titlebar(headerbar)
+        self.set_content(box)
 
 
     # ~ def _create_actions(self) -> None:
