@@ -101,7 +101,8 @@ if __name__ == "__main__":
     loro_options.add_argument('-v', '--version', help='Show current version', action='version', version='%s %s' % (ENV['APP']['ID'], ENV['APP']['VERSION']))
     loro_options.add_argument('-r', '--reset', help="Warning! Delete configuration for source/target languages", action='store_true', dest='RESET', default=False)
     params = parser.parse_args()
-    main()
+    from loro.main import main
+    main(params)
 
 
 
