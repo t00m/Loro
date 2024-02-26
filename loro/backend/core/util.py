@@ -128,3 +128,8 @@ def is_valid_word(word: str) -> bool:
     valid = alpha and lenghty and not nums and not tags and not urls
     # ~ print ("Word: %s [%s] > lengthy? %s, alpha? %s, not numbers? %s, not tag? %s, not url? %s" % (word, valid, lenghty, alpha, not nums, not tags, not urls))
     return valid
+
+def valid_key(self, key: str) -> str:
+    key = str(key).strip().replace('-', '_')
+    key = str(key).strip().replace(' ', '_')
+    return re.sub(r'(?u)[^-\w.]', '', key)

@@ -12,6 +12,7 @@ from gi.repository import Adw, Gio, Gtk  # type:ignore
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
+from loro.dictionary import Dictionary
 
 
 class Application(Adw.Application):
@@ -21,6 +22,8 @@ class Application(Adw.Application):
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
         )
         self.set_resource_base_path("/com/github/t00m/Loro/")
+
+        self.dictionary = Dictionary()
 
     def do_activate(self) -> None:
         from loro.frontend.gui.widgets.window import Window

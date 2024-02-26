@@ -57,6 +57,12 @@ class Dictionary:
         # Load (or create) personal dictionary for current project
         self.__load_dictionary()
 
+    def get_topics_file(self):
+        return self.ftopics
+
+    def get_subtopics_file(self):
+        return self.fsubtopics
+
     def __load_user_tokens(self):
         fusertokens = os.path.join(get_project_config_dir(self.source, self.target), 'user_tokens_%s_%s.json' % (self.source, self.target))
         try:

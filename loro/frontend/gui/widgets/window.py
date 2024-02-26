@@ -5,6 +5,11 @@ from __future__ import annotations
 from gi.repository import Gio, Adw, Gtk  # type:ignore
 
 from loro.frontend.gui.gsettings import GSettings
+from loro.frontend.gui.factory import WidgetFactory
+from loro.frontend.gui.actions import WidgetActions
+from loro.frontend.gui.models import Item
+from loro.backend.core.env import ENV
+from loro.backend.core.util import json_load
 
 WINDOW: Window = None
 
@@ -14,16 +19,19 @@ class Window(Adw.ApplicationWindow):
 
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
+        self.app = kwargs['application']
         global WINDOW
         WINDOW = self
-        # ~ self._create_actions()
+        self.actions = WidgetActions(self.app)
+        self.factory = WidgetFactory(self.app)
         self._build_ui()
+        self._update_ui()
         self.present()
 
     def _build_ui(self):
         self.set_title(_("Loro"))
-        # ~ self.props.width_request = 360
-        # ~ self.props.height_request = 200
+        self.props.width_request = 1024
+        self.props.height_request = 768
         # ~ # Remember window state
         # ~ GSettings.bind("width", self, "default_width")
         # ~ GSettings.bind("height", self, "default_height")
@@ -40,7 +48,7 @@ class Window(Adw.ApplicationWindow):
         viewstack.add_titled(Gtk.Label.new('Preferences'), 'preferences', 'Preferences')
         viewswitcher = Adw.ViewSwitcher()
         viewswitcher.set_stack(viewstack)
-        headerbar.pack_start(viewswitcher)
+        # ~ headerbar.set_title_widget(viewswitcher) # It works, but it is disabled by now
         mainbox.append(headerbar)
 
         # Toolbox
@@ -49,9 +57,32 @@ class Window(Adw.ApplicationWindow):
         toolbox.set_margin_end(margin=6)
         toolbox.set_margin_bottom(margin=6)
         toolbox.set_margin_start(margin=6)
-        button = Gtk.Button()
-        toolbox.append(button)
+        self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=False)
+        toolbox.append(self.ddTopics)
+        self.ddSubtopics = self.factory.create_dropdown_generic(Item, enable_search=False)
+        toolbox.append(self.ddSubtopics)
         mainbox.append(toolbox)
+
+        # Content View
+        contentview = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True, vexpand=True)
+        contentview.set_margin_top(margin=6)
+        contentview.set_margin_end(margin=6)
+        contentview.set_margin_bottom(margin=6)
+        contentview.set_margin_start(margin=6)
+        cvleft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
+        cvright = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        cvrightup = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        cvrightdown = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+
+        contentview.append(cvleft)
+        contentview.append(cvright)
+        cvright.append(cvrightup)
+        cvright.append(cvrightdown)
+        mainbox.append(contentview)
+
+        cvleft.append(Gtk.Label.new('left'))
+        cvrightup.append(Gtk.Label.new('right up'))
+        cvrightup.append(Gtk.Label.new('right down'))
 
         self.set_content(mainbox)
 
@@ -103,3 +134,19 @@ class Window(Adw.ApplicationWindow):
             # ~ lambda *_: self.props.application.quit(),
             # ~ ["<primary>q", "<primary>w"],
         # ~ )
+
+    def _update_ui(self):
+
+        ftopics = self.app.dictionary.get_topics_file()
+        adict = json_load(ftopics)
+        data = []
+        for key in adict.keys():
+            data.append((key, key.title()))
+        self.actions.dropdown_populate(self.ddTopics, Item, data)
+
+        fsubtopics = self.app.dictionary.get_subtopics_file()
+        adict = json_load(fsubtopics)
+        data = []
+        for key in adict.keys():
+            data.append((key, key.title()))
+        self.actions.dropdown_populate(self.ddSubtopics, Item, data)
