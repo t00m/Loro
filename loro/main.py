@@ -12,11 +12,15 @@ from loro.backend.core.util import setup_project_dirs
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import delete_project_config_files
 from loro.backend.core.util import get_inputs
-from loro.frontend import gui
 
 def main(params: argparse.Namespace):
     log = get_logger('main')
     log.info("%s %s", ENV['APP']['ID'], ENV['APP']['VERSION'])
+
+    if params.GUI:
+        from loro.frontend.gui import app
+        app.start()
+
     source = params.SOURCE
     target = params.TARGET
     if source is None or target is None:

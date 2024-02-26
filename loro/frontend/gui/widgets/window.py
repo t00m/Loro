@@ -31,12 +31,29 @@ class Window(Adw.ApplicationWindow):
         # Setup theme
         # ~ Adw.StyleManager.get_default().set_color_scheme(GSettings.get("theme"))
 
-        # ~ headerbar = self.add_widget('headerbar', Gtk.HeaderBar())
+        mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        # Headerbar
         headerbar = Adw.HeaderBar()
-        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        box.append(headerbar)
-        # ~ self.set_titlebar(headerbar)
-        self.set_content(box)
+        viewstack = Adw.ViewStack()
+        viewstack.add_titled(Gtk.Label.new('Dictionary'), 'dictionary', 'Dictionary')
+        viewstack.add_titled(Gtk.Label.new('Preferences'), 'preferences', 'Preferences')
+        viewswitcher = Adw.ViewSwitcher()
+        viewswitcher.set_stack(viewstack)
+        headerbar.pack_start(viewswitcher)
+        mainbox.append(headerbar)
+
+        # Toolbox
+        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL)
+        toolbox.set_margin_top(margin=6)
+        toolbox.set_margin_end(margin=6)
+        toolbox.set_margin_bottom(margin=6)
+        toolbox.set_margin_start(margin=6)
+        button = Gtk.Button()
+        toolbox.append(button)
+        mainbox.append(toolbox)
+
+        self.set_content(mainbox)
 
 
     # ~ def _create_actions(self) -> None:
