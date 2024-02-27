@@ -57,11 +57,14 @@ class Dictionary:
         # Load (or create) personal dictionary for current project
         self.__load_dictionary()
 
-    def get_topics_file(self):
+    def get_file_topics(self):
         return self.ftopics
 
-    def get_subtopics_file(self):
+    def get_file_subtopics(self):
         return self.fsubtopics
+
+    def get_file_pos(self):
+        return self.fpos
 
     def __load_user_tokens(self):
         fusertokens = os.path.join(get_project_config_dir(self.source, self.target), 'user_tokens_%s_%s.json' % (self.source, self.target))
@@ -90,9 +93,10 @@ class Dictionary:
                                 ]:
             if os.path.exists(thisfile):
                 thisdict = json_load(thisfile)
+                self.log.info("Loading %s (%d entries)", os.path.basename(thisfile), len(thisdict))
             else:
                 json_save(thisfile, thisdict)
-        # ~ self.log.info("Dictionary loaded")
+                self.log.info("Creating new config file '%s' with %d", os.path.basename(thisfile), len(thisdict))
 
     def __save_dictionary(self):
         for thisfile, thisdict in [
@@ -105,7 +109,7 @@ class Dictionary:
                                     (self.fents, self.entities)
                                 ]:
             json_save(thisfile, thisdict)
-        # ~ self.log.info("Dictionary saved")
+            self.log.info("Dictionary '%s' saved with %d entries", os.path.basename(thisfile), len(thisdict))
         for key in self.posset:
             postag = get_glossary_term_explained(key).title()
             self.log.info("%s: %d", postag, len(self.stats[key]))
@@ -127,36 +131,50 @@ class Dictionary:
     def add_topic(self, topic: str, workbook: {}) -> bool:
         added = False
         if not topic in self.topics:
-            self.topics[topic] = list(workbook.keys())
+            self.topics[topic] = {}
+            self.topics[topic]['sentences'] = list(workbook.keys())
             added = True
         else:
             newsids = []
             for sid in workbook.keys():
-                sids = self.topics[topic]
+                sids = self.topics[topic]['sentences']
                 if not sid in sids:
                     newsids.append(sid)
                     added = True
             sids.extend(newsids)
-            self.topics[topic] = sids
+            self.topics[topic] = {}
+            self.topics[topic]['sentences'] = sids
         return added
 
     def get_topics(self):
         return sorted(list(self.topics.keys()))
 
-    def add_subtopic(self, subtopic: str, workbook: {}) -> bool:
+    def add_subtopic(self, subtopic: str, topic: str, workbook: {}) -> bool:
         added = False
         if not subtopic in self.subtopics:
-            self.subtopics[subtopic] = list(workbook.keys())
+            self.subtopics[subtopic] = {}
+            self.subtopics[subtopic]['sentences'] = list(workbook.keys())
+            self.subtopics[subtopic]['topics'] = []
             added = True
         else:
             newsids = []
             for sid in workbook.keys():
-                sids = self.subtopics[subtopic]
+                sids = self.subtopics[subtopic]['sentences']
                 if not sid in sids:
                     newsids.append(sid)
                     added = True
             sids.extend(newsids)
-            self.subtopics[subtopic] = sids
+            self.subtopics[subtopic] = {}
+            self.subtopics[subtopic]['sentences'] = sids
+
+        try:
+            topics = self.subtopics[subtopic]['topics']
+        except:
+            topics = []
+            self.subtopics[subtopic]['topics'] = topics
+        if topic not in topics:
+            topics.append(topic)
+            self.subtopics[subtopic]['topics'] = topics
         return added
 
     def get_subtopics(self):

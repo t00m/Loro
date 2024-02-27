@@ -50,6 +50,7 @@ def main(params: argparse.Namespace):
                 workflow.start(filepath)
         except KeyError as error:
             log.error("Source language '%s' not supported yet", source)
+            raise
     else:
         log.warning("No input files found for source language '%s' and target language '%s'", source, target)
         log.info("Based on the current configuration, you should place some text files in the following directory:")

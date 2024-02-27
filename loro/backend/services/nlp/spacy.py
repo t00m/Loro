@@ -51,6 +51,12 @@ def get_glossary_term_explained(term: str) -> str:
     except KeyError:
         return ''
 
+def explain_term(term: str) -> str:
+    try:
+        return spacy.glossary.GLOSSARY[term]
+    except KeyError:
+        return ''
+
 def tokenize_sentence(sentence: str) -> []:
     global nlp
     return nlp(sentence)

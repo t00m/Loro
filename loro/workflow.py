@@ -123,7 +123,7 @@ class Workflow:
         self.dictionary.add_topic(topic, workbook)
 
         # Save subtopic
-        self.dictionary.add_subtopic(subtopic, workbook)
+        self.dictionary.add_subtopic(subtopic, topic, workbook)
 
         # Save sentences
         nsents = 0

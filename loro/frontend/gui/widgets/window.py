@@ -8,8 +8,10 @@ from loro.frontend.gui.gsettings import GSettings
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
 from loro.frontend.gui.models import Item
+from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
+from loro.backend.services.nlp.spacy import explain_term
 
 WINDOW: Window = None
 
@@ -30,8 +32,8 @@ class Window(Adw.ApplicationWindow):
 
     def _build_ui(self):
         self.set_title(_("Loro"))
-        self.props.width_request = 1024
-        self.props.height_request = 768
+        # ~ self.props.width_request = 1024
+        # ~ self.props.height_request = 768
         # ~ # Remember window state
         # ~ GSettings.bind("width", self, "default_width")
         # ~ GSettings.bind("height", self, "default_height")
@@ -52,15 +54,25 @@ class Window(Adw.ApplicationWindow):
         mainbox.append(headerbar)
 
         # Toolbox
-        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL)
+        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
         toolbox.set_margin_top(margin=6)
         toolbox.set_margin_end(margin=6)
         toolbox.set_margin_bottom(margin=6)
         toolbox.set_margin_start(margin=6)
+
         self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=False)
+        self.ddTopics.set_hexpand(False)
+        self.ddTopics.connect("notify::selected-item", self._on_topic_selected)
         toolbox.append(self.ddTopics)
+
         self.ddSubtopics = self.factory.create_dropdown_generic(Item, enable_search=False)
+        self.ddSubtopics.set_hexpand(False)
         toolbox.append(self.ddSubtopics)
+
+        self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=False)
+        self.ddPos.set_hexpand(False)
+        toolbox.append(self.ddPos)
+
         mainbox.append(toolbox)
 
         # Content View
@@ -80,12 +92,25 @@ class Window(Adw.ApplicationWindow):
         cvright.append(cvrightdown)
         mainbox.append(contentview)
 
-        cvleft.append(Gtk.Label.new('left'))
+        self.cvtokens = ColumnView(self.app, Item)
+        cvleft.append(self.cvtokens)
         cvrightup.append(Gtk.Label.new('right up'))
         cvrightup.append(Gtk.Label.new('right down'))
 
         self.set_content(mainbox)
 
+    def _on_topic_selected(self, *args):
+        item = self.ddTopics.get_selected_item()
+        topic = item.id
+
+        fsubtopics = self.app.dictionary.get_file_subtopics()
+        subtopics = json_load(fsubtopics)
+        print(subtopics.keys())
+        data = []
+        for key in subtopics:
+            if topic in subtopics[key]['topics']:
+                data.append((key, key.title()))
+        self.actions.dropdown_populate(self.ddSubtopics, Item, data)
 
     # ~ def _create_actions(self) -> None:
         # ~ """
@@ -137,16 +162,17 @@ class Window(Adw.ApplicationWindow):
 
     def _update_ui(self):
 
-        ftopics = self.app.dictionary.get_topics_file()
+        ftopics = self.app.dictionary.get_file_topics()
         adict = json_load(ftopics)
         data = []
         for key in adict.keys():
             data.append((key, key.title()))
         self.actions.dropdown_populate(self.ddTopics, Item, data)
 
-        fsubtopics = self.app.dictionary.get_subtopics_file()
-        adict = json_load(fsubtopics)
+        fpos = self.app.dictionary.get_file_pos()
+        adict = json_load(fpos)
         data = []
         for key in adict.keys():
-            data.append((key, key.title()))
-        self.actions.dropdown_populate(self.ddSubtopics, Item, data)
+            title = explain_term(key).title()
+            data.append((key, title))
+        self.actions.dropdown_populate(self.ddPos, Item, data)

@@ -193,7 +193,7 @@ class WidgetFactory:
         button.set_popover(popover)
         return button
 
-    def create_dropdown_generic(self, item_type, ellipsize=True, enable_search=True):
+    def create_dropdown_generic(self, item_type, ellipsize=False, enable_search=True):
         def _get_search_entry_widget(dropdown):
             popover = dropdown.get_last_child()
             box = popover.get_child()
