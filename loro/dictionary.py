@@ -66,19 +66,22 @@ class Dictionary:
     def get_file_pos(self):
         return self.fpos
 
+    def get_file_tokens(self):
+        return self.fusertokens
+
     def __load_user_tokens(self):
-        fusertokens = os.path.join(get_project_config_dir(self.source, self.target), 'user_tokens_%s_%s.json' % (self.source, self.target))
+        self.fusertokens = os.path.join(get_project_config_dir(self.source, self.target), 'user_tokens_%s_%s.json' % (self.source, self.target))
         try:
-            self.user_tokens = json_load(fusertokens)
+            self.user_tokens = json_load(self.fusertokens)
             self.log.info("Project user tokens loaded")
         except FileNotFoundError:
             self.user_tokens = {}
-            json_save(fusertokens, self.user_tokens)
+            json_save(self.fusertokens, self.user_tokens)
             self.log.info("Project user tokens loaded (new)")
 
     def __save_user_tokens(self):
-        fusertokens = os.path.join(get_project_config_dir(self.source, self.target), 'user_tokens_%s_%s.json' % (self.source, self.target))
-        json_save(fusertokens, self.user_tokens)
+        self.fusertokens = os.path.join(get_project_config_dir(self.source, self.target), 'user_tokens_%s_%s.json' % (self.source, self.target))
+        json_save(self.fusertokens, self.user_tokens)
         self.log.info("Project user tokens saved")
 
     def __load_dictionary(self):

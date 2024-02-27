@@ -11,6 +11,7 @@ from loro.frontend.gui.models import Item
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
+from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 
 WINDOW: Window = None
@@ -20,6 +21,7 @@ class Window(Adw.ApplicationWindow):
     about_window: Adw.AboutWindow = None
 
     def __init__(self, **kwargs) -> None:
+        self.log = get_logger('Window')
         super().__init__(**kwargs)
         self.app = kwargs['application']
         global WINDOW
@@ -105,7 +107,6 @@ class Window(Adw.ApplicationWindow):
 
         fsubtopics = self.app.dictionary.get_file_subtopics()
         subtopics = json_load(fsubtopics)
-        print(subtopics.keys())
         data = []
         for key in subtopics:
             if topic in subtopics[key]['topics']:
@@ -176,3 +177,16 @@ class Window(Adw.ApplicationWindow):
             title = explain_term(key).title()
             data.append((key, title))
         self.actions.dropdown_populate(self.ddPos, Item, data)
+
+        ftokens = self.app.dictionary.get_file_tokens()
+        dtokens = json_load(ftokens)
+        items = []
+        for key in dtokens.keys():
+            items.append(Item
+                             (
+                                id=key,
+                                title=key
+                            )
+                        )
+        self.cvtokens.update(items)
+        self.log.info(len(items))
