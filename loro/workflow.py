@@ -38,7 +38,7 @@ class Workflow:
         pass
 
     def start(self, filepath: str):
-        # Detect language of the file and validate
+        # Detect language of file and validate
         result = detect_language(open(filepath).read())
         lang = result['language']
         score = int((result['score']*100))
@@ -49,8 +49,7 @@ class Workflow:
                 topic, subtopic = get_metadata_from_filepath(filepath)
                 sentences = open(filepath, 'r').readlines()
                 task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
-                workbook = self.process_input(sentences, task)
-                self.process_workbook(topic, subtopic, workbook)
+                self.process_input(sentences, topic, subtopic, task)
         else:
             self.log.error("File will NOT be processed: '%s'", os.path.basename(filepath))
             self.log.error("Language '%s' detected with %d%% of confidenciality", lang, score)
@@ -59,14 +58,14 @@ class Workflow:
             else:
                 self.log.error("Score detection for detected language is less than 85%", score)
 
-    def process_input(self, sentences: [], task) -> {}:
+    def process_input(self, sentences: [], topic, subtopic, task) -> None:
         workbook = {}
         jobs = []
         jid = 1
         MAX_WORKERS = 40
         with Executor(max_workers=MAX_WORKERS) as exe:
             for sentence in sentences:
-                data = (sentence, jid, task)
+                data = (sentence, jid, topic, subtopic, task)
                 job = exe.submit(self.process_sentence, data)
                 job.add_done_callback(self.__sentence_processed)
                 jobs.append(job)
@@ -74,64 +73,57 @@ class Workflow:
 
             if jid-1 > 0:
                 for job in jobs:
-                    jid, metadata, task = job.result()
+                    jid, task = job.result()
                     # ~ self.log.debug("\tJob[%d] finished: %d tokens processed", jid, len(metadata['tokens']))
-                    sid = metadata['sid']
-                    workbook[sid] = {}
-                    workbook[sid]['sentence'] = metadata['sentence']
-                    workbook[sid]['tokens'] = list(metadata['tokens'])
+                    # ~ sid = metadata['sid']
+                    # ~ workbook[sid] = {}
+                    # ~ workbook[sid]['sentence'] = metadata['sentence']
+                    # ~ workbook[sid]['tokens'] = list(metadata['tokens'])
                     # ~ workbook[sid]['entities'] = list(metadata['entities'])
-        return workbook
+        # ~ return workbook
 
     def __sentence_processed(self, future):
         time.sleep(random.random())
         cur_thread = threading.current_thread().name
         x = future.result()
-        jid, metadata, task = x
+        jid, task = x
         self.progress.advance(task)
         if cur_thread != x:
             return x
 
     def process_sentence(self, data: tuple) -> tuple:
-        (sentence, jid, task) = data
+        (sentence, jid, topic, subtopic, task) = data
         sid = get_hash(sentence)
-        metadata = {}
-        metadata['sid'] = sid
-        metadata['sentence'] = sentence.strip()
-        metadata['tokens'] = set()
-        metadata['entities'] = set()
+        self.dictionary.add_sentence(sid, sentence.strip())
 
         # Tokenize sentence
         result = tokenize_sentence(sentence.lower())
 
         # Tokens
         for token in result:
-            name = token.text
-            if name not in metadata['tokens']:
-                if is_valid_word(name):
-                    thistoken = self.dictionary.add_token(token, sid)
-                    metadata['tokens'].add(name)
+            if is_valid_word(token.text):
+                thistoken = self.dictionary.add_token(token, sid, topic, subtopic)
 
-        return (jid, metadata, task)
+        return (jid, task)
 
-    def process_workbook(self, topic: str, subtopic: str, workbook: {}):
-        self.log.info("\tProcessing workbook")
-        self.log.info("\t\tTopic: %s", topic)
-        self.log.info("\t\tSubtopic: %s", subtopic)
+    # ~ def process_workbook(self, topic: str, subtopic: str, workbook: {}):
+        # ~ self.log.info("\tProcessing workbook")
+        # ~ self.log.info("\t\tTopic: %s", topic)
+        # ~ self.log.info("\t\tSubtopic: %s", subtopic)
 
-        # Save topic
-        self.dictionary.add_topic(topic, workbook)
+        # ~ # Save topic
+        # ~ self.dictionary.add_topic(topic, workbook)
 
-        # Save subtopic
-        self.dictionary.add_subtopic(subtopic, topic, workbook)
+        # ~ # Save subtopic
+        # ~ self.dictionary.add_subtopic(subtopic, topic, workbook)
 
-        # Save sentences
-        nsents = 0
-        for sid in workbook:
-            saved = self.dictionary.add_sentence(sid, workbook[sid]['sentence'])
-            if saved:
-                nsents += 1
-        self.log.info("Added %d sentences", nsents)
+        # ~ # Save sentences
+        # ~ nsents = 0
+        # ~ for sid in workbook:
+            # ~ saved = self.dictionary.add_sentence(sid, workbook[sid]['sentence'])
+            # ~ if saved:
+                # ~ nsents += 1
+        # ~ self.log.info("Added %d sentences", nsents)
 
 
 
