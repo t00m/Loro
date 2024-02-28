@@ -16,5 +16,5 @@ def get_logger(name):
     """
     logging.basicConfig(level='NOTSET', format="%(message)s", handlers=[RichHandler()])
     log = logging.getLogger(name)
-    log.setLevel(logging.INFO)
+    log.setLevel(logging.DEBUG)
     return log

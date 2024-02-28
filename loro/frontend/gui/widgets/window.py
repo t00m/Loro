@@ -9,6 +9,7 @@ from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
 from loro.frontend.gui.models import Item
 from loro.frontend.gui.widgets.columnview import ColumnView
+from loro.frontend.gui.widgets.views import ColumnViewToken
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.log import get_logger
@@ -62,16 +63,18 @@ class Window(Adw.ApplicationWindow):
         toolbox.set_margin_bottom(margin=6)
         toolbox.set_margin_start(margin=6)
 
-        self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=False)
-        self.ddTopics.set_hexpand(False)
+        self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=True)
         self.ddTopics.connect("notify::selected-item", self._on_topic_selected)
+        self.ddTopics.set_hexpand(False)
         toolbox.append(self.ddTopics)
 
-        self.ddSubtopics = self.factory.create_dropdown_generic(Item, enable_search=False)
+        self.ddSubtopics = self.factory.create_dropdown_generic(Item, enable_search=True)
+        self.ddSubtopics.connect("notify::selected-item", self._on_subtopic_selected)
         self.ddSubtopics.set_hexpand(False)
         toolbox.append(self.ddSubtopics)
 
-        self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=False)
+        self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=True)
+        self.ddPos.connect("notify::selected-item", self._on_pos_selected)
         self.ddPos.set_hexpand(False)
         toolbox.append(self.ddPos)
 
@@ -84,6 +87,7 @@ class Window(Adw.ApplicationWindow):
         contentview.set_margin_bottom(margin=6)
         contentview.set_margin_start(margin=6)
         cvleft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
+        cvleft.props.width_request = 400
         cvright = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
         cvrightup = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
         cvrightdown = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
@@ -94,12 +98,25 @@ class Window(Adw.ApplicationWindow):
         cvright.append(cvrightdown)
         mainbox.append(contentview)
 
-        self.cvtokens = ColumnView(self.app, Item)
+        self.cvtokens = ColumnViewToken(self.app)
+        selection = self.cvtokens.get_selection()
+        selection.connect('selection-changed', self._on_tokens_selection_changed)
         cvleft.append(self.cvtokens)
         cvrightup.append(Gtk.Label.new('right up'))
         cvrightup.append(Gtk.Label.new('right down'))
 
         self.set_content(mainbox)
+
+    def _on_tokens_selection_changed(self, selection, position, n_items):
+        self.selected_items = []
+        model = selection.get_model()
+        bitset = selection.get_selection()
+        for index in range(bitset.get_size()):
+            pos = bitset.get_nth(index)
+            item = model.get_item(pos)
+            self.log.info(item.title)
+            self.selected_items.append(item)
+        self.log.info("%d / %d" % (len(self.selected_items), len(model)))
 
     def _on_topic_selected(self, *args):
         item = self.ddTopics.get_selected_item()
@@ -113,56 +130,36 @@ class Window(Adw.ApplicationWindow):
                 data.append((key, key.title()))
         self.actions.dropdown_populate(self.ddSubtopics, Item, data)
 
-    # ~ def _create_actions(self) -> None:
-        # ~ """
-        # ~ Create actions for main menu
-        # ~ """
-        # ~ Log.debug("Creating actions")
+        if len(self.ddSubtopics.get_model()) > 0:
+            self.ddSubtopics.set_selected(0)
 
-        # ~ def _create_action(name: str, callback: callable, shortcuts=None) -> None:
-            # ~ action: Gio.SimpleAction = Gio.SimpleAction.new(name, None)
-            # ~ action.connect("activate", callback)
-            # ~ if shortcuts:
-                # ~ self.props.application.set_accels_for_action(f"app.{name}", shortcuts)
-            # ~ self.props.application.add_action(action)
+    def _on_subtopic_selected(self, dropdown, gparam):
+        # ~ self.log.info("%s (%s)", dropdown, gparam)
+        topic = self.ddTopics.get_selected_item()
+        subtopic = dropdown.get_selected_item()
+        if len(dropdown.get_model()) > 0:
+            # This is necessary. When Topic selection changes, subtopics
+            # dropdown has no items and this fails
+            self.log.info("Updating tokens for topic '%s' and subtopic '%s'", topic.title, subtopic.title)
+            ftokens = self.app.dictionary.get_file_tokens()
+            dtokens = json_load(ftokens)
+            items = []
+            for key in dtokens.keys():
+                items.append(Item
+                                 (
+                                    id=key,
+                                    title=key
+                                )
+                            )
+            self.cvtokens.update(items)
 
-        # ~ def _about(*args) -> None:
-            # ~ """
-            # ~ Show about window
-            # ~ """
-            # ~ if not self.about_window:
-                # ~ self.about_window = Adw.AboutWindow(
-                    # ~ transient_for=self,
-                    # ~ version=VERSION,
-                    # ~ application_icon=APP_ID,
-                    # ~ application_name=_("Loro"),
-                    # ~ copyright="© 2024 Tomás Vírseda",
-                    # ~ website="https://github.com/t00m/Loro",
-                    # ~ issue_url="https://github.com/t00m/Loro/issues",
-                    # ~ license_type=Gtk.License.GPL_3_0,
-                    # ~ translator_credits=_("translator-credits"),
-                    # ~ modal=True,
-                    # ~ hide_on_close=True,
-                # ~ )
-            # ~ self.about_window.present()
-
-        # ~ _create_action(
-            # ~ "preferences",
-            # ~ lambda *_: PreferencesWindow(self).show(),
-            # ~ ["<primary>comma"],
-        # ~ )
-        # ~ _create_action("about", _about)
-        # ~ _create_action("import", _import)
-        # ~ _create_action("secret_notes", _secret_notes)
-        # ~ _create_action("sync", _sync, ["<primary>f"])
-        # ~ _create_action(
-            # ~ "quit",
-            # ~ lambda *_: self.props.application.quit(),
-            # ~ ["<primary>q", "<primary>w"],
-        # ~ )
+    def _on_pos_selected(self, dropdown, gparam):
+        if len(dropdown.get_model()) > 0:
+            postag = dropdown.get_selected_item()
+            self.log.info(postag.title)
 
     def _update_ui(self):
-
+        # Update topics
         ftopics = self.app.dictionary.get_file_topics()
         adict = json_load(ftopics)
         data = []
@@ -170,6 +167,7 @@ class Window(Adw.ApplicationWindow):
             data.append((key, key.title()))
         self.actions.dropdown_populate(self.ddTopics, Item, data)
 
+        # Update P-O-S
         fpos = self.app.dictionary.get_file_pos()
         adict = json_load(fpos)
         data = []
@@ -178,15 +176,4 @@ class Window(Adw.ApplicationWindow):
             data.append((key, title))
         self.actions.dropdown_populate(self.ddPos, Item, data)
 
-        ftokens = self.app.dictionary.get_file_tokens()
-        dtokens = json_load(ftokens)
-        items = []
-        for key in dtokens.keys():
-            items.append(Item
-                             (
-                                id=key,
-                                title=key
-                            )
-                        )
-        self.cvtokens.update(items)
-        self.log.info(len(items))
+
