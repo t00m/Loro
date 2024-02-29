@@ -47,6 +47,14 @@ class Token(Item):
     def __init__(self,  id: str, title: str = ''):
         super().__init__(id, title)
 
+class Sentence(Item):
+    """Custom data model"""
+    __gtype_name__ = 'Sentence'
+    __title__ = 'Sentence'
+
+    def __init__(self,  id: str, title: str = ''):
+        super().__init__(id, title)
+
 class Topic(Item):
     """Custom data model for topics"""
     __gtype_name__ = 'Topic'

@@ -31,3 +31,18 @@ class ColumnViewToken(ColumnView):
         self.column_title.set_title(_('Id'))
         self.cv.append_column(self.column_title)
         self.column_title.set_title(_('Token'))
+        self.column_title.set_expand(True)
+
+class ColumnViewSentences(ColumnView):
+    """ Custom ColumnView widget for tokens """
+    __gtype_name__ = 'ColumnViewSentences'
+
+    def __init__(self, app):
+        super().__init__(app, item_type=Item)
+        self.cv.append_column(self.column_id)
+        self.column_id.set_visible(False)
+        self.column_title.set_title(_('Id'))
+        self.cv.append_column(self.column_title)
+        self.column_title.set_title(_('Sentences'))
+        self.column_title.set_expand(True)
+

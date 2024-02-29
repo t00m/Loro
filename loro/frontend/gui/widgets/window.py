@@ -7,9 +7,10 @@ from gi.repository import Gio, Adw, Gtk  # type:ignore
 from loro.frontend.gui.gsettings import GSettings
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
-from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token
+from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.frontend.gui.widgets.views import ColumnViewToken
+from loro.frontend.gui.widgets.views import ColumnViewSentences
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.log import get_logger
@@ -87,13 +88,15 @@ class Window(Adw.ApplicationWindow):
 
         # Content View
         contentview = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True, vexpand=True)
+        contentview.set_hexpand(True)
+        contentview.set_vexpand(True)
         contentview.set_margin_top(margin=6)
         contentview.set_margin_end(margin=6)
         contentview.set_margin_bottom(margin=6)
         contentview.set_margin_start(margin=6)
         self.cvleft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
         # ~ cvleft.props.width_request = 400
-        cvright = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
+        cvright = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
         cvrightup = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
         cvrightdown = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
 
@@ -107,7 +110,11 @@ class Window(Adw.ApplicationWindow):
         selection = self.cvtokens.get_selection()
         selection.connect('selection-changed', self._on_tokens_selected)
         self.cvleft.append(self.cvtokens)
-        cvrightup.append(Gtk.Label.new('right up'))
+
+        self.cvsentences = ColumnViewSentences(self.app)
+        self.cvsentences.set_hexpand(True)
+        self.cvsentences.set_vexpand(True)
+        cvrightup.append(self.cvsentences)
         cvrightup.append(Gtk.Label.new('right down'))
 
         self.set_content(mainbox)
@@ -144,8 +151,11 @@ class Window(Adw.ApplicationWindow):
                     # ~ matches.append(sid)
         self.log.debug("Displaying sentences for Topic['%s'] and Subtopic['%s']", selected_topic, selected_subtopic)
         sentences = self.app.dictionary.get_sentences()
+        items = []
         for sid in matches:
-            self.log.debug(sentences[sid]['de'])
+            sentence = sentences[sid]['de']
+            items.append(Sentence(id=sid, title=sentence))
+        self.cvsentences.update(items)
 
         # ~ for topic in token_topics:
             # ~ for subtopic in topics[topic]:
