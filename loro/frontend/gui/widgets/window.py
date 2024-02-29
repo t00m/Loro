@@ -7,7 +7,7 @@ from gi.repository import Gio, Adw, Gtk  # type:ignore
 from loro.frontend.gui.gsettings import GSettings
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
-from loro.frontend.gui.models import Item
+from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.frontend.gui.widgets.views import ColumnViewToken
 from loro.backend.core.env import ENV
@@ -29,7 +29,11 @@ class Window(Adw.ApplicationWindow):
         WINDOW = self
         self.actions = WidgetActions(self.app)
         self.factory = WidgetFactory(self.app)
+        self.current_topic = 'ALL'
+        self.current_subtopic = 'ALL'
+        self.current_postag = 'ALL'
         self.selected = []
+        self.selected_tokens = []
         self._build_ui()
         self._update_ui()
         self.present()
@@ -75,7 +79,7 @@ class Window(Adw.ApplicationWindow):
         toolbox.append(self.ddSubtopics)
 
         self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=True)
-        self.ddPos.connect("notify::selected-item", self._on_pos_selected)
+        self.ddPos.connect("notify::selected-item", self._on_postag_selected)
         self.ddPos.set_hexpand(False)
         toolbox.append(self.ddPos)
 
@@ -109,24 +113,23 @@ class Window(Adw.ApplicationWindow):
         self.set_content(mainbox)
 
     def _on_tokens_selected(self, selection, position, n_items):
-        self.selected_items = []
+        # ~ self.selected_tokens = []
         model = selection.get_model()
         bitset = selection.get_selection()
         for index in range(bitset.get_size()):
             pos = bitset.get_nth(index)
             item = model.get_item(pos)
             self.log.info("%s > %s", item.id, item.title)
-            self.selected_items.append(item)
-        self.log.info("%d / %d" % (len(self.selected_items), len(model)))
+            # ~ self.selected_tokens.append(item.id)
+        # ~ self.log.info("%d / %d" % (len(self.selected_tokens), len(model)))
 
     def _on_topic_selected(self, *args):
-        item = self.ddTopics.get_selected_item()
-        topic = item.id
+        current_topic = self.ddTopics.get_selected_item()
         topics = self.app.dictionary.get_topics()
-        self.log.debug("Displaying subtopics for topic '%s'", topic)
+        self.log.debug("Displaying subtopics for topic '%s'", current_topic.id)
         data = []
         data.append(("ALL", "All subtopics"))
-        if topic == "ALL":
+        if current_topic.id == "ALL":
             all_subs = set()
             for topic in topics:
                 for subtopic in topics[topic]:
@@ -134,49 +137,45 @@ class Window(Adw.ApplicationWindow):
             for subtopic in all_subs:
                 data.append((subtopic.upper(), subtopic.title()))
         else:
-            subtopics = topics[topic]
+            subtopics = topics[current_topic.id]
             for subtopic in subtopics:
                 data.append((subtopic, subtopic.title()))
-        self.actions.dropdown_populate(self.ddSubtopics, Item, data)
+        self.actions.dropdown_populate(self.ddSubtopics, Subtopic, data)
 
         if len(self.ddSubtopics.get_model()) > 0:
             self.ddSubtopics.set_selected(0)
 
     def _on_subtopic_selected(self, dropdown, gparam):
-        item_topic = self.ddTopics.get_selected_item()
-        item_subtopic = dropdown.get_selected_item()
-        if item_topic is not None:
-            topic = item_topic.id
-        else:
+        current_topic = self.ddTopics.get_selected_item()
+        current_subtopic = dropdown.get_selected_item()
+        if current_topic is None:
             return
-        if item_subtopic is not None:
-            subtopic = item_subtopic.id
-        else:
+        if current_subtopic is None:
             return
 
         selected = []
         tokens = self.app.dictionary.get_tokens()
         for key in tokens.keys():
-            if topic == 'ALL':
-                if subtopic == 'ALL':
+            if current_topic.id == 'ALL':
+                if current_subtopic.id == 'ALL':
                     selected.append(key)
                 else:
-                    if subtopic in tokens[key]['subtopics']:
+                    if current_subtopic.id in tokens[key]['subtopics']:
                         selected.append(key)
             else:
-                if topic in tokens[key]['topics']:
-                    if subtopic == 'ALL':
+                if current_topic.id in tokens[key]['topics']:
+                    if current_subtopic.id == 'ALL':
                         selected.append(key)
                     else:
-                        if subtopic in tokens[key]['subtopics']:
+                        if current_subtopic.id in tokens[key]['subtopics']:
                             selected.append(key)
 
-        self.selected = selected
-        self.log.info("Selected %d tokens for topic '%s' and subtopic '%s'", len(selected), topic, subtopic)
+        self.selected_tokens = selected
+        self.log.info("Selected %d tokens for topic '%s' and subtopic '%s'", len(self.selected_tokens), current_topic.id, current_subtopic.id)
 
         # Update POS
         postags = set()
-        for key in self.selected:
+        for key in self.selected_tokens:
             for postag in tokens[key]['postags']:
                 postags.add(postag)
 
@@ -185,7 +184,7 @@ class Window(Adw.ApplicationWindow):
         for postag in postags:
             title = explain_term(postag).title()
             data.append((postag, explain_term(postag).title()))
-        self.actions.dropdown_populate(self.ddPos, Item, data)
+        self.actions.dropdown_populate(self.ddPos, POSTag, data)
 
         # ~ self.actions.dropdown_populate(self.ddPos, Item, data)
 
@@ -199,24 +198,25 @@ class Window(Adw.ApplicationWindow):
             # ~ for key in tokens.keys():
 
 
-    def _on_pos_selected(self, dropdown, gparam):
+    def _on_postag_selected(self, dropdown, gparam):
         tokens = self.app.dictionary.get_tokens()
         if len(dropdown.get_model()) > 0:
-            item_postag = dropdown.get_selected_item()
-            postag = item_postag.id
+            current_postag = dropdown.get_selected_item()
+            postag = current_postag.id
             selected = []
-            for key in self.selected:
+            for key in self.selected_tokens:
                 if postag == 'ALL':
                     selected.append(key)
                 else:
                     if postag in tokens[key]['postags']:
                         selected.append(key)
+                        # ~ self.log.debug("Key['%s'], POS['%s']", key, tokens[key]['postags'])
 
             items = []
             lenmax = 0
             for key in selected:
                 lemma = tokens[key]['lemmas'][0]
-                items.append(Item(id=key, title=key))
+                items.append(Token(id=key, title=key))
                 if len(key) > lenmax:
                     lenmax = len(key)
             self.cvtokens.update(items)
@@ -233,7 +233,7 @@ class Window(Adw.ApplicationWindow):
         data.append(("ALL", "All topics"))
         for topic in topics.keys():
             data.append((topic.upper(), topic.title()))
-        self.actions.dropdown_populate(self.ddTopics, Item, data)
+        self.actions.dropdown_populate(self.ddTopics, Topic, data)
 
         # ~ # Update P-O-S
         # ~ fpos = self.app.dictionary.get_file_pos()

@@ -38,3 +38,35 @@ class Item(Model):
 
     def __init__(self,  id: str, title: str = ''):
         super().__init__(id, title)
+
+class Token(Item):
+    """Custom data model"""
+    __gtype_name__ = 'Token'
+    __title__ = 'Token'
+
+    def __init__(self,  id: str, title: str = ''):
+        super().__init__(id, title)
+
+class Topic(Item):
+    """Custom data model for topics"""
+    __gtype_name__ = 'Topic'
+    __title__ = 'Topic'
+
+    def __init__(self,  id: str, title: str = ''):
+        super().__init__(id, title)
+
+class Subtopic(Topic):
+    """Custom data model for topics"""
+    __gtype_name__ = 'Subtopic'
+    __title__ = 'Subtopic'
+
+    def __init__(self,  id: str, title: str = ''):
+        super().__init__(id, title)
+
+class POSTag(Item):
+    """Custom data model for topics"""
+    __gtype_name__ = 'POSTag'
+    __title__ = 'POSTag'
+
+    def __init__(self,  id: str, title: str = ''):
+        super().__init__(id, title)
