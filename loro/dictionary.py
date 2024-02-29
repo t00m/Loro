@@ -110,12 +110,17 @@ class Dictionary:
             self.tokens[token.text] = metadata
 
             if not topic in self.topics:
-                self.topics[topic] = [subtopic]
+                self.topics[topic] = {}
+                self.topics[topic][subtopic] = [sid]
             else:
-                subtopics = self.topics[topic]
-                if not subtopic in subtopics:
-                    subtopics.append(subtopic)
-                    self.topics[topic] = subtopics
+                if not subtopic in self.topics[topic]:
+                    self.topics[topic][subtopic] = [sid]
+                else:
+                    sids = self.topics[topic][subtopic]
+                    if not sid in sids:
+                        sids.append(sid)
+                        self.topics[topic][subtopic] = sids
+
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
 
     def get_tokens(self):
@@ -129,6 +134,9 @@ class Dictionary:
 
     def get_topics(self):
         return self.topics
+
+    def get_sentences(self):
+        return self.sentences
 
     # ~ def __del__(self):
         # ~ self.__save_dictionary()

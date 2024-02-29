@@ -112,14 +112,57 @@ class Window(Adw.ApplicationWindow):
 
         self.set_content(mainbox)
 
+    def _update_sentences(self, token: Token):
+        tokens = self.app.dictionary.get_tokens()
+        all_topics = self.app.dictionary.get_topics()
+        selected_topic = self.ddTopics.get_selected_item().id
+        selected_subtopic = self.ddSubtopics.get_selected_item().id
+        matches = []
+        token_sids = tokens[token.id]['sentences']
+
+        for token_sid in token_sids:
+            if selected_topic == 'ALL':
+                for this_topic in all_topics:
+                    if selected_subtopic == 'ALL':
+                        for this_subtopic in all_topics[this_topic]:
+                            if token_sid in all_topics[this_topic][this_subtopic]:
+                                matches.append(token_sid)
+                    else:
+                        if token_sid in all_topics[this_topic][selected_subtopic]:
+                            matches.append(token_sid)
+            else:
+                if selected_subtopic == 'ALL':
+                    for this_subtopic in all_topics[selected_topic]:
+                        if token_sid in all_topics[selected_topic][this_subtopic]:
+                            matches.append(token_sid)
+                else:
+                    if token_sid in all_topics[selected_topic][selected_subtopic]:
+                        matches.append(token_sid)
+
+                # ~ for sid in topics[topic.id][subtopic.id]:
+                # ~ if token_sid == sid:
+                    # ~ matches.append(sid)
+        self.log.debug("Displaying sentences for Topic['%s'] and Subtopic['%s']", selected_topic, selected_subtopic)
+        sentences = self.app.dictionary.get_sentences()
+        for sid in matches:
+            self.log.debug(sentences[sid]['de'])
+
+        # ~ for topic in token_topics:
+            # ~ for subtopic in topics[topic]:
+                # ~ for sid in tokens[token.id]['sentences']:
+                    # ~ if sid in topics[topic][subtopic]:
+                        # ~ self.log.info("Token %s found in %s > %s:", token.id, topic, subtopic)
+                        # ~ self.log.info("\t%s", sid)
+
     def _on_tokens_selected(self, selection, position, n_items):
-        # ~ self.selected_tokens = []
         model = selection.get_model()
         bitset = selection.get_selection()
         for index in range(bitset.get_size()):
             pos = bitset.get_nth(index)
-            item = model.get_item(pos)
-            self.log.info("%s > %s", item.id, item.title)
+            token = model.get_item(pos)
+            self.log.info("%s > %s", token.id, token.title)
+            self._update_sentences(token)
+
             # ~ self.selected_tokens.append(item.id)
         # ~ self.log.info("%d / %d" % (len(self.selected_tokens), len(model)))
 
