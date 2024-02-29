@@ -72,6 +72,10 @@ class Dictionary:
             json_save(thisfile, thisdict)
             self.log.info("Dictionary '%s' saved with %d entries", os.path.basename(thisfile), len(thisdict))
 
+    def save(self):
+        self.__save_dictionary()
+        self.log.debug("Dictionary saved")
+
     def add_sentence(self, sid: str, sentence:str) -> bool:
         added = False
         if not sid in self.sentences:

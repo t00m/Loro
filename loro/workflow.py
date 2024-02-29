@@ -35,7 +35,7 @@ class Workflow:
         self.progress = None
 
     def __del__(self):
-        pass
+        self.dictionary.save()
 
     def start(self, filepath: str):
         # Detect language of file and validate
