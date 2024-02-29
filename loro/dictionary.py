@@ -24,6 +24,7 @@ class Dictionary:
          # Dictionary in-memory dicts
         self.sentences = {}
         self.tokens = {}
+        self.topics = {}
 
         # Initialize stats
         self.stats = {}
@@ -34,32 +35,42 @@ class Dictionary:
         # Dictionary configuration files
         self.ftokens = os.path.join(get_project_config_dir(self.source, self.target), 'tokens_%s_%s.json' % (self.source, self.target))
         self.fsents = os.path.join(get_project_config_dir(self.source, self.target), 'sentences.json')
+        self.ftopics = os.path.join(get_project_config_dir(self.source, self.target), 'topics.json')
 
         # Load (or create) personal dictionary for current project
         self.__load_dictionary()
 
     def __load_dictionary(self):
-        for thisfile, thisdict in [
-                                    (self.fsents, self.sentences),
-                                    (self.ftokens, self.tokens)
-                                ]:
-            if os.path.exists(thisfile):
-                thisdict = json_load(thisfile)
-                self.log.info("Loading %s (%d entries)", os.path.basename(thisfile), len(thisdict))
-            else:
-                json_save(thisfile, thisdict)
-                self.log.info("Creating new config file '%s' with %d", os.path.basename(thisfile), len(thisdict))
+        if os.path.exists(self.ftokens):
+            self.tokens = json_load(self.ftokens)
+        else:
+            json_save(self.ftokens, self.tokens)
+            self.log.info("Created new config file for tokens")
+
+        if os.path.exists(self.fsents):
+            self.sentences = json_load(self.fsents)
+        else:
+            json_save(self.fsents, self.sentences)
+            self.log.info("Created new config file for tokens")
+
+        if os.path.exists(self.ftopics):
+            self.topics = json_load(self.ftopics)
+        else:
+            json_save(self.ftopics, self.topics)
+            self.log.info("Created new config file for topics")
+
+        self.log.info("Tokens loaded: %d", len(self.tokens))
+        self.log.info("Sentences loaded: %d", len(self.sentences))
+        self.log.info("Topics loaded: %d", len(self.topics))
 
     def __save_dictionary(self):
         for thisfile, thisdict in [
-                                    (self.fsents, self.sentences),
                                     (self.ftokens, self.tokens),
+                                    (self.fsents, self.sentences),
+                                    (self.ftopics, self.topics),
                                 ]:
             json_save(thisfile, thisdict)
             self.log.info("Dictionary '%s' saved with %d entries", os.path.basename(thisfile), len(thisdict))
-
-    def get_file_tokens(self):
-        return self.ftokens
 
     def add_sentence(self, sid: str, sentence:str) -> bool:
         added = False
@@ -69,16 +80,9 @@ class Dictionary:
             added = True
         return added
 
-    def get_token(name: str) -> {}:
-        try:
-            return self.tokens[name]
-        except KeyError:
-            return {}
-
     def add_token(self, token: Token, sid: str, topic: str, subtopic: str):
         try:
             metadata = self.tokens[token.text]
-
             if not sid in metadata['sentences']:
                 metadata['sentences'].extend([sid])
             if not token.lemma_ in metadata['lemmas']:
@@ -86,9 +90,9 @@ class Dictionary:
             if not token.pos_ in metadata['postags']:
                 metadata['postags'].extend([token.pos_])
             if not topic in metadata['topics']:
-                metadata['topics'].extend([topic])
+                metadata['topics'].extend([topic.upper()])
             if not subtopic in metadata['subtopics']:
-                metadata['subtopics'].extend([subtopic])
+                metadata['subtopics'].extend([subtopic.upper()])
             metadata['count'] += 1
         except KeyError:
             metadata = {}
@@ -100,45 +104,27 @@ class Dictionary:
             metadata['count'] = 1
         finally:
             self.tokens[token.text] = metadata
+
+            if not topic in self.topics:
+                self.topics[topic] = [subtopic]
+            else:
+                subtopics = self.topics[topic]
+                if not subtopic in subtopics:
+                    subtopics.append(subtopic)
+                    self.topics[topic] = subtopics
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
 
-    def __del__(self):
-        self.__save_dictionary()
+    def get_tokens(self):
+        return self.tokens
 
-        # ~ try:
-            # ~ tokens = self.lemmas[token.lemma_]
-            # ~ if token.text not in tokens:
-                # ~ tokens.append(token.text)
-                # ~ self.lemmas[token.lemma_] = tokens
-        # ~ except:
-            # ~ self.lemmas[token.lemma_] = [token.text]
+    def get_token(name: str) -> {}:
+        try:
+            return self.tokens[name]
+        except KeyError:
+            return {}
 
-        # P-O-S (Part Of Speech) tagging and stats
-        ## Stats
-        # ~ try:
-            # ~ num = self.stats[token.pos_][token.lemma_]
-            # ~ self.stats[token.pos_][token.lemma_] = num + 1
-        # ~ except:
-            # ~ self.stats[token.pos_][token.lemma_] = 1
-        # ~ self.posset.add(token.pos_)
+    def get_topics(self):
+        return self.topics
 
-        # ~ try:
-            # ~ tokens = self.pos[token.pos_]
-            # ~ if token.text not in tokens:
-                # ~ tokens.append(token.text)
-            # ~ self.pos[token.pos_] = tokens
-        # ~ except:
-            # ~ self.pos[token.pos_] = [token.text]
-
-            # ~ if key == 'PROPN':
-                # ~ self.log.info(self.stats[key])
-
-        # ~ create_excel(self.stats, self.posset)
-        # ~ for key in self.posset:
-            # ~ print("POS TAG: %s" % key)
-            # ~ pprint.pprint(sorted(self.stats[key].items(), key=lambda p:p[1], reverse=True))
-        # ~ pprint.pprint(self.stats)
-
-        # ~ for key in self.posset:
-            # ~ postag = get_glossary_term_explained(key).title()
-            # ~ self.log.info("%s: %d", postag, len(self.stats[key]))
+    # ~ def __del__(self):
+        # ~ self.__save_dictionary()
