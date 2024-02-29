@@ -168,18 +168,6 @@ class ColumnView(Gtk.Box):
     def refilter(self):
         self.filter.emit('changed', Gtk.FilterChange.DIFFERENT)
 
-    # ~ def update(self, items):
-        # ~ self.selected_items = []
-        # ~ self.store.remove_all()
-        # ~ ds = datetime.now()
-        # ~ for item in items:
-            # ~ # item =~ Subclass of MiAZModel(id='xxx', title='xxx', ...)
-            # ~ self.store.append(item)
-        # ~ self.select_first_item()
-        # ~ de = datetime.now()
-        # ~ dt = de - ds
-        # ~ self.log.debug("Columnview for %s updated (%s)", self.item_type.__title__, dt)
-
     def update(self, items):
         self.selected_items = []
         ds = datetime.now()
