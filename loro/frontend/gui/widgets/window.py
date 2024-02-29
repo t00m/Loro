@@ -29,6 +29,7 @@ class Window(Adw.ApplicationWindow):
         WINDOW = self
         self.actions = WidgetActions(self.app)
         self.factory = WidgetFactory(self.app)
+        self.selected = []
         self._build_ui()
         self._update_ui()
         self.present()
@@ -86,13 +87,13 @@ class Window(Adw.ApplicationWindow):
         contentview.set_margin_end(margin=6)
         contentview.set_margin_bottom(margin=6)
         contentview.set_margin_start(margin=6)
-        cvleft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
-        cvleft.props.width_request = 400
-        cvright = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.cvleft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
+        # ~ cvleft.props.width_request = 400
+        cvright = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
         cvrightup = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
         cvrightdown = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
 
-        contentview.append(cvleft)
+        contentview.append(self.cvleft)
         contentview.append(cvright)
         cvright.append(cvrightup)
         cvright.append(cvrightdown)
@@ -100,80 +101,147 @@ class Window(Adw.ApplicationWindow):
 
         self.cvtokens = ColumnViewToken(self.app)
         selection = self.cvtokens.get_selection()
-        selection.connect('selection-changed', self._on_tokens_selection_changed)
-        cvleft.append(self.cvtokens)
+        selection.connect('selection-changed', self._on_tokens_selected)
+        self.cvleft.append(self.cvtokens)
         cvrightup.append(Gtk.Label.new('right up'))
         cvrightup.append(Gtk.Label.new('right down'))
 
         self.set_content(mainbox)
 
-    def _on_tokens_selection_changed(self, selection, position, n_items):
+    def _on_tokens_selected(self, selection, position, n_items):
         self.selected_items = []
         model = selection.get_model()
         bitset = selection.get_selection()
         for index in range(bitset.get_size()):
             pos = bitset.get_nth(index)
             item = model.get_item(pos)
-            self.log.info(item.title)
+            self.log.info("%s > %s", item.id, item.title)
             self.selected_items.append(item)
         self.log.info("%d / %d" % (len(self.selected_items), len(model)))
 
     def _on_topic_selected(self, *args):
         item = self.ddTopics.get_selected_item()
         topic = item.id
-
-        fsubtopics = self.app.dictionary.get_file_subtopics()
-        subtopics = json_load(fsubtopics)
+        topics = self.app.dictionary.get_topics()
+        self.log.debug("Displaying subtopics for topic '%s'", topic)
         data = []
-        for key in subtopics:
-            if topic in subtopics[key]['topics']:
-                data.append((key, key.title()))
+        data.append(("ALL", "All subtopics"))
+        if topic == "ALL":
+            all_subs = set()
+            for topic in topics:
+                for subtopic in topics[topic]:
+                    all_subs.add(subtopic)
+            for subtopic in all_subs:
+                data.append((subtopic.upper(), subtopic.title()))
+        else:
+            subtopics = topics[topic]
+            for subtopic in subtopics:
+                data.append((subtopic, subtopic.title()))
         self.actions.dropdown_populate(self.ddSubtopics, Item, data)
 
         if len(self.ddSubtopics.get_model()) > 0:
             self.ddSubtopics.set_selected(0)
 
     def _on_subtopic_selected(self, dropdown, gparam):
-        # ~ self.log.info("%s (%s)", dropdown, gparam)
-        topic = self.ddTopics.get_selected_item()
-        subtopic = dropdown.get_selected_item()
-        if len(dropdown.get_model()) > 0:
-            # This is necessary. When Topic selection changes, subtopics
-            # dropdown has no items and this fails
-            self.log.info("Updating tokens for topic '%s' and subtopic '%s'", topic.title, subtopic.title)
-            ftokens = self.app.dictionary.get_file_tokens()
-            dtokens = json_load(ftokens)
-            items = []
-            for key in dtokens.keys():
-                items.append(Item
-                                 (
-                                    id=key,
-                                    title=key
-                                )
-                            )
-            self.cvtokens.update(items)
+        item_topic = self.ddTopics.get_selected_item()
+        item_subtopic = dropdown.get_selected_item()
+        if item_topic is not None:
+            topic = item_topic.id
+        else:
+            return
+        if item_subtopic is not None:
+            subtopic = item_subtopic.id
+        else:
+            return
+
+        selected = []
+        tokens = self.app.dictionary.get_tokens()
+        for key in tokens.keys():
+            if topic == 'ALL':
+                if subtopic == 'ALL':
+                    selected.append(key)
+                else:
+                    if subtopic in tokens[key]['subtopics']:
+                        selected.append(key)
+            else:
+                if topic in tokens[key]['topics']:
+                    if subtopic == 'ALL':
+                        selected.append(key)
+                    else:
+                        if subtopic in tokens[key]['subtopics']:
+                            selected.append(key)
+
+        self.selected = selected
+        self.log.info("Selected %d tokens for topic '%s' and subtopic '%s'", len(selected), topic, subtopic)
+
+        # Update POS
+        postags = set()
+        for key in self.selected:
+            for postag in tokens[key]['postags']:
+                postags.add(postag)
+
+        data = []
+        data.append(("ALL", "All Part-Of-Speech tags"))
+        for postag in postags:
+            title = explain_term(postag).title()
+            data.append((postag, explain_term(postag).title()))
+        self.actions.dropdown_populate(self.ddPos, Item, data)
+
+        # ~ self.actions.dropdown_populate(self.ddPos, Item, data)
+
+        # ~ if matches:
+        # ~ if len(dropdown.get_model()) > 0:
+            # ~ # This is necessary. When Topic selection changes, subtopics
+            # ~ # dropdown has no items and this fails
+
+            # ~ items = []
+
+            # ~ for key in tokens.keys():
+
 
     def _on_pos_selected(self, dropdown, gparam):
+        tokens = self.app.dictionary.get_tokens()
         if len(dropdown.get_model()) > 0:
-            postag = dropdown.get_selected_item()
-            self.log.info(postag.title)
+            item_postag = dropdown.get_selected_item()
+            postag = item_postag.id
+            selected = []
+            for key in self.selected:
+                if postag == 'ALL':
+                    selected.append(key)
+                else:
+                    if postag in tokens[key]['postags']:
+                        selected.append(key)
+
+            items = []
+            lenmax = 0
+            for key in selected:
+                lemma = tokens[key]['lemmas'][0]
+                items.append(Item(id=key, title=key))
+                if len(key) > lenmax:
+                    lenmax = len(key)
+            self.cvtokens.update(items)
+            self.log.info("Selected %d tokens for POS tag '%s'", len(selected), postag)
+            if lenmax < 25:
+                lenmax = 25
+            self.cvleft.props.width_request = lenmax*8
+
 
     def _update_ui(self):
-        # Update topics
-        ftopics = self.app.dictionary.get_file_topics()
-        adict = json_load(ftopics)
+        # ~ # Update topics
+        topics = self.app.dictionary.get_topics()
         data = []
-        for key in adict.keys():
-            data.append((key, key.title()))
+        data.append(("ALL", "All topics"))
+        for topic in topics.keys():
+            data.append((topic.upper(), topic.title()))
         self.actions.dropdown_populate(self.ddTopics, Item, data)
 
-        # Update P-O-S
-        fpos = self.app.dictionary.get_file_pos()
-        adict = json_load(fpos)
-        data = []
-        for key in adict.keys():
-            title = explain_term(key).title()
-            data.append((key, title))
-        self.actions.dropdown_populate(self.ddPos, Item, data)
+        # ~ # Update P-O-S
+        # ~ fpos = self.app.dictionary.get_file_pos()
+        # ~ adict = json_load(fpos)
+        # ~ data = []
+        # ~ for key in adict.keys():
+            # ~ title = explain_term(key).title()
+            # ~ data.append((key, title))
+        # ~ self.actions.dropdown_populate(self.ddPos, Item, data)
 
 
