@@ -29,7 +29,9 @@ class Window(Adw.ApplicationWindow):
         headerbar = Adw.HeaderBar()
         viewstack = Adw.ViewStack()
         viewstack.add_titled_with_icon(Dashboard(self.app), 'dashboard', 'Dashboard', 'accessories-dictionary-symbolic')
-        viewstack.add_titled_with_icon(Gtk.Label.new('Preferences'), 'preferences', 'Preferences', 'preferences-system-symbolic')
+        # ~ viewstack.add_titled_with_icon(Gtk.Label.new('Preferences'), 'preferences', 'Preferences', 'preferences-system-symbolic')
+        viewstack.add_titled_with_icon(Gtk.Label.new('Documents'), 'documents', 'Documents', 'emblem-documents-symbolic')
+
         viewswitcher = Adw.ViewSwitcher()
         viewswitcher.set_stack(viewstack)
         headerbar.set_title_widget(viewswitcher) # It works, but it is disabled by now
