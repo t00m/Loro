@@ -1,5 +1,5 @@
-# Copyright 2023 Vlad Krupinskii <mrvladus@yandex.ru>
-# SPDX-License-Identifier: MIT
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 from __future__ import annotations
 from gi.repository import Gio, Adw, Gtk  # type:ignore
@@ -60,7 +60,7 @@ class Window(Adw.ApplicationWindow):
         viewstack.add_titled(Gtk.Label.new('Preferences'), 'preferences', 'Preferences')
         viewswitcher = Adw.ViewSwitcher()
         viewswitcher.set_stack(viewstack)
-        # ~ headerbar.set_title_widget(viewswitcher) # It works, but it is disabled by now
+        headerbar.set_title_widget(viewswitcher) # It works, but it is disabled by now
         mainbox.append(headerbar)
 
         # Toolbox
@@ -89,22 +89,22 @@ class Window(Adw.ApplicationWindow):
 
         # Content View
         contentview = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True, vexpand=True)
-        contentview.set_hexpand(True)
-        contentview.set_vexpand(True)
         contentview.set_margin_top(margin=6)
         contentview.set_margin_end(margin=6)
         contentview.set_margin_bottom(margin=6)
         contentview.set_margin_start(margin=6)
-        self.cvleft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
-        # ~ cvleft.props.width_request = 400
-        cvright = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
-        cvrightup = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
-        cvrightdown = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
 
-        contentview.append(self.cvleft)
-        contentview.append(cvright)
-        cvright.append(cvrightup)
-        cvright.append(cvrightdown)
+        self.hpaned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
+        self.hpaned.set_position(200)
+        contentview.append(self.hpaned)
+        self.cvleft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
+        self.vpaned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
+        self.hpaned.set_start_child(self.cvleft)
+        self.hpaned.set_end_child(self.vpaned)
+        self.cvrightup = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.cvrightdown = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.vpaned.set_start_child(self.cvrightup)
+        self.vpaned.set_end_child(self.cvrightdown)
         mainbox.append(contentview)
 
         self.cvtokens = ColumnViewToken(self.app)
@@ -117,12 +117,12 @@ class Window(Adw.ApplicationWindow):
         selection.connect('selection-changed', self._on_sentence_selected)
         self.cvsentences.set_hexpand(True)
         self.cvsentences.set_vexpand(True)
-        cvrightup.append(self.cvsentences)
+        self.cvrightup.append(self.cvsentences)
 
         self.cvanalysis = ColumnViewAnalysis(self.app)
         self.cvanalysis.set_hexpand(True)
         self.cvanalysis.set_vexpand(True)
-        cvrightdown.append(self.cvanalysis)
+        self.cvrightdown.append(self.cvanalysis)
 
         self.set_content(mainbox)
 
@@ -309,7 +309,10 @@ class Window(Adw.ApplicationWindow):
             self.log.info("Selected %d tokens for POS tag '%s'", len(selected), postag)
             if lenmax < 25:
                 lenmax = 25
-            self.cvleft.props.width_request = lenmax*8
+            cur_pos = self.hpaned.get_position()
+            new_pos = lenmax*8
+            self.hpaned.set_position(new_pos)
+            self.log.debug("HPaned position changed from %d to %d", cur_pos, new_pos)
 
 
     def _update_ui(self):
