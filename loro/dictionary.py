@@ -76,11 +76,13 @@ class Dictionary:
         self.__save_dictionary()
         self.log.debug("Dictionary saved")
 
-    def add_sentence(self, sid: str, sentence:str) -> bool:
+    def add_sentence(self, sid: str, sentence: str, tokens: []) -> bool:
         added = False
         if not sid in self.sentences:
             self.sentences[sid] = {}
             self.sentences[sid][self.source] = sentence
+            sid_tokens = []
+            self.sentences[sid]['tokens'] = tokens
             added = True
         return added
 

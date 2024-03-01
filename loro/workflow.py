@@ -94,15 +94,18 @@ class Workflow:
     def process_sentence(self, data: tuple) -> tuple:
         (sentence, jid, topic, subtopic, task) = data
         sid = get_hash(sentence)
-        self.dictionary.add_sentence(sid, sentence.strip())
 
         # Tokenize sentence
-        result = tokenize_sentence(sentence.lower())
+        tokens = tokenize_sentence(sentence.lower())
 
         # Tokens
-        for token in result:
+        sid_tokens = []
+        for token in tokens:
             if is_valid_word(token.text):
                 thistoken = self.dictionary.add_token(token, sid, topic, subtopic)
+                sid_tokens.append(token.text)
+
+        self.dictionary.add_sentence(sid, sentence.strip(), sid_tokens)
 
         return (jid, task)
 
