@@ -55,6 +55,14 @@ class Sentence(Item):
     def __init__(self,  id: str, title: str = ''):
         super().__init__(id, title)
 
+class Translation(Item):
+    """Custom data model"""
+    __gtype_name__ = 'Translation'
+    __title__ = 'Translation'
+
+    def __init__(self,  id: str, title: str = ''):
+        super().__init__(id, title)
+
 class Topic(Item):
     """Custom data model for topics"""
     __gtype_name__ = 'Topic'
@@ -78,3 +86,42 @@ class POSTag(Item):
 
     def __init__(self,  id: str, title: str = ''):
         super().__init__(id, title)
+
+
+class Analysis(Item):
+    """Custom data model sentence analysis"""
+    __gtype_name__ = 'Analysis'
+    __title__ = 'Analysis'
+
+    def __init__(self,  id: str,                # Token
+                        title: str = '',        # Token
+                        lemma: str = '',        # Lemma
+                        postag: str = '',       # P-O-S Tag
+                        count: int = 0,         # Count
+                        translation: str = ''   # Translation
+                ):
+        super().__init__(id, title)
+        self._lemma = lemma
+        self._postag = postag
+        self._count = count
+        self._translation = translation
+
+    @GObject.Property
+    def lemma(self):
+        return self._lemma
+
+    @GObject.Property
+    def postag(self):
+        return self._postag
+
+    @GObject.Property
+    def group(self):
+        return self._group
+
+    @GObject.Property
+    def count(self):
+        return self._count
+
+    @GObject.Property
+    def translation(self):
+        return self._translation

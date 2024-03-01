@@ -231,3 +231,11 @@ class ColumnView(Gtk.Box):
             return Gtk.Ordering.SMALLER
         else:
             return Gtk.Ordering.EQUAL
+
+    def _on_sort_number_func(self, item1, item2, prop):
+        if eval("item1.%s" % prop) > eval("item2.%s" % prop):
+            return Gtk.Ordering.LARGER
+        elif eval("item1.%s" % prop) < eval("item2.%s" % prop):
+            return Gtk.Ordering.SMALLER
+        else:
+            return Gtk.Ordering.EQUAL

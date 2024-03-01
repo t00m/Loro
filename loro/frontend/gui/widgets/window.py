@@ -7,10 +7,11 @@ from gi.repository import Gio, Adw, Gtk  # type:ignore
 from loro.frontend.gui.gsettings import GSettings
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
-from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence
+from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence, Analysis
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.frontend.gui.widgets.views import ColumnViewToken
 from loro.frontend.gui.widgets.views import ColumnViewSentences
+from loro.frontend.gui.widgets.views import ColumnViewAnalysis
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.log import get_logger
@@ -112,12 +113,34 @@ class Window(Adw.ApplicationWindow):
         self.cvleft.append(self.cvtokens)
 
         self.cvsentences = ColumnViewSentences(self.app)
+        selection = self.cvsentences.get_selection()
+        selection.connect('selection-changed', self._on_sentence_selected)
         self.cvsentences.set_hexpand(True)
         self.cvsentences.set_vexpand(True)
         cvrightup.append(self.cvsentences)
-        cvrightup.append(Gtk.Label.new('right down'))
+
+        self.cvanalysis = ColumnViewAnalysis(self.app)
+        self.cvanalysis.set_hexpand(True)
+        self.cvanalysis.set_vexpand(True)
+        cvrightdown.append(self.cvanalysis)
 
         self.set_content(mainbox)
+
+    def _update_analysis(self, sid: str):
+        tokens = self.app.dictionary.get_tokens()
+        sentences = self.app.dictionary.get_sentences()
+        items = []
+        for token in sentences[sid]['tokens']:
+            items.append(Analysis(
+                                id = token,
+                                title = token,
+                                lemma = tokens[token]['lemmas'][0],
+                                postag = tokens[token]['postags'][0],
+                                count = tokens[token]['count'],
+                                translation = ''
+                            )
+                        )
+        self.cvanalysis.update(items)
 
     def _update_sentences(self, token: Token):
         tokens = self.app.dictionary.get_tokens()
@@ -175,6 +198,16 @@ class Window(Adw.ApplicationWindow):
 
             # ~ self.selected_tokens.append(item.id)
         # ~ self.log.info("%d / %d" % (len(self.selected_tokens), len(model)))
+
+    def _on_sentence_selected(self, selection, position, n_items):
+        model = selection.get_model()
+        bitset = selection.get_selection()
+        for index in range(bitset.get_size()):
+            pos = bitset.get_nth(index)
+            sentence = model.get_item(pos)
+            self.log.info("%s", sentence.title)
+        self._update_analysis(sentence.id)
+
 
     def _on_topic_selected(self, *args):
         current_topic = self.ddTopics.get_selected_item()
