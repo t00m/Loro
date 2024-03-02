@@ -45,12 +45,6 @@ class Editor(Gtk.Box):
         self.set_margin_bottom(margin=6)
         self.set_margin_start(margin=6)
 
-        # Toolbox
-        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
-        self.btnAdd = self.factory.create_button('list-add-symbolic', 'Add document', self._add_document)
-        toolbox.append(self.btnAdd)
-        self.append(toolbox)
-
         # Content View
         editor = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True, vexpand=True)
         editor.set_margin_top(margin=6)
@@ -63,14 +57,38 @@ class Editor(Gtk.Box):
         self.hpaned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
         self.hpaned.set_start_child(self.boxLeft)
         self.hpaned.set_end_child(self.boxRight)
+        self.hpaned.set_position(400)
+        self.hpaned.set_resize_start_child(False)
         editor.append(self.hpaned)
 
+        ## Left: Files view
+
+        ### Files Toolbox
+        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+        toolbox.set_margin_bottom(margin=6)
+        self.btnAdd = self.factory.create_button('document-new-symbolic', 'Add doc', self._add_document)
+        self.btnImport= self.factory.create_button('list-add-symbolic', 'Import docs', self._import_document)
+        self.btnDelete = self.factory.create_button('edit-delete-symbolic', 'Delete doc', self._delete_document)
+        toolbox.append(self.btnAdd)
+        toolbox.append(self.btnImport)
+        toolbox.append(self.btnDelete)
+        self.boxLeft.append(toolbox)
+
+        ### Files view
         self.cvfiles = ColumnViewFiles(self.app)
         selection = self.cvfiles.get_selection()
         selection.connect('selection-changed', self._on_file_selected)
         self.boxLeft.append(self.cvfiles)
 
-        # Editor GtkSource
+        ## Right: Editor view
+        ### Editor Toolbox
+        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+        toolbox.set_margin_bottom(margin=6)
+        self.btnSave = self.factory.create_button('document-save-symbolic', 'Save changes', self._save_document)
+        toolbox.append(self.btnSave)
+        self.boxRight.append(toolbox)
+
+        ### Editor GtkSource
         editorview = GtkSource.View(
             height_request=-1,
             top_margin=12,
@@ -79,12 +97,29 @@ class Editor(Gtk.Box):
             right_margin=12,
             wrap_mode=3,
             show_line_numbers=True,
+            show_line_marks=True,
+            show_right_margin=True,
             css_classes=["card"],
         )
+        editorview.set_background_pattern(GtkSource.BackgroundPatternType.GRID)
+        editorview.set_monospace(True)
         self.buffer = editorview.get_buffer()
-        # ~ notes_ovrl = Gtk.Overlay(child=editorview)
-        # ~ self.boxRight.append(editor)
         editorview.set_vexpand(True)
+
+        # ~ # Save button
+        # ~ self.notes_save_btn: Gtk.Button = Gtk.Button(
+            # ~ icon_name="emblems-documents-symbolic",
+            # ~ css_classes=["circular", "suggested-action"],
+            # ~ halign=Gtk.Align.END,
+            # ~ valign=Gtk.Align.END,
+            # ~ margin_bottom=6,
+            # ~ margin_end=6,
+            # ~ tooltip_text=_("Save"),
+            # ~ visible=False,
+        # ~ )
+        # ~ self.notes_save_btn.connect("clicked", lambda *_: self._update_editor())
+
+
         self.boxRight.append(editorview)
 
         self.append(editor)
@@ -101,6 +136,15 @@ class Editor(Gtk.Box):
 
 
     def _add_document(self, *args):
+        self.log.debug(args)
+
+    def _import_document(self, *args):
+        self.log.debug(args)
+
+    def _delete_document(self, *args):
+        self.log.debug(args)
+
+    def _save_document(self, *args):
         self.log.debug(args)
 
     def _update_editor(self):
