@@ -88,6 +88,14 @@ class POSTag(Item):
         super().__init__(id, title)
 
 
+class Filepath(Item):
+    """Custom data model"""
+    __gtype_name__ = 'Filepath'
+    __title__ = 'Filename'
+
+    def __init__(self,  id: str, title: str = ''):
+        super().__init__(id, title)
+
 class Analysis(Item):
     """Custom data model sentence analysis"""
     __gtype_name__ = 'Analysis'
@@ -125,3 +133,4 @@ class Analysis(Item):
     @GObject.Property
     def translation(self):
         return self._translation
+

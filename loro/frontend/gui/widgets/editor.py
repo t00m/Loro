@@ -1,15 +1,19 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
+
 from __future__ import annotations
+import os
+
 from gi.repository import Gio, Adw, Gtk  # type:ignore
 
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
-from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence, Analysis
+from loro.frontend.gui.models import Filepath
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.frontend.gui.widgets.views import ColumnViewFiles
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
+from loro.backend.core.util import get_inputs
 from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 
@@ -61,41 +65,30 @@ class Editor(Gtk.Box):
 
         self.cvfiles = ColumnViewFiles(self.app)
         selection = self.cvfiles.get_selection()
-        # ~ selection.connect('selection-changed', self._on_tokens_selected)
+        selection.connect('selection-changed', self._on_file_selected)
         self.boxLeft.append(self.cvfiles)
 
-        # ~ self.cvsentences = ColumnViewSentences(self.app)
-        # ~ selection = self.cvsentences.get_selection()
-        # ~ selection.connect('selection-changed', self._on_sentence_selected)
-        # ~ self.cvsentences.set_hexpand(True)
-        # ~ self.cvsentences.set_vexpand(True)
-        # ~ self.boxRightUp.append(self.cvsentences)
-
-        # ~ self.cvanalysis = ColumnViewAnalysis(self.app)
-        # ~ self.cvanalysis.set_hexpand(True)
-        # ~ self.cvanalysis.set_vexpand(True)
-        # ~ self.boxRightDown.append(self.cvanalysis)
-
         self.append(editor)
+
+    def _on_file_selected(self, selection, position, n_items):
+        model = selection.get_model()
+        bitset = selection.get_selection()
+        for index in range(bitset.get_size()):
+            pos = bitset.get_nth(index)
+            filename = model.get_item(pos)
+            self.log.info("%s > %s", filename.id, filename.title)
+
 
     def _add_document(self, *args):
         self.log.debug(args)
 
     def _update_editor(self):
-        pass
-        # ~ # Update topics
-        # ~ topics = self.app.dictionary.get_topics()
-        # ~ data = []
-        # ~ data.append(("ALL", "All topics"))
-        # ~ for topic in topics.keys():
-            # ~ data.append((topic.upper(), topic.title()))
-        # ~ self.actions.dropdown_populate(self.ddTopics, Topic, data)
-
-        # ~ # Update P-O-S
-        # ~ fpos = self.app.dictionary.get_file_pos()
-        # ~ adict = json_load(fpos)
-        # ~ data = []
-        # ~ for key in adict.keys():
-            # ~ title = explain_term(key).title()
-            # ~ data.append((key, title))
-        # ~ self.actions.dropdown_populate(self.ddPos, Item, data)
+        source, target = ENV['Projects']['Default']['Languages']
+        self.log.debug("%s > %s", source, target)
+        files = get_inputs(source, target)
+        self.log.debug(files)
+        items = []
+        for filepath in files:
+            title = os.path.basename(filepath)
+            items.append(Filepath(id=filepath, title=title))
+        self.cvfiles.update(items)

@@ -18,7 +18,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.frontend.gui.widgets.columnview import ColLabel
-from loro.frontend.gui.models import Item
+from loro.frontend.gui.models import Item, Filepath
 
 
 class ColumnViewFiles(ColumnView):
@@ -26,7 +26,7 @@ class ColumnViewFiles(ColumnView):
     __gtype_name__ = 'ColumnViewFiles'
 
     def __init__(self, app):
-        super().__init__(app, item_type=Item)
+        super().__init__(app, item_type=Filepath)
         self.cv.append_column(self.column_id)
         self.column_id.set_visible(False)
         self.column_title.set_title(_('Id'))
