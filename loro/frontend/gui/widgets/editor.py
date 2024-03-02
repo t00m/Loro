@@ -78,6 +78,7 @@ class Editor(Gtk.Box):
             left_margin=12,
             right_margin=12,
             wrap_mode=3,
+            show_line_numbers=True,
             css_classes=["card"],
         )
         self.buffer = editorview.get_buffer()
