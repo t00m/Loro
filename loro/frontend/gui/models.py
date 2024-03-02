@@ -93,8 +93,22 @@ class Filepath(Item):
     __gtype_name__ = 'Filepath'
     __title__ = 'Filename'
 
-    def __init__(self,  id: str, title: str = ''):
+    def __init__(self,  id: str,                # Filepath
+                        title: str = '',        # Basename
+                        topic: str = '',        # Topic
+                        subtopic: str = '',       # Subtopic
+                ):
         super().__init__(id, title)
+        self._topic = topic
+        self._subtopic = subtopic
+
+    @GObject.Property
+    def topic(self):
+        return self._topic
+
+    @GObject.Property
+    def subtopic(self):
+        return self._subtopic
 
 class Analysis(Item):
     """Custom data model sentence analysis"""

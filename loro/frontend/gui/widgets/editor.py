@@ -16,6 +16,7 @@ from loro.frontend.gui.widgets.views import ColumnViewFiles
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.util import get_inputs
+from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 
@@ -154,6 +155,12 @@ class Editor(Gtk.Box):
         self.log.debug(files)
         items = []
         for filepath in files:
+            topic, subtopic = get_metadata_from_filepath(filepath)
             title = os.path.basename(filepath)
-            items.append(Filepath(id=filepath, title=title))
+            items.append(Filepath(  id=filepath,
+                                    title=title,
+                                    topic=topic.title(),
+                                    subtopic=subtopic.title()
+                                )
+                        )
         self.cvfiles.update(items)
