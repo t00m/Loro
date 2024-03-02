@@ -1,11 +1,15 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+from __future__ import annotations
 from gi.repository import Gio, Adw, Gtk  # type:ignore
 
 from loro.backend.core.log import get_logger
 from loro.frontend.gui.widgets.dashboard import Dashboard
+from loro.frontend.gui.widgets.editor import Editor
 
+
+WINDOW: Window = None
 
 class Window(Adw.ApplicationWindow):
     about_window: Adw.AboutWindow = None
@@ -29,8 +33,7 @@ class Window(Adw.ApplicationWindow):
         headerbar = Adw.HeaderBar()
         viewstack = Adw.ViewStack()
         viewstack.add_titled_with_icon(Dashboard(self.app), 'dashboard', 'Dashboard', 'accessories-dictionary-symbolic')
-        # ~ viewstack.add_titled_with_icon(Gtk.Label.new('Preferences'), 'preferences', 'Preferences', 'preferences-system-symbolic')
-        viewstack.add_titled_with_icon(Gtk.Label.new('Documents'), 'documents', 'Documents', 'emblem-documents-symbolic')
+        viewstack.add_titled_with_icon(Editor(self.app), 'editor', 'Documents', 'emblem-documents-symbolic')
 
         viewswitcher = Adw.ViewSwitcher()
         viewswitcher.set_stack(viewstack)
@@ -50,4 +53,3 @@ class Window(Adw.ApplicationWindow):
         # Setup theme
         # ~ Adw.StyleManager.get_default().set_color_scheme(GSettings.get("theme"))
 
-WINDOW: Window = None

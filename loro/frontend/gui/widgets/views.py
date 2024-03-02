@@ -21,6 +21,19 @@ from loro.frontend.gui.widgets.columnview import ColLabel
 from loro.frontend.gui.models import Item
 
 
+class ColumnViewFiles(ColumnView):
+    """ Custom ColumnView widget for managing files in the editor """
+    __gtype_name__ = 'ColumnViewFiles'
+
+    def __init__(self, app):
+        super().__init__(app, item_type=Item)
+        self.cv.append_column(self.column_id)
+        self.column_id.set_visible(False)
+        self.column_title.set_title(_('Id'))
+        self.cv.append_column(self.column_title)
+        self.column_title.set_title(_('Filename'))
+        self.column_title.set_expand(True)
+
 class ColumnViewToken(ColumnView):
     """ Custom ColumnView widget for tokens """
     __gtype_name__ = 'ColumnViewToken'
