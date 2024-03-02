@@ -4,7 +4,9 @@
 from __future__ import annotations
 import os
 
-from gi.repository import Gio, Adw, Gtk  # type:ignore
+import gi
+gi.require_version('GtkSource', '5')
+from gi.repository import Gio, Adw, Gtk, GtkSource  # type:ignore
 
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
@@ -68,6 +70,22 @@ class Editor(Gtk.Box):
         selection.connect('selection-changed', self._on_file_selected)
         self.boxLeft.append(self.cvfiles)
 
+        # Editor GtkSource
+        editorview = GtkSource.View(
+            height_request=-1,
+            top_margin=12,
+            bottom_margin=12,
+            left_margin=12,
+            right_margin=12,
+            wrap_mode=3,
+            css_classes=["card"],
+        )
+        self.buffer = editorview.get_buffer()
+        # ~ notes_ovrl = Gtk.Overlay(child=editorview)
+        # ~ self.boxRight.append(editor)
+        editorview.set_vexpand(True)
+        self.boxRight.append(editorview)
+
         self.append(editor)
 
     def _on_file_selected(self, selection, position, n_items):
@@ -77,6 +95,8 @@ class Editor(Gtk.Box):
             pos = bitset.get_nth(index)
             filename = model.get_item(pos)
             self.log.info("%s > %s", filename.id, filename.title)
+            text = open(filename.id).read()
+            self.buffer.set_text(text)
 
 
     def _add_document(self, *args):
