@@ -74,7 +74,7 @@ if __name__ == "__main__":
     loro_options.add_argument('-L', '--log', help='Control output verbosity. Default set to INFO', dest='LOGLEVEL', action='store', choices=['DEBUG', 'INFO', 'WARNING', 'ERROR'], default='INFO')
     loro_options.add_argument('-v', '--version', help='Show current version', action='version', version='%s %s' % (ENV['APP']['ID'], ENV['APP']['VERSION']))
     loro_options.add_argument('-r', '--reset', help="Warning! Delete configuration for source/target languages", action='store_true', dest='RESET', default=False)
-    loro_options.add_argument('-g', '-gui', help="Execute app in GUI mode", action='store_true', dest='GUI', default=False)
+    loro_options.add_argument('-g', '-gui', help="Execute app in GUI mode", action='store_true', dest='GUI', default=True)
     params = parser.parse_args()
     main(params)
 
