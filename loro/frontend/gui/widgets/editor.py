@@ -29,11 +29,7 @@ class Editor(Gtk.Box):
         self.app = app
         self.actions = WidgetActions(self.app)
         self.factory = WidgetFactory(self.app)
-        self.current_topic = 'ALL'
-        self.current_subtopic = 'ALL'
-        self.current_postag = 'ALL'
-        self.selected = []
-        self.selected_tokens = []
+        self.selected_file = None
         self._build_editor()
         self._update_editor()
 
@@ -81,6 +77,7 @@ class Editor(Gtk.Box):
 
         ### Files view
         self.cvfiles = ColumnViewFiles(self.app)
+        self.cvfiles.set_single_selection()
         self.cvfiles.get_style_context().add_class(class_name='monospace')
         selection = self.cvfiles.get_selection()
         selection.connect('selection-changed', self._on_file_selected)
@@ -120,9 +117,10 @@ class Editor(Gtk.Box):
         for index in range(bitset.get_size()):
             pos = bitset.get_nth(index)
             filename = model.get_item(pos)
-            self.log.info("%s > %s", filename.id, filename.title)
+            self.log.debug("File selected: %s", filename.title)
             text = open(filename.id).read()
             self.buffer.set_text(text)
+            self.selected_file = filename.id
 
     def _add_document(self, *args):
         self.log.debug(args)
@@ -134,7 +132,12 @@ class Editor(Gtk.Box):
         self.log.debug(args)
 
     def _save_document(self, *args):
-        self.log.debug(args)
+        start = self.buffer.get_start_iter()
+        end = self.buffer.get_end_iter()
+        with open(self.selected_file, 'w') as fsel:
+            text = self.buffer.get_text(start, end, False)
+            fsel.write(text)
+            self.log.info("File '%s' saved", os.path.basename(self.selected_file))
 
     def _update_editor(self, *args):
         source, target = ENV['Projects']['Default']['Languages']
