@@ -27,7 +27,6 @@ class Editor(Gtk.Box):
         super(Editor, self).__init__(orientation=Gtk.Orientation.VERTICAL)
         self.log = get_logger('Editor')
         self.app = app
-
         self.actions = WidgetActions(self.app)
         self.factory = WidgetFactory(self.app)
         self.current_topic = 'ALL'
@@ -35,7 +34,6 @@ class Editor(Gtk.Box):
         self.current_postag = 'ALL'
         self.selected = []
         self.selected_tokens = []
-
         self._build_editor()
         self._update_editor()
 
@@ -67,16 +65,23 @@ class Editor(Gtk.Box):
         ### Files Toolbox
         toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
         toolbox.set_margin_bottom(margin=6)
-        self.btnAdd = self.factory.create_button('document-new-symbolic', 'Add doc', self._add_document)
-        self.btnImport= self.factory.create_button('list-add-symbolic', 'Import docs', self._import_document)
-        self.btnDelete = self.factory.create_button('edit-delete-symbolic', 'Delete doc', self._delete_document)
+        self.btnAdd = self.factory.create_button(icon_name='document-new-symbolic', tooltip='Add new document', callback=self._add_document)
+        self.btnImport= self.factory.create_button(icon_name='list-add-symbolic', tooltip='Import docs', callback=self._import_document)
+        separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        self.btnDelete = self.factory.create_button(icon_name='edit-delete-symbolic', tooltip='Delete doc', callback=self._delete_document)
+        expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+        self.btnRefresh = self.factory.create_button(icon_name='view-refresh-symbolic', tooltip='Refresh', callback=self._update_editor)
         toolbox.append(self.btnAdd)
         toolbox.append(self.btnImport)
+        toolbox.append(separator)
         toolbox.append(self.btnDelete)
+        toolbox.append(expander)
+        toolbox.append(self.btnRefresh)
         self.boxLeft.append(toolbox)
 
         ### Files view
         self.cvfiles = ColumnViewFiles(self.app)
+        self.cvfiles.get_style_context().add_class(class_name='monospace')
         selection = self.cvfiles.get_selection()
         selection.connect('selection-changed', self._on_file_selected)
         self.boxLeft.append(self.cvfiles)
@@ -85,7 +90,7 @@ class Editor(Gtk.Box):
         ### Editor Toolbox
         toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
         toolbox.set_margin_bottom(margin=6)
-        self.btnSave = self.factory.create_button('document-save-symbolic', 'Save changes', self._save_document)
+        self.btnSave = self.factory.create_button(icon_name='document-save-symbolic', tooltip='Save changes', callback=self._save_document)
         toolbox.append(self.btnSave)
         self.boxRight.append(toolbox)
 
@@ -106,23 +111,7 @@ class Editor(Gtk.Box):
         editorview.set_monospace(True)
         self.buffer = editorview.get_buffer()
         editorview.set_vexpand(True)
-
-        # ~ # Save button
-        # ~ self.notes_save_btn: Gtk.Button = Gtk.Button(
-            # ~ icon_name="emblems-documents-symbolic",
-            # ~ css_classes=["circular", "suggested-action"],
-            # ~ halign=Gtk.Align.END,
-            # ~ valign=Gtk.Align.END,
-            # ~ margin_bottom=6,
-            # ~ margin_end=6,
-            # ~ tooltip_text=_("Save"),
-            # ~ visible=False,
-        # ~ )
-        # ~ self.notes_save_btn.connect("clicked", lambda *_: self._update_editor())
-
-
         self.boxRight.append(editorview)
-
         self.append(editor)
 
     def _on_file_selected(self, selection, position, n_items):
@@ -134,7 +123,6 @@ class Editor(Gtk.Box):
             self.log.info("%s > %s", filename.id, filename.title)
             text = open(filename.id).read()
             self.buffer.set_text(text)
-
 
     def _add_document(self, *args):
         self.log.debug(args)
@@ -148,19 +136,18 @@ class Editor(Gtk.Box):
     def _save_document(self, *args):
         self.log.debug(args)
 
-    def _update_editor(self):
+    def _update_editor(self, *args):
         source, target = ENV['Projects']['Default']['Languages']
-        self.log.debug("%s > %s", source, target)
         files = get_inputs(source, target)
-        self.log.debug(files)
         items = []
         for filepath in files:
             topic, subtopic = get_metadata_from_filepath(filepath)
             title = os.path.basename(filepath)
-            items.append(Filepath(  id=filepath,
-                                    title=title,
-                                    topic=topic.title(),
-                                    subtopic=subtopic.title()
-                                )
+            items.append(Filepath(
+                                id=filepath,
+                                title=title,
+                                topic=topic.title(),
+                                subtopic=subtopic.title()
+                            )
                         )
         self.cvfiles.update(items)

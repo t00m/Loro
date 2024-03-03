@@ -83,11 +83,13 @@ class Dashboard(Gtk.Box):
         dashboard.append(self.hpaned)
 
         self.cvtokens = ColumnViewToken(self.app)
+        self.cvtokens.get_style_context().add_class(class_name='monospace')
         selection = self.cvtokens.get_selection()
         selection.connect('selection-changed', self._on_tokens_selected)
         self.boxLeft.append(self.cvtokens)
 
         self.cvsentences = ColumnViewSentences(self.app)
+        self.cvsentences.get_style_context().add_class(class_name='monospace')
         selection = self.cvsentences.get_selection()
         selection.connect('selection-changed', self._on_sentence_selected)
         self.cvsentences.set_hexpand(True)
@@ -95,6 +97,7 @@ class Dashboard(Gtk.Box):
         self.boxRightUp.append(self.cvsentences)
 
         self.cvanalysis = ColumnViewAnalysis(self.app)
+        self.cvanalysis.get_style_context().add_class(class_name='monospace')
         self.cvanalysis.set_hexpand(True)
         self.cvanalysis.set_vexpand(True)
         self.boxRightDown.append(self.cvanalysis)
@@ -112,7 +115,7 @@ class Dashboard(Gtk.Box):
                                 id = token,
                                 title = token,
                                 lemma = tokens[token]['lemmas'][0],
-                                postag = tokens[token]['postags'][0],
+                                postag = explain_term(tokens[token]['postags'][0]),
                                 count = tokens[token]['count'],
                                 translation = ''
                             )

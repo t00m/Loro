@@ -1,3 +1,13 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+
+"""
+# File: utils.py
+# Author: Tomás Vírseda
+# License: GPL v3
+# Description: utils
+"""
+
 import os
 import re
 import glob

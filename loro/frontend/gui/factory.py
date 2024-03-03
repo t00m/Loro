@@ -118,7 +118,7 @@ class WidgetFactory:
 
         return hbox
 
-    def create_button(self, icon_name='', title='', callback=None, width=16, height=16, css_classes=[], data=None):
+    def create_button(self, icon_name='', title='', tooltip='', callback=None, width=24, height=24, css_classes=['flat'], data=None):
         button = Gtk.Button(css_classes=css_classes)
         hbox = self.create_box_horizontal()
         if len(icon_name.strip()) > 0:
@@ -132,6 +132,9 @@ class WidgetFactory:
             label.set_markup(title)
             label.set_valign(Gtk.Align.CENTER)
             hbox.append(label)
+
+        if len(tooltip) > 0:
+            button.set_tooltip_markup(tooltip)
 
         button.set_child(hbox)
 
