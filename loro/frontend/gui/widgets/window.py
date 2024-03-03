@@ -38,8 +38,9 @@ class Window(Adw.ApplicationWindow):
         menu: Gio.Menu = Gio.Menu.new()
         bottom_section: Gio.Menu = Gio.Menu.new()
         bottom_section.append(_("Preferences"), "app.preferences")
-        bottom_section.append(_("Keyboard Shortcuts"), "win.show-help-overlay")
+        # ~ bottom_section.append(_("Keyboard Shortcuts"), "win.show-help-overlay")
         bottom_section.append(_("About Loro"), "app.about")
+        bottom_section.append(_("Quit"), "app.quit")
         menu.append_section(None, bottom_section)
         menu_btn: Gtk.MenuButton = Gtk.MenuButton(
             menu_model=menu,
