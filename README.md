@@ -2,7 +2,7 @@
 
 # Loro
 
-**Learn a new language**
+**An application for learning German language**
 
 <br>
 
@@ -12,7 +12,22 @@
 </p>
 
 ## Description
-Learn a new language by analyzing the text or documents.
+The main goal of this application is to learn the German language by
+analyzing documents.
+
+This documents can be:
+- Invoices
+- School letters
+- Ads
+- Instant Messaging services(eg. Whatsapp, Telegram groups)
+
+## How
+
+By creating text files with the format {topic}-{subtopic}_{sequence}.txt
+and writing only one sentence per line.
+
+In this way, Loro can scan these files, and thanks to libraries like
+'SpaCy', analyze the sentences and extract all the information
 
 ## Install
 
@@ -22,15 +37,12 @@ Learn a new language by analyzing the text or documents.
 
 ### Build from source
 
-You can clone and run from GNOME Builder.
-
-#### Requirements
+#### Minimum requirements
 
 - Python 3 `python`
 - PyGObject `python-gobject`
-- GTK4 `gtk4`
-- libadwaita (>= 1.1.0) `libadwaita`
-- GStreamer 1.0 `gstreamer`
+- Gtk 4.8.3
+- Adw 1.2.2
 - Meson `meson`
 - Ninja `ninja`
 
