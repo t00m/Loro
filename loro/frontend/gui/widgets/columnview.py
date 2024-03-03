@@ -94,8 +94,8 @@ class ColumnView(Gtk.Box):
         # Setup ColumnView Widget
         self.cv = Gtk.ColumnView()
         # ~ self.cv.get_style_context().add_class(class_name='monospace')
-        self.cv.set_show_column_separators(False)
-        self.cv.set_show_row_separators(False)
+        self.cv.set_show_column_separators(True)
+        self.cv.set_show_row_separators(True)
         # ~ self.cv.set_single_click_activate(True)
         self.scrwin.set_child(self.cv)
 
@@ -134,6 +134,15 @@ class ColumnView(Gtk.Box):
 
     def get_selection(self):
         return self.selection
+
+    def set_selection(self, selection):
+        self.selection = selection
+
+    def set_single_selection(self):
+        filter_model = self.get_model_filter()
+        self.selection = Gtk.SingleSelection.new(filter_model)
+        self.selection.unselect_all()
+        self.cv.set_model(self.selection)
 
     def get_item(self):
         selection = self.get_selection()
