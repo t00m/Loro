@@ -123,7 +123,58 @@ class Editor(Gtk.Box):
             self.selected_file = filename.id
 
     def _add_document(self, *args):
-        self.log.debug(args)
+        def _entry_activated(_, dialog):
+            if dialog.get_response_enabled("add"):
+                dialog.response("add")
+                dialog.close()
+
+        def _entry_changed(entry, _, dialog):
+            text = entry.props.text.strip(" \n\t")
+            dialog.set_response_enabled("add", len(text) > 0)
+
+        def _confirm(_, res, combobox):
+            if res == "cancel":
+                return
+            name = combobox.get_child().get_text()
+            self.log.debug("Document name: %s", name)
+
+        def completion_match_func(self, completion, key, treeiter):
+            model = completion.get_model()
+            text = model.get_value(treeiter, 0)
+            if key.upper() in text.upper():
+                return True
+            return False
+
+        window = self.app.get_main_window()
+        vbox = self.factory.create_box_vertical()
+        topics = list(self.app.dictionary.get_topics().keys())
+        # ~ entry_topic = self.factory.create_entry_with_completion(topics)
+        entry_topic = self.factory.create_combobox_with_entry(topics)
+        entry_subtopic = Gtk.Entry(placeholder_text=_("Subtopic"))
+        entry_suffix = Gtk.Entry(placeholder_text=_("Suffix"))
+        vbox.append(entry_topic)
+        vbox.append(entry_subtopic)
+        vbox.append(entry_suffix)
+
+        dialog = Adw.MessageDialog(
+            transient_for=window,
+            hide_on_close=True,
+            heading=_("Add new document"),
+            default_response="add",
+            close_response="cancel",
+            extra_child=vbox,
+        )
+
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("add", _("Add"))
+        dialog.set_response_enabled("add", True)
+        dialog.set_response_appearance("add", Adw.ResponseAppearance.SUGGESTED)
+        dialog.connect("response", _confirm, entry_topic)
+        # ~ entry_topic.connect("activate", _entry_activated, dialog)
+        # ~ entry.connect("notify::text", _entry_changed, dialog)
+        dialog.present()
+
+
 
     def _import_document(self, *args):
         self.log.debug(args)
