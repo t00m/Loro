@@ -20,10 +20,6 @@ def main(params: argparse.Namespace):
     log = get_logger('main')
     log.info("%s %s", ENV['APP']['ID'], ENV['APP']['VERSION'])
 
-    if params.GUI:
-        from loro.frontend.gui import app
-        app.start()
-
     source = params.SOURCE
     target = params.TARGET
     if source is None or target is None:
@@ -42,6 +38,10 @@ def main(params: argparse.Namespace):
         log.warning("Configuration reset (deleted %d config files)", len(deleted_files))
 
     setup_project_dirs(source, target)
+    if params.GUI:
+        from loro.frontend.gui import app
+        app.start()
+
     inputs = get_inputs(source, target)
 
     if len(inputs) > 0:
