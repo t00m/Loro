@@ -22,14 +22,18 @@ class Application(Adw.Application):
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
         )
         self.set_resource_base_path("/com/github/t00m/Loro/")
-
+        self.window = None
         self.dictionary = Dictionary()
 
     def do_activate(self) -> None:
         from loro.frontend.gui.widgets.window import Window
-        Window(application=self)
+        self.window = Window(application=self)
+
+    def get_main_window(self):
+        return self.window
 
 def start():
     resource = Gio.Resource.load(os.path.join(ENV['APP']['PGKDATADIR'], 'loro.gresource'))
     resource._register()
     sys.exit(Application().run())
+
