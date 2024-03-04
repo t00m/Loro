@@ -399,3 +399,47 @@ class WidgetFactory:
 
     def noop(self, *args):
         self.log.debug(args)
+
+    def create_entry_with_completion(self, completion_values):
+        def completion_match_func(completion, key, iter):
+            model = completion.get_model()
+            text = model.get_value(iter, 0)
+            if key.upper() in text.upper():
+                return True
+            return False
+        completion = Gtk.EntryCompletion()
+        completion.set_match_func(completion_match_func)
+        completion_model = Gtk.ListStore(str)
+        for value in completion_values:
+            completion_model.append((value,))
+        completion.set_model(completion_model)
+        completion.set_text_column(0)
+        entry = Gtk.Entry()
+        entry.set_completion(completion)
+        return entry
+
+    def create_combobox_with_entry(self, completion_values):
+        def completion_match_func(completion, key, iter):
+            model = completion.get_model()
+            text = model.get_value(iter, 0)
+            if key.upper() in text.upper():
+                return True
+            return False
+
+        completion_model = Gtk.ListStore(str)
+        for value in completion_values:
+            completion_model.append((value,))
+        combobox = Gtk.ComboBox.new_with_model_and_entry(completion_model)
+        combobox.set_entry_text_column(0)
+        combobox.set_id_column(0)
+        combobox.set_valign(Gtk.Align.CENTER)
+
+        completion = Gtk.EntryCompletion()
+        completion.set_model(completion_model)
+        completion.set_text_column(0)
+        completion.set_match_func(completion_match_func)
+        entry = combobox.get_child()
+        entry.set_completion(completion)
+
+        return combobox
+
