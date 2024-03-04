@@ -22,8 +22,8 @@ from loro.backend.core.constants import LORO_USER_CONFIG_DIR
 def setup_project_dirs(source: str, target: str) -> None:
     dir_project_source = os.path.join(LORO_USER_PROJECTS_DIR, source)
     dir_project_target = os.path.join(LORO_USER_PROJECTS_DIR, source, target)
+    dir_project_input = os.path.join(dir_project_source, 'input')
     dir_project_config = os.path.join(dir_project_target, '.config')
-    dir_project_input = os.path.join(dir_project_target, 'input')
     dir_project_output = os.path.join(dir_project_target, 'output')
     for directory in [
                         LORO_USER_DIR,
@@ -38,14 +38,14 @@ def setup_project_dirs(source: str, target: str) -> None:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-def get_project_input_dir(source: str, target: str) -> str:
-    return os.path.join(LORO_USER_PROJECTS_DIR, source, target, 'input')
+def get_project_input_dir(source: str) -> str:
+    return os.path.join(LORO_USER_PROJECTS_DIR, source, 'input')
 
 def get_project_config_dir(source: str, target: str) -> str:
     return os.path.join(LORO_USER_PROJECTS_DIR, source, target, '.config')
 
 def get_inputs(source: str, target: str) -> []:
-    input_dir = get_project_input_dir(source, target)
+    input_dir = get_project_input_dir(source)
     return glob.glob(os.path.join(input_dir, '*'))
 
 def delete_project_config_files(source: str, target: str):
