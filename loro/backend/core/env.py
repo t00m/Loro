@@ -27,6 +27,6 @@ except:
     ENV['Languages']['de']['model']['default'] = 'lg'
     ENV['Projects'] = {}
     ENV['Projects']['Default'] = {}
-    ENV['Projects']['Default']['Languages'] = ('de', 'en')
+    ENV['Projects']['Default']['Languages'] = ('DE', 'EN')
     ENV['Projects']['Available'] = {}
-    ENV['Projects']['Available']['Languages'] = [('de', 'en')] # Only DE
+    ENV['Projects']['Available']['Languages'] = [('DE', 'EN')]

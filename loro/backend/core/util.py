@@ -22,9 +22,7 @@ from loro.backend.core.constants import LORO_USER_CONFIG_DIR
 def setup_project_dirs(source: str, target: str) -> None:
     dir_project_source = os.path.join(LORO_USER_PROJECTS_DIR, source)
     dir_project_target = os.path.join(LORO_USER_PROJECTS_DIR, source, target)
-    dir_project_input = os.path.join(dir_project_source, 'input')
-    dir_project_config = os.path.join(dir_project_target, '.config')
-    dir_project_output = os.path.join(dir_project_target, 'output')
+    dir_project_config = os.path.join(dir_project_source, '.config')
     for directory in [
                         LORO_USER_DIR,
                         LORO_USER_PROJECTS_DIR,
@@ -32,31 +30,29 @@ def setup_project_dirs(source: str, target: str) -> None:
                         dir_project_source,
                         dir_project_target,
                         dir_project_config,
-                        dir_project_input,
-                        dir_project_output
                      ]:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
 def get_project_input_dir(source: str) -> str:
-    return os.path.join(LORO_USER_PROJECTS_DIR, source, 'input')
+    return os.path.join(LORO_USER_PROJECTS_DIR, source)
 
-def get_project_config_dir(source: str, target: str) -> str:
-    return os.path.join(LORO_USER_PROJECTS_DIR, source, target, '.config')
+def get_project_output_dir(source: str) -> str:
+    return os.path.join(LORO_USER_PROJECTS_DIR, source, target)
+
+def get_project_config_dir(source: str) -> str:
+    return os.path.join(LORO_USER_PROJECTS_DIR, source, '.config')
 
 def get_inputs(source: str, target: str) -> []:
     input_dir = get_project_input_dir(source)
-    return glob.glob(os.path.join(input_dir, '*'))
+    return glob.glob(os.path.join(input_dir, '*.txt'))
 
-def delete_project_config_files(source: str, target: str):
-    config_dir = get_project_config_dir(source, target)
+def delete_project_config_files(source: str):
+    config_dir = get_project_config_dir(source)
     config_files = glob.glob(os.path.join(config_dir, '*.json'))
     for config_file in config_files:
         os.remove(config_file)
     return config_files
-
-# ~ def get_project_output_dir(source: str):
-    # ~ return os.path.join(LORO_USER_PROJECTS_DIR, source, target'input')
 
 def get_metadata_from_filepath(filepath:str) -> ():
     basename = os.path.basename(filepath)

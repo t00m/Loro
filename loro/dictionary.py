@@ -19,7 +19,7 @@ class Dictionary:
     def __init__(self):
         self.log = get_logger('Dictionary')
         self.source, self.target = ENV['Projects']['Default']['Languages']
-        configdir = get_project_config_dir(self.source, self.target)
+        configdir = get_project_config_dir(self.source)
 
          # Dictionary in-memory dicts
         self.sentences = {}
@@ -33,9 +33,9 @@ class Dictionary:
             self.stats[key] = {}
 
         # Dictionary configuration files
-        self.ftokens = os.path.join(get_project_config_dir(self.source, self.target), 'tokens_%s_%s.json' % (self.source, self.target))
-        self.fsents = os.path.join(get_project_config_dir(self.source, self.target), 'sentences.json')
-        self.ftopics = os.path.join(get_project_config_dir(self.source, self.target), 'topics.json')
+        self.ftokens = os.path.join(get_project_config_dir(self.source), 'tokens_%s_%s.json' % (self.source, self.target))
+        self.fsents = os.path.join(get_project_config_dir(self.source), 'sentences.json')
+        self.ftopics = os.path.join(get_project_config_dir(self.source), 'topics.json')
 
         # Load (or create) personal dictionary for current project
         self.__load_dictionary()
@@ -45,19 +45,22 @@ class Dictionary:
             self.tokens = json_load(self.ftokens)
         else:
             json_save(self.ftokens, self.tokens)
-            self.log.info("Created new config file for tokens")
+            self.log.debug("Created new config file for tokens:")
+            self.log.debug(self.ftokens)
 
         if os.path.exists(self.fsents):
             self.sentences = json_load(self.fsents)
         else:
             json_save(self.fsents, self.sentences)
-            self.log.info("Created new config file for tokens")
+            self.log.debug("Created new config file for sentences:")
+            self.log.debug(self.fsents)
 
         if os.path.exists(self.ftopics):
             self.topics = json_load(self.ftopics)
         else:
             json_save(self.ftopics, self.topics)
-            self.log.info("Created new config file for topics")
+            self.log.debug("Created new config file for topics")
+            self.log.debug(self.ftopics)
 
         self.log.info("Tokens loaded: %d", len(self.tokens))
         self.log.info("Sentences loaded: %d", len(self.sentences))
