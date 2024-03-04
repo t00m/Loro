@@ -11,7 +11,7 @@ from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.preferences import PreferencesWindow
 
 
-WINDOW: Window = None
+# ~ WINDOW: Window = None
 
 class Window(Adw.ApplicationWindow):
     about_window: Adw.AboutWindow = None
@@ -20,8 +20,8 @@ class Window(Adw.ApplicationWindow):
         self.log = get_logger('Window')
         super().__init__(**kwargs)
         self.app = kwargs['application']
-        global WINDOW
-        WINDOW = self
+        # ~ global WINDOW
+        # ~ WINDOW = self
         self._create_actions()
         self._build_ui()
         self.present()
