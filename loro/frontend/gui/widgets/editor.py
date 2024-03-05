@@ -5,8 +5,8 @@ from __future__ import annotations
 import os
 
 import gi
-gi.require_version('GtkSource', '5')
-from gi.repository import Gio, Adw, Gtk, GtkSource  # type:ignore
+
+from gi.repository import Gio, Adw, Gtk  # type:ignore
 
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
@@ -92,22 +92,7 @@ class Editor(Gtk.Box):
         self.boxRight.append(toolbox)
 
         ### Editor GtkSource
-        editorview = GtkSource.View(
-            height_request=-1,
-            top_margin=12,
-            bottom_margin=12,
-            left_margin=12,
-            right_margin=12,
-            wrap_mode=3,
-            show_line_numbers=True,
-            show_line_marks=True,
-            show_right_margin=True,
-            css_classes=["card"],
-        )
-        editorview.set_background_pattern(GtkSource.BackgroundPatternType.GRID)
-        editorview.set_monospace(True)
-        self.buffer = editorview.get_buffer()
-        editorview.set_vexpand(True)
+        editorview = self.factory.create_editor_view()
         self.boxRight.append(editorview)
         self.append(editor)
 
@@ -149,7 +134,7 @@ class Editor(Gtk.Box):
         vbox = self.factory.create_box_vertical()
         topics = list(self.app.dictionary.get_topics().keys())
         # ~ entry_topic = self.factory.create_entry_with_completion(topics)
-        entry_topic = self.factory.create_combobox_with_entry(topics)
+        entry_topic = self.factory.create_combobox_with_entry(_("Topic"), topics)
         entry_subtopic = Gtk.Entry(placeholder_text=_("Subtopic"))
         entry_suffix = Gtk.Entry(placeholder_text=_("Suffix"))
         vbox.append(entry_topic)

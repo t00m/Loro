@@ -13,6 +13,7 @@ import os
 import gi
 gi.require_version('GdkPixbuf', '2.0')
 gi.require_version('Gtk', '4.0')
+gi.require_version('GtkSource', '5')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
@@ -21,6 +22,7 @@ from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Pango
 from gi.repository.GdkPixbuf import Pixbuf
+from gi.repository import GtkSource
 
 from loro.backend.core.log import get_logger
 from loro.frontend.gui.models import Item
@@ -418,7 +420,7 @@ class WidgetFactory:
         entry.set_completion(completion)
         return entry
 
-    def create_combobox_with_entry(self, completion_values):
+    def create_combobox_with_entry(self, placeholder: str, completion_values: []) -> Gtk.ComboBox:
         def completion_match_func(completion, key, iter):
             model = completion.get_model()
             text = model.get_value(iter, 0)
@@ -439,7 +441,27 @@ class WidgetFactory:
         completion.set_text_column(0)
         completion.set_match_func(completion_match_func)
         entry = combobox.get_child()
+        entry.set_placeholder_text(placeholder)
         entry.set_completion(completion)
 
         return combobox
 
+    def create_editor_view(self):
+        editorview = GtkSource.View(
+            height_request=-1,
+            top_margin=12,
+            bottom_margin=12,
+            left_margin=12,
+            right_margin=12,
+            wrap_mode=3,
+            show_line_numbers=True,
+            show_line_marks=True,
+            show_right_margin=True,
+            css_classes=["card"],
+        )
+        editorview.set_background_pattern(GtkSource.BackgroundPatternType.GRID)
+        editorview.set_monospace(True)
+        self.buffer = editorview.get_buffer()
+        editorview.set_vexpand(True)
+        editorview.set_hexpand(True)
+        return editorview
