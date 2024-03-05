@@ -9,6 +9,7 @@ from loro.backend.core.log import get_logger
 from loro.frontend.gui.widgets.dashboard import Dashboard
 from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.preferences import PreferencesWindow
+from loro.frontend.gui.widgets.status import StatusWindow
 
 
 # ~ WINDOW: Window = None
@@ -39,6 +40,7 @@ class Window(Adw.ApplicationWindow):
         bottom_section: Gio.Menu = Gio.Menu.new()
         bottom_section.append(_("Preferences"), "app.preferences")
         # ~ bottom_section.append(_("Keyboard Shortcuts"), "win.show-help-overlay")
+        bottom_section.append(_("Status"), "app.status")
         bottom_section.append(_("About Loro"), "app.about")
         bottom_section.append(_("Quit"), "app.quit")
         menu.append_section(None, bottom_section)
@@ -109,6 +111,11 @@ class Window(Adw.ApplicationWindow):
         _create_action(
             "preferences",
             lambda *_: PreferencesWindow(self).show(),
+            ["<primary>comma"],
+        )
+        _create_action(
+            "status",
+            lambda *_: StatusWindow(self).show(),
             ["<primary>comma"],
         )
         _create_action("about", _about)

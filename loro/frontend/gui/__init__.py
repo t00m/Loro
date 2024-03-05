@@ -12,6 +12,10 @@ from loro.backend.core.log import get_logger
 
 log = get_logger('GUI')
 
-log.info("Adw %s.%s.%s", Adw.MAJOR_VERSION, Adw.MINOR_VERSION, Adw.MICRO_VERSION)
-log.info("Gtk %s.%s.%s", Gtk.MAJOR_VERSION, Gtk.MINOR_VERSION, Gtk.MICRO_VERSION)
+GTK_VERSION = "Gtk %s.%s.%s" % (Gtk.MAJOR_VERSION, Gtk.MINOR_VERSION, Gtk.MICRO_VERSION)
+ADW_VERSION = "Adw %s.%s.%s" % (Adw.MAJOR_VERSION, Adw.MINOR_VERSION, Adw.MICRO_VERSION)
+
+log.info(GTK_VERSION)
+log.info(ADW_VERSION)
+
 
