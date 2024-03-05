@@ -49,7 +49,7 @@ class Workflow:
 
         if valid:
             with Progress() as self.progress:
-                topic, subtopic = get_metadata_from_filepath(filepath)
+                topic, subtopic, suffix = get_metadata_from_filepath(filepath)
                 sentences = open(filepath, 'r').readlines()
                 task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
                 self.process_input(sentences, topic, subtopic, task)

@@ -56,18 +56,24 @@ def delete_project_config_files(source: str):
 
 def get_metadata_from_filepath(filepath:str) -> ():
     basename = os.path.basename(filepath)
+    return get_metadata_from_filename(basename)
+
+def get_metadata_from_filename(basename:str) -> ():
     dot = basename.rfind('.')
     if dot > 1:
         basename = basename[:dot]
-    seq = basename.rfind('_')
-    if seq > 1:
-        basename = basename[:seq]
+    sep = basename.rfind('_')
+    if sep > 1:
+        suffix = basename[sep+1:]
+    else:
+        suffix = ''
+
     try:
         topic, subtopic = basename.split('-')
     except:
         topic = 'unknown'
         subtopic = 'unknown'
-    return topic, subtopic
+    return topic, subtopic, suffix
 
 def json_load(filepath: str) -> {}:
     """Load into a dictionary a file in json format"""

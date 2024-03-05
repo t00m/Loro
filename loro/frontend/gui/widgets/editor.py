@@ -17,6 +17,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.util import get_inputs
 from loro.backend.core.util import get_metadata_from_filepath
+from loro.backend.core.util import get_metadata_from_filename
 from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 
@@ -108,38 +109,33 @@ class Editor(Gtk.Box):
             self.selected_file = filename.id
 
     def _add_document(self, *args):
-        def _entry_activated(_, dialog):
-            if dialog.get_response_enabled("add"):
-                dialog.response("add")
-                dialog.close()
+        def _update_filename(_, gparam, data):
+            enabled = False
+            dialog, label, etyt, etys, etyu = data
+            topic = etyt.get_text().upper()
+            subtopic = etys.get_text().upper()
+            suffix = etyu.get_text().upper()
+            label.set_text("%s-%s_%s.txt" % (topic, subtopic, suffix))
+            if len(topic) > 1 and len(subtopic) > 1:
+                enabled = True
+            dialog.set_response_enabled("add", enabled)
+            self.log.debug("Document name: %s -> %s", label.get_text(), enabled)
 
-        def _entry_changed(entry, _, dialog):
-            text = entry.props.text.strip(" \n\t")
-            dialog.set_response_enabled("add", len(text) > 0)
-
-        def _confirm(_, res, combobox):
+        def _confirm(_, res, lblFilename):
             if res == "cancel":
                 return
-            name = combobox.get_child().get_text()
-            self.log.debug("Document name: %s", name)
-
-        def completion_match_func(self, completion, key, treeiter):
-            model = completion.get_model()
-            text = model.get_value(treeiter, 0)
-            if key.upper() in text.upper():
-                return True
-            return False
+            filename = lblFilename.get_text()
+            self.log.debug("Accepted document name: %s", filename)
+            # ~ topic, subtopic, suffix = get_metadata_from_filename(filename)
+            return filename
 
         window = self.app.get_main_window()
-        vbox = self.factory.create_box_vertical()
+        vbox = self.factory.create_box_vertical(margin=6, spacing=6)
+        vbox.props.width_request = 800
+        vbox.props.height_request = 600
         topics = list(self.app.dictionary.get_topics().keys())
-        # ~ entry_topic = self.factory.create_entry_with_completion(topics)
-        entry_topic = self.factory.create_combobox_with_entry(_("Topic"), topics)
-        entry_subtopic = Gtk.Entry(placeholder_text=_("Subtopic"))
-        entry_suffix = Gtk.Entry(placeholder_text=_("Suffix"))
-        vbox.append(entry_topic)
-        vbox.append(entry_subtopic)
-        vbox.append(entry_suffix)
+        subtopics = []
+        suffixes = []
 
         dialog = Adw.MessageDialog(
             transient_for=window,
@@ -149,14 +145,31 @@ class Editor(Gtk.Box):
             close_response="cancel",
             extra_child=vbox,
         )
-
         dialog.add_response("cancel", _("Cancel"))
         dialog.add_response("add", _("Add"))
-        dialog.set_response_enabled("add", True)
+        dialog.set_response_enabled("add", False)
         dialog.set_response_appearance("add", Adw.ResponseAppearance.SUGGESTED)
-        dialog.connect("response", _confirm, entry_topic)
-        # ~ entry_topic.connect("activate", _entry_activated, dialog)
-        # ~ entry.connect("notify::text", _entry_changed, dialog)
+        hbox = self.factory.create_box_horizontal(margin=6, spacing=6, hexpand=True)
+        cmbTopic = self.factory.create_combobox_with_entry(_("Topic"), topics)
+        cmbSubtopic = self.factory.create_combobox_with_entry(_("Subopic"), subtopics)
+        cmbSuffix = self.factory.create_combobox_with_entry(_("Suffix / Sequence / etc..."), suffixes)
+        etyTopic = cmbTopic.get_child()
+        etySubtopic = cmbSubtopic.get_child()
+        etySuffix = cmbSuffix.get_child()
+        lblFilename = Gtk.Label()
+        lblFilename.set_selectable(True)
+        editorview = self.factory.create_editor_view()
+        data = (dialog, lblFilename, etyTopic, etySubtopic, etySuffix)
+        etyTopic.connect("notify::text", _update_filename, data)
+        etySubtopic.connect("notify::text", _update_filename, data)
+        etySuffix.connect("notify::text", _update_filename, data)
+        hbox.append(cmbTopic)
+        hbox.append(cmbSubtopic)
+        hbox.append(cmbSuffix)
+        vbox.append(hbox)
+        vbox.append(lblFilename)
+        vbox.append(editorview)
+        dialog.connect("response", _confirm, lblFilename)
         dialog.present()
 
 
@@ -180,7 +193,7 @@ class Editor(Gtk.Box):
         files = get_inputs(source, target)
         items = []
         for filepath in files:
-            topic, subtopic = get_metadata_from_filepath(filepath)
+            topic, subtopic, suffix = get_metadata_from_filepath(filepath)
             title = os.path.basename(filepath)
             items.append(Filepath(
                                 id=filepath,
