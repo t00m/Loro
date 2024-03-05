@@ -5,6 +5,13 @@ project('loro',
                    ],
 )
 
+r = run_command('spacy', 'validate', check: true)
+output = r.stdout().strip()
+errortxt = r.stderr().strip()
+message(output)
+#~ run_command('command', 'arg1', 'arg2', env: {'FOO': 'bar'}, check: true)
+
+
 python = import('python')
 i18n = import('i18n')
 
