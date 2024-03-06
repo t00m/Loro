@@ -32,7 +32,9 @@ class IconManager(GObject.GObject):
         self.log = get_logger('IconManager')
         win = Gtk.Window()
         self.theme = Gtk.IconTheme.get_for_display(win.get_display())
-        # ~ self.theme.add_search_path(ENV['GPATH']['ICONS'])
+        ICONSDIR = os.path.join(ENV['APP']['PGKDATADIR'], 'resources', 'icons', 'scalable')
+        self.log.debug("ICONS DIR: %s", ICONSDIR)
+        self.theme.add_search_path(ICONSDIR)
         self.paintable = {}
         self.gicondict = {}
         self.icondict = {}

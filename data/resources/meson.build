@@ -1,3 +1,5 @@
+subdir('icons')
+
 pkgdatadir = join_paths(get_option('prefix'), get_option('datadir'), meson.project_name())
 gnome = import('gnome')
 
@@ -17,3 +19,4 @@ gnome.compile_resources('loro',
   install_dir: pkgdatadir,
   dependencies: blueprints,
 )
+
