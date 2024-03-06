@@ -65,14 +65,15 @@ def get_metadata_from_filename(basename:str) -> ():
     sep = basename.rfind('_')
     if sep > 1:
         suffix = basename[sep+1:]
+        basename = basename[:sep]
     else:
         suffix = ''
 
     try:
         topic, subtopic = basename.split('-')
     except:
-        topic = 'unknown'
-        subtopic = 'unknown'
+        topic = 'Unknown'
+        subtopic = 'Unknown'
     return topic, subtopic, suffix
 
 def json_load(filepath: str) -> {}:

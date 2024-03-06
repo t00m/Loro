@@ -25,6 +25,7 @@ class Dictionary:
         self.sentences = {}
         self.tokens = {}
         self.topics = {}
+        self.workbooks = {}
 
         # Initialize stats
         self.stats = {}
@@ -36,6 +37,7 @@ class Dictionary:
         self.ftokens = os.path.join(get_project_config_dir(self.source), 'tokens_%s_%s.json' % (self.source, self.target))
         self.fsents = os.path.join(get_project_config_dir(self.source), 'sentences.json')
         self.ftopics = os.path.join(get_project_config_dir(self.source), 'topics.json')
+        self.fworkbooks = os.path.join(get_project_config_dir(self.source), 'workbooks.json')
 
         # Load (or create) personal dictionary for current project
         self.__load_dictionary()
@@ -61,6 +63,13 @@ class Dictionary:
             json_save(self.ftopics, self.topics)
             self.log.debug("Created new config file for topics")
             self.log.debug(self.ftopics)
+
+        if os.path.exists(self.fworkbooks):
+            self.topics = json_load(self.fworkbooks)
+        else:
+            json_save(self.fworkbooks, self.workbooks)
+            self.log.debug("Created new config file for workbooks")
+            self.log.debug(self.fworkbooks)
 
         self.log.info("Tokens loaded: %d", len(self.tokens))
         self.log.info("Sentences loaded: %d", len(self.sentences))
@@ -142,6 +151,9 @@ class Dictionary:
 
     def get_sentences(self):
         return self.sentences
+
+    def get_workbooks(self):
+        return self.workbooks
 
     # ~ def __del__(self):
         # ~ self.__save_dictionary()

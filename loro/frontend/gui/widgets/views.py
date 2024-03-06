@@ -17,7 +17,7 @@ from gi.repository import Pango
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.frontend.gui.widgets.columnview import ColumnView
-from loro.frontend.gui.widgets.columnview import ColLabel
+from loro.frontend.gui.widgets.columnview import ColLabel, ColCheck
 from loro.frontend.gui.models import Item, Filepath
 
 
@@ -33,6 +33,7 @@ class ColumnViewFiles(ColumnView):
         self.cv.append_column(self.column_title)
         self.column_title.set_title(_('Filename'))
         self.column_title.set_expand(True)
+        self.column_title.set_visible(False)
 
         self.factory_topic = Gtk.SignalListItemFactory()
         self.factory_topic.connect("setup", self._on_factory_setup_topic)
@@ -42,12 +43,27 @@ class ColumnViewFiles(ColumnView):
         self.factory_subtopic.connect("setup", self._on_factory_setup_subtopic)
         self.factory_subtopic.connect("bind", self._on_factory_bind_subtopic)
 
+        self.factory_suffix = Gtk.SignalListItemFactory()
+        self.factory_suffix.connect("setup", self._on_factory_setup_suffix)
+        self.factory_suffix.connect("bind", self._on_factory_bind_suffix)
+
+        self.factory_belongsto = Gtk.SignalListItemFactory()
+        self.factory_belongsto.connect("setup", self._on_factory_setup_belongsto)
+        self.factory_belongsto.connect("bind", self._on_factory_bind_belongsto)
+
         # Setup columnview columns
         self.column_topic = Gtk.ColumnViewColumn.new(_('Topic'), self.factory_topic)
         self.column_subtopic = Gtk.ColumnViewColumn.new(_('Subtopic'), self.factory_subtopic)
+        self.column_suffix = Gtk.ColumnViewColumn.new(_('Suffix'), self.factory_suffix)
+        self.column_belongsto = Gtk.ColumnViewColumn.new(_('Active?'), self.factory_belongsto)
 
         self.cv.append_column(self.column_topic)
         self.cv.append_column(self.column_subtopic)
+        self.cv.append_column(self.column_suffix)
+        self.cv.append_column(self.column_belongsto)
+
+        self.column_topic.set_expand(True)
+        self.column_subtopic.set_expand(True)
 
         # Sorting
         self.prop_topic_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='topic')
@@ -60,6 +76,9 @@ class ColumnViewFiles(ColumnView):
 
         # Default sorting by date
         # ~ self.cv.sort_by_column(self.column_title, Gtk.SortType.DESCENDING)
+
+    def set_column_belongs_visible(self, visible):
+        self.column_belongsto.set_visible(visible)
 
     def _on_factory_setup_topic(self, factory, list_item):
         box = ColLabel()
@@ -80,6 +99,26 @@ class ColumnViewFiles(ColumnView):
         item = list_item.get_item()
         label = box.get_first_child()
         label.set_markup(item.subtopic)
+
+    def _on_factory_setup_suffix(self, factory, list_item):
+        box = ColLabel()
+        list_item.set_child(box)
+
+    def _on_factory_bind_suffix(self, factory, list_item):
+        box = list_item.get_child()
+        item = list_item.get_item()
+        label = box.get_first_child()
+        label.set_markup(item.suffix)
+
+    def _on_factory_setup_belongsto(self, factory, list_item):
+        box = ColCheck()
+        list_item.set_child(box)
+
+    def _on_factory_bind_belongsto(self, factory, list_item):
+        box = list_item.get_child()
+        item = list_item.get_item()
+        checkbox = box.get_first_child()
+        checkbox.set_active(item.belongs)
 
 class ColumnViewToken(ColumnView):
     """ Custom ColumnView widget for tokens """

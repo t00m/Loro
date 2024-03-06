@@ -71,6 +71,14 @@ class Topic(Item):
     def __init__(self,  id: str, title: str = ''):
         super().__init__(id, title)
 
+class Workbook(Item):
+    """Custom data model for topics"""
+    __gtype_name__ = 'Workbook'
+    __title__ = 'Workbook'
+
+    def __init__(self,  id: str, title: str = ''):
+        super().__init__(id, title)
+
 class Subtopic(Topic):
     """Custom data model for topics"""
     __gtype_name__ = 'Subtopic'
@@ -93,14 +101,19 @@ class Filepath(Item):
     __gtype_name__ = 'Filepath'
     __title__ = 'Filename'
 
-    def __init__(self,  id: str,                # Filepath
-                        title: str = '',        # Basename
-                        topic: str = '',        # Topic
-                        subtopic: str = '',       # Subtopic
+    def __init__(self,
+                    id: str,                 # Filepath
+                    title: str = '',         # Basename
+                    topic: str = '',         # Topic
+                    subtopic: str = '',      # Subtopic
+                    suffix: str = '',        # Suffix
+                    belongs: bool = False    # Belong to active workbook
                 ):
         super().__init__(id, title)
         self._topic = topic
         self._subtopic = subtopic
+        self._suffix = suffix
+        self._belongs = belongs
 
     @GObject.Property
     def topic(self):
@@ -109,6 +122,14 @@ class Filepath(Item):
     @GObject.Property
     def subtopic(self):
         return self._subtopic
+
+    @GObject.Property
+    def suffix(self):
+        return self._suffix
+
+    @GObject.Property
+    def belongs(self):
+        return self._belongs
 
 class Analysis(Item):
     """Custom data model sentence analysis"""

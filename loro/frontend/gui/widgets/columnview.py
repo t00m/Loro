@@ -62,7 +62,7 @@ class ColCheck(Gtk.Box):
     __gtype_name__ = 'ColCheck'
 
     def __init__(self):
-        super(ColLabel, self).__init__()
+        super(ColCheck, self).__init__()
         check = Gtk.CheckButton()
         self.append(check)
 
