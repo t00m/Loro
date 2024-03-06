@@ -117,8 +117,10 @@ class Editor(Gtk.Box):
         self.boxRight.append(toolbox)
 
         ### Editor GtkSource
+        scrwindow = Gtk.ScrolledWindow()
         self.editorview = self.factory.create_editor_view()
-        self.boxRight.append(self.editorview)
+        scrwindow.set_child(self.editorview)
+        self.boxRight.append(scrwindow)
         self.append(editor)
 
     def _add_workbook(self, *args):
@@ -202,7 +204,9 @@ class Editor(Gtk.Box):
         etySuffix = cmbSuffix.get_child()
         lblFilename = Gtk.Label()
         lblFilename.set_selectable(True)
+        scrwindow = Gtk.ScrolledWindow()
         editorview = self.factory.create_editor_view()
+        scrwindow.set_child(editorview)
         data = (dialog, lblFilename, etyTopic, etySubtopic, etySuffix)
         etyTopic.connect("notify::text", _update_filename, data)
         etySubtopic.connect("notify::text", _update_filename, data)
@@ -212,7 +216,7 @@ class Editor(Gtk.Box):
         hbox.append(cmbSuffix)
         vbox.append(hbox)
         vbox.append(lblFilename)
-        vbox.append(editorview)
+        vbox.append(scrwindow)
         dialog.connect("response", _confirm, lblFilename)
         dialog.present()
 
