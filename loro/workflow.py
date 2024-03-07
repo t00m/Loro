@@ -23,6 +23,9 @@ from loro.backend.core.log import get_logger
 from loro import dictionary
 from loro.dictionary import Dictionary
 
+DIR_PROJECT_TARGET =
+DIR_WORKBOOK_OUTPUT = os.path.join(dir_project_target, "<#WORKBOOK#>")
+DIR_WORKBOOK_CONFIG = os.path.join(dir_project_target, "<#WORKBOOK#>", .config)
 
 class Workflow:
     def __init__(self):

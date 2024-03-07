@@ -19,29 +19,49 @@ from loro.backend.core.constants import LORO_USER_DIR
 from loro.backend.core.constants import LORO_USER_PROJECTS_DIR
 from loro.backend.core.constants import LORO_USER_CONFIG_DIR
 
+def get_project_dir(source: str) -> str:
+    return os.path.join(os.path.join(LORO_USER_PROJECTS_DIR, source))
+
+def get_project_config_dir(source: str) -> str:
+    return os.path.join(get_project_dir(source), '.config')
+
+def get_project_input_dir(source: str) -> str:
+    return os.path.join(get_project_dir(source), 'input')
+
+def get_project_output_dir(source: str) -> str:
+    return os.path.join(get_project_dir(source), 'output')
+
+def get_project_target_dir(source: str, target: str) -> str:
+    return os.path.join(get_project_output_dir(source), target)
+
 def setup_project_dirs(source: str, target: str) -> None:
-    dir_project_source = os.path.join(LORO_USER_PROJECTS_DIR, source)
-    dir_project_target = os.path.join(LORO_USER_PROJECTS_DIR, source, target)
-    dir_project_config = os.path.join(dir_project_source, '.config')
+    dir_project_source = get_project_dir(source)
+    dir_project_config = get_project_config_dir(source)
+    dir_project_source_input = get_project_input_dir(source)
+    dir_project_source_output = get_project_output_dir(source)
+    dir_project_target = get_project_target_dir(source, target)
+
     for directory in [
                         LORO_USER_DIR,
                         LORO_USER_PROJECTS_DIR,
                         LORO_USER_CONFIG_DIR,
                         dir_project_source,
-                        dir_project_target,
                         dir_project_config,
+                        dir_project_source_input,
+                        dir_project_source_output,
+                        dir_project_target,
                      ]:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-def get_project_input_dir(source: str) -> str:
-    return os.path.join(LORO_USER_PROJECTS_DIR, source)
+# ~ def get_project_input_dir(source: str) -> str:
+    # ~ return os.path.join(LORO_USER_PROJECTS_DIR, source)
 
-def get_project_output_dir(source: str) -> str:
-    return os.path.join(LORO_USER_PROJECTS_DIR, source, target)
+# ~ def get_project_output_dir(source: str) -> str:
+    # ~ return os.path.join(LORO_USER_PROJECTS_DIR, source)
 
-def get_project_config_dir(source: str) -> str:
-    return os.path.join(LORO_USER_PROJECTS_DIR, source, '.config')
+# ~ def get_project_config_dir(source: str) -> str:
+    # ~ return os.path.join(LORO_USER_PROJECTS_DIR, source, '.config')
 
 def get_inputs(source: str) -> []:
     input_dir = get_project_input_dir(source)

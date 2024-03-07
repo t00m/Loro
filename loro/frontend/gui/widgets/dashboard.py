@@ -17,6 +17,8 @@ from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import get_metadata_from_filepath
+from loro.backend.core.util import get_project_output_dir
+
 
 class Dashboard(Gtk.Box):
     __gtype_name__ = 'Dashboard'
@@ -198,7 +200,9 @@ class Dashboard(Gtk.Box):
 
     def _on_workbook_selected(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
-        entries = self.app.dictionary.get_workbook_entries(workbook.id)
+        self.log.debug("Workbook selected: '%s'", workbook.id)
+        entries = self.app.workbooks.get_workbook_entries(workbook.id)
+        self.log.debug("Entries: %s", entries)
         source, target = ENV['Projects']['Default']['Languages']
         inputdir = get_project_input_dir(source)
         topics = set()
@@ -208,13 +212,24 @@ class Dashboard(Gtk.Box):
             topics.add(topic)
         data = []
         data.append(("ALL", "All topics"))
-        self.log.debug(topics)
+        self.log.debug("Topics for these entries: %s", topics)
+
+        # Check if topic metada has been built for the current workbook
+        output_dir = get_project_output_dir(source)
+        workbook_dir = os.path.join(output_dir, workbook.id)
+        if not os.path.exists(workbook_dir):
+            self.log.error("Workbook dir '%s' doesn't exist", workbook_dir)
+            return
+
         for topic in topics:
             data.append((topic.upper(), topic.title()))
         self.actions.dropdown_populate(self.ddTopics, Topic, data)
 
     def _on_topic_selected(self, *args):
         current_topic = self.ddTopics.get_selected_item()
+        if current_topic is None:
+            return
+        self.log.debug("Topic selected: '%s'", current_topic.id)
         topics = self.app.dictionary.get_topics()
         self.log.debug("Displaying subtopics for topic '%s'", current_topic.id)
         data = []
@@ -319,7 +334,7 @@ class Dashboard(Gtk.Box):
 
 
     def _update_dashboard(self):
-        workbooks = self.app.dictionary.get_workbooks()
+        workbooks = self.app.workbooks.get_workbooks()
         data = []
         for workbook in workbooks.keys():
             data.append((workbook, workbook))

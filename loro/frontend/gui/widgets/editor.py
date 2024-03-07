@@ -143,12 +143,12 @@ class Editor(Gtk.Box):
                 return
             name = entry.get_text()
             self.log.debug("Accepted workbook name: %s", name)
-            self.app.dictionary.add_workbook(name)
+            self.app.workbooks.add_workbook(name)
             self._update_editor()
 
         def _allow(entry, gparam, dialog):
             name = entry.get_text()
-            exists = self.app.dictionary.exists_workbook(name)
+            exists = self.app.workbooks.exists_workbook(name)
             dialog.set_response_enabled("add", not exists)
 
         window = self.app.get_main_window()
@@ -180,12 +180,12 @@ class Editor(Gtk.Box):
                 return
             new_name = entry.get_text()
             self.log.debug("Accepted workbook name: %s", new_name)
-            self.app.dictionary.rename_workbook(old_name, new_name)
+            self.app.workbooks.rename_workbook(old_name, new_name)
             self._update_editor()
 
         def _allow(entry, gparam, dialog):
             name = entry.get_text()
-            exists = self.app.dictionary.exists_workbook(name)
+            exists = self.app.workbooks.exists_workbook(name)
             dialog.set_response_enabled("rename", not exists)
 
         workbook = self.ddWorkbooks.get_selected_item()
@@ -217,7 +217,7 @@ class Editor(Gtk.Box):
     def _delete_workbook(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
         if workbook is not None:
-            self.app.dictionary.delete_workbook(workbook.id)
+            self.app.workbooks.delete_workbook(workbook.id)
             self._update_editor()
 
     def _on_file_selected(self, selection, position, n_items):
@@ -254,7 +254,7 @@ class Editor(Gtk.Box):
             if wbname == 'None':
                 belongs = False
             else:
-                belongs = self.app.dictionary.filename_in_workbook(wbname, title)
+                belongs = self.app.workbooks.filename_in_workbook(wbname, title)
             items.append(Filepath(
                                 id=filepath,
                                 title=title,
@@ -422,7 +422,7 @@ class Editor(Gtk.Box):
 
     def _update_editor(self, *args):
         # Update workbooks
-        workbooks = self.app.dictionary.get_workbooks()
+        workbooks = self.app.workbooks.get_workbooks()
         items = []
         if len(workbooks) == 0:
             items.append(('None', 'No workbooks created yet'))

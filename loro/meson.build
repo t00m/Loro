@@ -11,7 +11,8 @@ configure_file(
 sources = [
   'main.py',
   'workflow.py',
-  'dictionary.py'
+  'dictionary.py',
+  'workbook.py'
 ]
 
 install_data(sources, install_dir: moduledir)
