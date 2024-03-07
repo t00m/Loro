@@ -1,11 +1,12 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import annotations
+import os
 from gi.repository import Gio, Adw, Gtk  # type:ignore
 
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
-from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence, Analysis
+from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence, Analysis, Workbook
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.frontend.gui.widgets.views import ColumnViewToken
 from loro.frontend.gui.widgets.views import ColumnViewSentences
@@ -14,6 +15,8 @@ from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
+from loro.backend.core.util import get_project_input_dir
+from loro.backend.core.util import get_metadata_from_filepath
 
 class Dashboard(Gtk.Box):
     __gtype_name__ = 'Dashboard'
@@ -43,6 +46,11 @@ class Dashboard(Gtk.Box):
 
         # Toolbox
         toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+
+        self.ddWorkbooks = self.factory.create_dropdown_generic(Workbook, enable_search=True)
+        self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
+        self.ddWorkbooks.set_hexpand(False)
+        toolbox.append(self.ddWorkbooks)
 
         self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=True)
         self.ddTopics.connect("notify::selected-item", self._on_topic_selected)
@@ -188,6 +196,22 @@ class Dashboard(Gtk.Box):
             self.log.info("%s", sentence.title)
         self._update_analysis(sentence.id)
 
+    def _on_workbook_selected(self, *args):
+        workbook = self.ddWorkbooks.get_selected_item()
+        entries = self.app.dictionary.get_workbook_entries(workbook.id)
+        source, target = ENV['Projects']['Default']['Languages']
+        inputdir = get_project_input_dir(source)
+        topics = set()
+        for filename in entries:
+            filepath = os.path.join(inputdir, filename)
+            topic, subtopic, suffix = get_metadata_from_filepath(filepath)
+            topics.add(topic)
+        data = []
+        data.append(("ALL", "All topics"))
+        self.log.debug(topics)
+        for topic in topics:
+            data.append((topic.upper(), topic.title()))
+        self.actions.dropdown_populate(self.ddTopics, Topic, data)
 
     def _on_topic_selected(self, *args):
         current_topic = self.ddTopics.get_selected_item()
@@ -295,13 +319,19 @@ class Dashboard(Gtk.Box):
 
 
     def _update_dashboard(self):
-        # ~ # Update topics
-        topics = self.app.dictionary.get_topics()
+        workbooks = self.app.dictionary.get_workbooks()
         data = []
-        data.append(("ALL", "All topics"))
-        for topic in topics.keys():
-            data.append((topic.upper(), topic.title()))
-        self.actions.dropdown_populate(self.ddTopics, Topic, data)
+        for workbook in workbooks.keys():
+            data.append((workbook, workbook))
+        self.actions.dropdown_populate(self.ddWorkbooks, Workbook, data)
+
+        # ~ # Update topics
+        # ~ topics = self.app.dictionary.get_topics()
+        # ~ data = []
+        # ~ data.append(("ALL", "All topics"))
+        # ~ for topic in topics.keys():
+            # ~ data.append((topic.upper(), topic.title()))
+        # ~ self.actions.dropdown_populate(self.ddTopics, Topic, data)
 
         # ~ # Update P-O-S
         # ~ fpos = self.app.dictionary.get_file_pos()

@@ -155,6 +155,9 @@ class Dictionary:
     def get_workbooks(self):
         return self.workbooks
 
+    def get_workbook_entries(self, wbname):
+        return self.workbooks[wbname]
+
     def exists_workbook(self, name: str) -> bool:
         return name.upper() in self.workbooks.keys()
 
@@ -199,6 +202,7 @@ class Dictionary:
 
     def _save_workbooks(self):
         json_save(self.fworkbooks, self.workbooks)
+        self.workbooks = json_load(self.fworkbooks)
         self.log.debug("%d workbooks saved", len(self.workbooks))
 
 
