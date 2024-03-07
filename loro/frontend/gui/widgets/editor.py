@@ -19,6 +19,7 @@ from loro.backend.core.util import json_load
 from loro.backend.core.util import get_inputs
 from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_metadata_from_filename
+from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 
@@ -54,7 +55,7 @@ class Editor(Gtk.Box):
         editor.set_margin_top(margin=6)
 
         ## Wdigets distribution
-        self.boxLeft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.boxLeft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
         self.boxLeft.set_margin_end(margin=6)
         self.boxRight = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
         self.boxRight.set_margin_start(margin=6)
@@ -83,14 +84,15 @@ class Editor(Gtk.Box):
         self.boxLeft.append(hbox)
 
         ### Files Toolbox
-        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+        vbox = self.factory.create_box_horizontal(spacing=6, margin=6, vexpand=False, hexpand=False)
+        toolbox = self.factory.create_box_vertical()
         toolbox.set_margin_bottom(margin=6)
         self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], tooltip='Add new document', callback=self._add_document)
         self.btnRename = self.factory.create_button(icon_name=ICON['DOC_EDIT'], tooltip='Rename document', callback=self._rename_document)
         self.btnImport= self.factory.create_button(icon_name=ICON['DOC_DELETE'], tooltip='Import docs', callback=self._import_document)
-        separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
         self.btnDelete = self.factory.create_button(icon_name=ICON['TRASH'], tooltip='Delete doc', callback=self._delete_document)
-        expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+        expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
         self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_editor)
         toolbox.append(self.btnAdd)
         toolbox.append(self.btnRename)
@@ -99,16 +101,18 @@ class Editor(Gtk.Box):
         toolbox.append(self.btnDelete)
         toolbox.append(expander)
         toolbox.append(self.btnRefresh)
-        self.boxLeft.append(toolbox)
+        vbox.append(toolbox)
 
         ### Files view
         self.cvfiles = ColumnViewFiles(self.app)
         self.cvfiles.set_single_selection()
         self.cvfiles.set_toggle_button_callback(self._filename_toggled)
         self.cvfiles.get_style_context().add_class(class_name='monospace')
+        self.cvfiles.set_hexpand(True)
         selection = self.cvfiles.get_selection()
         selection.connect('selection-changed', self._on_file_selected)
-        self.boxLeft.append(self.cvfiles)
+        vbox.append(self.cvfiles)
+        self.boxLeft.append(vbox)
 
         ## Right: Editor view
         ### Editor Toolbox
@@ -239,7 +243,7 @@ class Editor(Gtk.Box):
 
                 # Update files
                 source, target = ENV['Projects']['Default']['Languages']
-                files = get_inputs(source, target)
+                files = get_inputs(source)
                 items = []
                 for filepath in files:
                     topic, subtopic, suffix = get_metadata_from_filepath(filepath)
@@ -265,15 +269,24 @@ class Editor(Gtk.Box):
             subtopic = etys.get_text().upper()
             suffix = etyu.get_text().upper()
             label.set_text("%s-%s_%s.txt" % (topic, subtopic, suffix))
-            if len(topic) > 1 and len(subtopic) > 1:
+            if len(topic) > 1 and len(subtopic) > 1 and len(suffix) > 0:
                 enabled = True
             dialog.set_response_enabled("add", enabled)
-            self.log.debug("Document name: %s -> %s", label.get_text(), enabled)
+            # ~ self.log.debug("Document name: %s -> %s", label.get_text(), enabled)
 
-        def _confirm(_, res, lblFilename):
+        def _confirm(_, res, lblFilename, editorview):
             if res == "cancel":
                 return
             filename = lblFilename.get_text()
+            textbuffer = editorview.get_buffer()
+            start = textbuffer.get_start_iter()
+            end = textbuffer.get_end_iter()
+            contents = textbuffer.get_text(start, end, False)
+            source, target = ENV['Projects']['Default']['Languages']
+            input_dir = get_project_input_dir(source)
+            filepath = os.path.join(input_dir, filename)
+            with open(filepath, 'w') as fout:
+                fout.write(contents)
             self.log.debug("Accepted document name: %s", filename)
             # ~ topic, subtopic, suffix = get_metadata_from_filename(filename)
             return filename
@@ -320,7 +333,7 @@ class Editor(Gtk.Box):
         vbox.append(hbox)
         vbox.append(lblFilename)
         vbox.append(scrwindow)
-        dialog.connect("response", _confirm, lblFilename)
+        dialog.connect("response", _confirm, lblFilename, editorview)
         dialog.present()
 
     def _rename_document(self, *args):
@@ -331,10 +344,10 @@ class Editor(Gtk.Box):
             subtopic = etys.get_text().upper()
             suffix = etyu.get_text().upper()
             label.set_text("%s-%s_%s.txt" % (topic, subtopic, suffix))
-            if len(topic) > 1 and len(subtopic) > 1:
+            if len(topic) > 1 and len(subtopic) > 1 and len(suffix) > 0:
                 enabled = True
             dialog.set_response_enabled("add", enabled)
-            self.log.debug("Document name: %s -> %s", label.get_text(), enabled)
+            # ~ self.log.debug("Document name: %s -> %s", label.get_text(), enabled)
 
         def _confirm(_, res, lblFilename):
             if res == "cancel":

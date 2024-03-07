@@ -42,7 +42,7 @@ def main(params: argparse.Namespace):
         from loro.frontend.gui import app
         app.start()
 
-    inputs = get_inputs(source, target)
+    inputs = get_inputs(source)
 
     if len(inputs) > 0:
         from loro.workflow import Workflow

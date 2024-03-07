@@ -43,7 +43,7 @@ def get_project_output_dir(source: str) -> str:
 def get_project_config_dir(source: str) -> str:
     return os.path.join(LORO_USER_PROJECTS_DIR, source, '.config')
 
-def get_inputs(source: str, target: str) -> []:
+def get_inputs(source: str) -> []:
     input_dir = get_project_input_dir(source)
     return glob.glob(os.path.join(input_dir, '*.txt'))
 
