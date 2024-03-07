@@ -84,7 +84,7 @@ class Editor(Gtk.Box):
         self.boxLeft.append(hbox)
 
         ### Files Toolbox
-        vbox = self.factory.create_box_horizontal(spacing=6, margin=6, vexpand=False, hexpand=False)
+        vbox = self.factory.create_box_horizontal(spacing=6, margin=6, vexpand=True, hexpand=False)
         toolbox = self.factory.create_box_vertical()
         toolbox.set_margin_bottom(margin=6)
         self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], tooltip='Add new document', callback=self._add_document)
@@ -109,6 +109,7 @@ class Editor(Gtk.Box):
         self.cvfiles.set_toggle_button_callback(self._filename_toggled)
         self.cvfiles.get_style_context().add_class(class_name='monospace')
         self.cvfiles.set_hexpand(True)
+        self.cvfiles.set_vexpand(True)
         selection = self.cvfiles.get_selection()
         selection.connect('selection-changed', self._on_file_selected)
         vbox.append(self.cvfiles)
@@ -240,26 +241,30 @@ class Editor(Gtk.Box):
                 self.cvfiles.set_column_belongs_visible(False)
             else:
                 self.cvfiles.set_column_belongs_visible(True)
+                self._update_files_view(workbook.id)
 
-                # Update files
-                source, target = ENV['Projects']['Default']['Languages']
-                files = get_inputs(source)
-                items = []
-                for filepath in files:
-                    topic, subtopic, suffix = get_metadata_from_filepath(filepath)
-                    title = os.path.basename(filepath)
-                    belongs = self.app.dictionary.filename_in_workbook(workbook.id, title)
-                    items.append(Filepath(
-                                        id=filepath,
-                                        title=title,
-                                        topic=topic.title(),
-                                        subtopic=subtopic.title(),
-                                        suffix=suffix,
-                                        belongs=belongs
-                                    )
-                                )
-                self.cvfiles.update(items)
-
+    def _update_files_view(self, wbname: str):
+        # Update files
+        source, target = ENV['Projects']['Default']['Languages']
+        files = get_inputs(source)
+        items = []
+        for filepath in files:
+            topic, subtopic, suffix = get_metadata_from_filepath(filepath)
+            title = os.path.basename(filepath)
+            if wbname == 'None':
+                belongs = False
+            else:
+                belongs = self.app.dictionary.filename_in_workbook(wbname, title)
+            items.append(Filepath(
+                                id=filepath,
+                                title=title,
+                                topic=topic.title(),
+                                subtopic=subtopic.title(),
+                                suffix=suffix,
+                                belongs=belongs
+                            )
+                        )
+        self.cvfiles.update(items)
 
     def _add_document(self, *args):
         def _update_filename(_, gparam, data):
@@ -277,6 +282,7 @@ class Editor(Gtk.Box):
         def _confirm(_, res, lblFilename, editorview):
             if res == "cancel":
                 return
+            workbook = self.ddWorkbooks.get_selected_item()
             filename = lblFilename.get_text()
             textbuffer = editorview.get_buffer()
             start = textbuffer.get_start_iter()
@@ -287,7 +293,8 @@ class Editor(Gtk.Box):
             filepath = os.path.join(input_dir, filename)
             with open(filepath, 'w') as fout:
                 fout.write(contents)
-            self.log.debug("Accepted document name: %s", filename)
+                self.log.debug("Document '%s' created", filename)
+                self._update_files_view(workbook.id)
             # ~ topic, subtopic, suffix = get_metadata_from_filename(filename)
             return filename
 
@@ -405,10 +412,11 @@ class Editor(Gtk.Box):
         self.log.debug(args)
 
     def _save_document(self, *args):
-        start = self.buffer.get_start_iter()
-        end = self.buffer.get_end_iter()
+        textbuffer = self.editorview.get_buffer()
+        start = textbuffer.get_start_iter()
+        end = textbuffer.get_end_iter()
         with open(self.selected_file, 'w') as fsel:
-            text = self.buffer.get_text(start, end, False)
+            text = textbuffer.get_text(start, end, False)
             fsel.write(text)
             self.log.info("File '%s' saved", os.path.basename(self.selected_file))
 
