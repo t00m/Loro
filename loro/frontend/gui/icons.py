@@ -24,7 +24,14 @@ from loro.backend.core.log import get_logger
 from loro.backend.core.env import ENV
 from loro.backend.core.util import valid_key
 
-# FIXME: Review this module
+ICON = {}
+ICON['TRASH'] = 'com.github.t00m.Loro-user-trash-symbolic'
+ICON['REFRESH'] = 'com.github.t00m.Loro-view-refresh-symbolic'
+ICON['DOC_NEW'] = 'com.github.t00m.Loro-document-new-symbolic'
+ICON['DOC_EDIT'] = 'com.github.t00m.Loro-document-edit-symbolic'
+ICON['DOC_DELETE'] = 'com.github.t00m.Loro-user-trash-symbolic'
+
+
 class IconManager(GObject.GObject):
     def __init__(self, app):
         super(IconManager, self).__init__()
@@ -33,7 +40,6 @@ class IconManager(GObject.GObject):
         win = Gtk.Window()
         self.theme = Gtk.IconTheme.get_for_display(win.get_display())
         ICONSDIR = os.path.join(ENV['APP']['PGKDATADIR'], 'resources', 'icons', 'scalable')
-        self.log.debug("ICONS DIR: %s", ICONSDIR)
         self.theme.add_search_path(ICONSDIR)
         self.paintable = {}
         self.gicondict = {}

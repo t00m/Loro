@@ -13,6 +13,7 @@ from loro.frontend.gui.actions import WidgetActions
 from loro.frontend.gui.models import Filepath, Workbook
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.frontend.gui.widgets.views import ColumnViewFiles
+from loro.frontend.gui.icons import ICON
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.util import get_inputs
@@ -72,9 +73,9 @@ class Editor(Gtk.Box):
         self.ddWorkbooks.set_hexpand(False)
         hbox.append(self.ddWorkbooks)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
-        self.btnWBAdd = self.factory.create_button(icon_name='com.github.t00m.Loro-document-new-symbolic', tooltip='Add a new workbook', callback=self._add_workbook)
-        self.btnWBEdit = self.factory.create_button(icon_name='com.github.t00m.Loro-document-edit-symbolic', tooltip='Edit workbook name', callback=self._edit_workbook)
-        self.btnWBDel = self.factory.create_button(icon_name='com.github.t00m.Loro-user-trash-symbolic', tooltip='Delete selected workbook', callback=self._delete_workbook)
+        self.btnWBAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], tooltip='Add a new workbook', callback=self._add_workbook)
+        self.btnWBEdit = self.factory.create_button(icon_name=ICON['DOC_EDIT'], tooltip='Edit workbook name', callback=self._edit_workbook)
+        self.btnWBDel = self.factory.create_button(icon_name=ICON['DOC_DELETE'], tooltip='Delete selected workbook', callback=self._delete_workbook)
         hbox.append(expander)
         hbox.append(self.btnWBAdd)
         hbox.append(self.btnWBEdit)
@@ -84,13 +85,13 @@ class Editor(Gtk.Box):
         ### Files Toolbox
         toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
         toolbox.set_margin_bottom(margin=6)
-        self.btnAdd = self.factory.create_button(icon_name='com.github.t00m.Loro-document-new-symbolic', tooltip='Add new document', callback=self._add_document)
-        self.btnRename = self.factory.create_button(icon_name='com.github.t00m.Loro-document-edit-symbolic', tooltip='Rename document', callback=self._rename_document)
-        self.btnImport= self.factory.create_button(icon_name='com.github.t00m.Loro-add-symbolic', tooltip='Import docs', callback=self._import_document)
+        self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], tooltip='Add new document', callback=self._add_document)
+        self.btnRename = self.factory.create_button(icon_name=ICON['DOC_EDIT'], tooltip='Rename document', callback=self._rename_document)
+        self.btnImport= self.factory.create_button(icon_name=ICON['DOC_DELETE'], tooltip='Import docs', callback=self._import_document)
         separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        self.btnDelete = self.factory.create_button(icon_name='com.github.t00m.Loro-user-trash-symbolic', tooltip='Delete doc', callback=self._delete_document)
+        self.btnDelete = self.factory.create_button(icon_name=ICON['TRASH'], tooltip='Delete doc', callback=self._delete_document)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
-        self.btnRefresh = self.factory.create_button(icon_name='com.github.t00m.Loro-view-refresh-symbolic', tooltip='Refresh', callback=self._update_editor)
+        self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_editor)
         toolbox.append(self.btnAdd)
         toolbox.append(self.btnRename)
         toolbox.append(self.btnImport)
@@ -103,6 +104,7 @@ class Editor(Gtk.Box):
         ### Files view
         self.cvfiles = ColumnViewFiles(self.app)
         self.cvfiles.set_single_selection()
+        self.cvfiles.set_toggle_button_callback(self._filename_toggled)
         self.cvfiles.get_style_context().add_class(class_name='monospace')
         selection = self.cvfiles.get_selection()
         selection.connect('selection-changed', self._on_file_selected)
@@ -123,14 +125,95 @@ class Editor(Gtk.Box):
         self.boxRight.append(scrwindow)
         self.append(editor)
 
+    def _filename_toggled(self, toggle_button, filepath):
+        workbook = self.ddWorkbooks.get_selected_item()
+        active = toggle_button.get_active()
+        filename = os.path.basename(filepath.id)
+        self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, active)
+        self.app.dictionary.update_workbook(workbook.id, filename, active)
+
     def _add_workbook(self, *args):
-        self.log.debug(args)
+        def _confirm(_, res, entry):
+            if res == "cancel":
+                return
+            name = entry.get_text()
+            self.log.debug("Accepted workbook name: %s", name)
+            self.app.dictionary.add_workbook(name)
+            self._update_editor()
+
+        def _allow(entry, gparam, dialog):
+            name = entry.get_text()
+            exists = self.app.dictionary.exists_workbook(name)
+            dialog.set_response_enabled("add", not exists)
+
+        window = self.app.get_main_window()
+        vbox = self.factory.create_box_vertical(margin=6, spacing=6)
+        # ~ vbox.props.width_request = 600
+        # ~ vbox.props.height_request = 480
+        etyWBName = Gtk.Entry()
+        etyWBName.set_placeholder_text('Type the workbook name...')
+        vbox.append(etyWBName)
+        dialog = Adw.MessageDialog(
+            transient_for=window,
+            hide_on_close=True,
+            heading=_("Add new workbook"),
+            default_response="add",
+            close_response="cancel",
+            extra_child=vbox,
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("add", _("Add"))
+        dialog.set_response_enabled("add", False)
+        dialog.set_response_appearance("add", Adw.ResponseAppearance.SUGGESTED)
+        dialog.connect("response", _confirm, etyWBName)
+        etyWBName.connect("notify::text", _allow, dialog)
+        dialog.present()
 
     def _edit_workbook(self, *args):
-        self.log.debug(args)
+        def _confirm(_, res, entry, old_name):
+            if res == "cancel":
+                return
+            new_name = entry.get_text()
+            self.log.debug("Accepted workbook name: %s", new_name)
+            self.app.dictionary.rename_workbook(old_name, new_name)
+            self._update_editor()
+
+        def _allow(entry, gparam, dialog):
+            name = entry.get_text()
+            exists = self.app.dictionary.exists_workbook(name)
+            dialog.set_response_enabled("rename", not exists)
+
+        workbook = self.ddWorkbooks.get_selected_item()
+        if workbook is None:
+            return
+
+        window = self.app.get_main_window()
+        vbox = self.factory.create_box_vertical(margin=6, spacing=6)
+        etyWBName = Gtk.Entry()
+        etyWBName.set_text(workbook.id)
+        old_name = workbook.id
+        vbox.append(etyWBName)
+        dialog = Adw.MessageDialog(
+            transient_for=window,
+            hide_on_close=True,
+            heading=_("Rename workbook"),
+            default_response="rename",
+            close_response="cancel",
+            extra_child=vbox,
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("rename", _("Rename"))
+        dialog.set_response_enabled("rename", False)
+        dialog.set_response_appearance("rename", Adw.ResponseAppearance.SUGGESTED)
+        dialog.connect("response", _confirm, etyWBName, old_name)
+        etyWBName.connect("notify::text", _allow, dialog)
+        dialog.present()
 
     def _delete_workbook(self, *args):
-        self.log.debug(args)
+        workbook = self.ddWorkbooks.get_selected_item()
+        if workbook is not None:
+            self.app.dictionary.delete_workbook(workbook.id)
+            self._update_editor()
 
     def _on_file_selected(self, selection, position, n_items):
         model = selection.get_model()
@@ -153,6 +236,26 @@ class Editor(Gtk.Box):
                 self.cvfiles.set_column_belongs_visible(False)
             else:
                 self.cvfiles.set_column_belongs_visible(True)
+
+                # Update files
+                source, target = ENV['Projects']['Default']['Languages']
+                files = get_inputs(source, target)
+                items = []
+                for filepath in files:
+                    topic, subtopic, suffix = get_metadata_from_filepath(filepath)
+                    title = os.path.basename(filepath)
+                    belongs = self.app.dictionary.filename_in_workbook(workbook.id, title)
+                    items.append(Filepath(
+                                        id=filepath,
+                                        title=title,
+                                        topic=topic.title(),
+                                        subtopic=subtopic.title(),
+                                        suffix=suffix,
+                                        belongs=belongs
+                                    )
+                                )
+                self.cvfiles.update(items)
+
 
     def _add_document(self, *args):
         def _update_filename(_, gparam, data):
@@ -305,25 +408,7 @@ class Editor(Gtk.Box):
         else:
             items = []
             for workbook in workbooks:
-                items.append((workbook, workbook))
+                items.append((workbook, 'Workbook %s' % workbook))
         self.actions.dropdown_populate(self.ddWorkbooks, Workbook, items)
         self.ddWorkbooks.set_selected(0)
 
-        # Update files
-        source, target = ENV['Projects']['Default']['Languages']
-        files = get_inputs(source, target)
-        items = []
-        for filepath in files:
-            topic, subtopic, suffix = get_metadata_from_filepath(filepath)
-            self.log.debug("T[%s] S[%s] U[%s]", topic, subtopic, suffix)
-            title = os.path.basename(filepath)
-            items.append(Filepath(
-                                id=filepath,
-                                title=title,
-                                topic=topic.title(),
-                                subtopic=subtopic.title(),
-                                suffix=suffix,
-                                belongs=False
-                            )
-                        )
-        self.cvfiles.update(items)

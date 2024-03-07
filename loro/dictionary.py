@@ -65,7 +65,7 @@ class Dictionary:
             self.log.debug(self.ftopics)
 
         if os.path.exists(self.fworkbooks):
-            self.topics = json_load(self.fworkbooks)
+            self.workbooks = json_load(self.fworkbooks)
         else:
             json_save(self.fworkbooks, self.workbooks)
             self.log.debug("Created new config file for workbooks")
@@ -154,6 +154,54 @@ class Dictionary:
 
     def get_workbooks(self):
         return self.workbooks
+
+    def exists_workbook(self, name: str) -> bool:
+        return name.upper() in self.workbooks.keys()
+
+    def add_workbook(self, name: str) -> None:
+        self.workbooks[name.upper()] = []
+        self.log.debug("Workbook '%s' added", name)
+        self._save_workbooks()
+
+    def rename_workbook(self, old_name: str, new_name: str) -> bool:
+        self.workbooks[new_name] = self.workbooks[old_name]
+        self.delete_workbook(old_name)
+        self.log.debug("Workbook '%s' renamed to '%s'", old_name, new_name)
+
+    def update_workbook(self, wbname:str, fname:str, active:bool):
+        try:
+            fnames = self.workbooks[wbname]
+        except:
+            return
+        changes = False
+        if active:
+            if not fname in fnames:
+                fnames.append(fname)
+                self.workbooks[wbname] = fnames
+                changes = True
+        else:
+            if fname in fnames:
+                fnames.remove(fname)
+                self.workbooks[wbname] = fnames
+                changes = True
+
+        if changes:
+            self._save_workbooks()
+
+    def filename_in_workbook(self, wbname: str, fname: str) -> bool:
+        return fname in self.workbooks[wbname]
+
+    def delete_workbook(self, name:str) -> None:
+        if self.exists_workbook(name):
+            del(self.workbooks[name])
+            self.log.debug("Workbook '%s' deleted", name)
+            self._save_workbooks()
+
+    def _save_workbooks(self):
+        json_save(self.fworkbooks, self.workbooks)
+        self.log.debug("%d workbooks saved", len(self.workbooks))
+
+
 
     # ~ def __del__(self):
         # ~ self.__save_dictionary()

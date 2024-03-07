@@ -292,7 +292,6 @@ class Dashboard(Gtk.Box):
             cur_pos = self.hpaned.get_position()
             new_pos = lenmax*8
             self.hpaned.set_position(new_pos)
-            self.log.debug("HPaned position changed from %d to %d (lenmax = %d)", cur_pos, new_pos, lenmax)
 
 
     def _update_dashboard(self):

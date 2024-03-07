@@ -77,6 +77,9 @@ class ColumnViewFiles(ColumnView):
         # Default sorting by date
         # ~ self.cv.sort_by_column(self.column_title, Gtk.SortType.DESCENDING)
 
+    def set_toggle_button_callback(self, callback):
+        self.toggle_button_callback = callback
+
     def set_column_belongs_visible(self, visible):
         self.column_belongsto.set_visible(visible)
 
@@ -118,6 +121,7 @@ class ColumnViewFiles(ColumnView):
         box = list_item.get_child()
         item = list_item.get_item()
         checkbox = box.get_first_child()
+        checkbox.connect('toggled', self.toggle_button_callback, item)
         checkbox.set_active(item.belongs)
 
 class ColumnViewToken(ColumnView):
@@ -172,7 +176,6 @@ class ColumnViewAnalysis(ColumnView):
         self.factory_translation = Gtk.SignalListItemFactory()
         self.factory_translation.connect("setup", self._on_factory_setup_translation)
         self.factory_translation.connect("bind", self._on_factory_bind_translation)
-
 
         # Setup columnview columns
         self.column_lemma = Gtk.ColumnViewColumn.new(_('Lemma'), self.factory_lemma)
