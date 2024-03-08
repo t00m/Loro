@@ -89,11 +89,10 @@ class Workflow(GObject.GObject):
                     self.process_input(sentences, topic, subtopic, task)
             else:
                 self.log.error("File will NOT be processed: '%s'", os.path.basename(filepath))
-                self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
                 if lang.upper() != self.source.upper():
                     self.log.error("Language detected ('%s') differs from source language ('%s')", lang, self.source)
-                else:
-                    self.log.error("Score detection for detected language is less than 85%", score)
+                if score < 85:
+                    self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
 
         self.dictionary.save()
         self.emit('workflow-finished')
