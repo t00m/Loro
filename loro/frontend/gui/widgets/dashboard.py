@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 import os
-from gi.repository import Gio, Adw, Gtk  # type:ignore
+from gi.repository import Gio, Adw, GLib, Gtk  # type:ignore
 
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
@@ -17,8 +17,9 @@ from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import get_metadata_from_filepath
-from loro.backend.core.util import get_project_output_dir
-
+from loro.backend.core.util import get_project_target_dir
+from loro.workflow import Workflow
+from loro.frontend.gui.icons import ICON
 
 class Dashboard(Gtk.Box):
     __gtype_name__ = 'Dashboard'
@@ -27,7 +28,7 @@ class Dashboard(Gtk.Box):
         super(Dashboard, self).__init__(orientation=Gtk.Orientation.VERTICAL)
         self.log = get_logger('Dashboard')
         self.app = app
-
+        self.window = self.app.get_main_window()
         self.actions = WidgetActions(self.app)
         self.factory = WidgetFactory(self.app)
         self.current_topic = 'ALL'
@@ -35,9 +36,10 @@ class Dashboard(Gtk.Box):
         self.current_postag = 'ALL'
         self.selected = []
         self.selected_tokens = []
-
+        self.workflow = Workflow()
         self._build_dashboard()
-        self._update_dashboard()
+        self.update_dashboard()
+
 
 
     def _build_dashboard(self):
@@ -68,6 +70,11 @@ class Dashboard(Gtk.Box):
         self.ddPos.connect("notify::selected-item", self._on_postag_selected)
         self.ddPos.set_hexpand(False)
         toolbox.append(self.ddPos)
+
+        expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
+        self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_workbook)
+        toolbox.append(expander)
+        toolbox.append(self.btnRefresh)
 
         self.append(toolbox)
 
@@ -117,8 +124,10 @@ class Dashboard(Gtk.Box):
 
 
     def _update_analysis(self, sid: str):
-        tokens = self.app.dictionary.get_tokens()
-        sentences = self.app.dictionary.get_sentences()
+        workbook = self.ddWorkbooks.get_selected_item()
+        dictionary = self.app.workbooks.get_dictionary(workbook.id)
+        tokens = dictionary.get_tokens()
+        sentences = dictionary.get_sentences()
         items = []
         for token in sentences[sid]['tokens']:
             items.append(Analysis(
@@ -133,8 +142,10 @@ class Dashboard(Gtk.Box):
         self.cvanalysis.update(items)
 
     def _update_sentences(self, token: Token):
-        tokens = self.app.dictionary.get_tokens()
-        all_topics = self.app.dictionary.get_topics()
+        workbook = self.ddWorkbooks.get_selected_item()
+        dictionary = self.app.workbooks.get_dictionary(workbook.id)
+        tokens = dictionary.get_tokens()
+        all_topics = dictionary.get_topics()
         selected_topic = self.ddTopics.get_selected_item().id
         selected_subtopic = self.ddSubtopics.get_selected_item().id
         matches = []
@@ -163,10 +174,10 @@ class Dashboard(Gtk.Box):
                 # ~ if token_sid == sid:
                     # ~ matches.append(sid)
         self.log.debug("Displaying sentences for Topic['%s'] and Subtopic['%s']", selected_topic, selected_subtopic)
-        sentences = self.app.dictionary.get_sentences()
+        sentences = dictionary.get_sentences()
         items = []
         for sid in matches:
-            sentence = sentences[sid]['de']
+            sentence = sentences[sid]['DE']
             items.append(Sentence(id=sid, title=sentence))
         self.cvsentences.update(items)
 
@@ -200,37 +211,59 @@ class Dashboard(Gtk.Box):
 
     def _on_workbook_selected(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
+        if workbook is None:
+            return
         self.log.debug("Workbook selected: '%s'", workbook.id)
-        entries = self.app.workbooks.get_workbook_entries(workbook.id)
-        self.log.debug("Entries: %s", entries)
-        source, target = ENV['Projects']['Default']['Languages']
-        inputdir = get_project_input_dir(source)
-        topics = set()
-        for filename in entries:
-            filepath = os.path.join(inputdir, filename)
-            topic, subtopic, suffix = get_metadata_from_filepath(filepath)
-            topics.add(topic)
+        dictionary = self.app.workbooks.get_dictionary(workbook.id)
+        topics = dictionary.get_topics()
         data = []
         data.append(("ALL", "All topics"))
-        self.log.debug("Topics for these entries: %s", topics)
-
-        # Check if topic metada has been built for the current workbook
-        output_dir = get_project_output_dir(source)
-        workbook_dir = os.path.join(output_dir, workbook.id)
-        if not os.path.exists(workbook_dir):
-            self.log.error("Workbook dir '%s' doesn't exist", workbook_dir)
-            return
-
         for topic in topics:
             data.append((topic.upper(), topic.title()))
         self.actions.dropdown_populate(self.ddTopics, Topic, data)
+
+    def _update_workbook(self, *args):
+        workbook = self.ddWorkbooks.get_selected_item()
+        self.workflow.connect('workflow-finished', self.update_dashboard)
+        files = self.app.workbooks.get_files(workbook.id)
+        GLib.idle_add(self.workflow.start, workbook.id, files)
+
+
+        # ~ files = self.app.workbooks.get_files(workbook.id)
+        # ~ self.log.debug("Files: %s", files)
+        # ~ source, target = ENV['Projects']['Default']['Languages']
+        # ~ inputdir = get_project_input_dir(source)
+        # ~ topics = set()
+        # ~ for filename in files:
+            # ~ filepath = os.path.join(inputdir, filename)
+            # ~ topic, subtopic, suffix = get_metadata_from_filepath(filepath)
+            # ~ topics.add(topic)
+        # ~ data = []
+        # ~ data.append(("ALL", "All topics"))
+        # ~ self.log.debug("Topics for these entries: %s", topics)
+
+        # Check if topic metada has been built for the current workbook
+
+        # ~ output_dir = get_project_target_dir(source, target)
+        # ~ workbook_dir = os.path.join(output_dir, workbook.id)
+        # ~ if not os.path.exists(workbook_dir):
+            # ~ self.log.error("Workbook dir '%s' doesn't exist", workbook_dir)
+        # ~ workflow = Workflow(workbook.id)
+        # ~ files = self.app.workbooks.get_files(workbook.id)
+        # ~ GLib.idle_add(workflow.start, files)
+
+        # ~ for topic in topics:
+            # ~ data.append((topic.upper(), topic.title()))
+        # ~ self.actions.dropdown_populate(self.ddTopics, Topic, data)
 
     def _on_topic_selected(self, *args):
         current_topic = self.ddTopics.get_selected_item()
         if current_topic is None:
             return
         self.log.debug("Topic selected: '%s'", current_topic.id)
-        topics = self.app.dictionary.get_topics()
+        workbook = self.ddWorkbooks.get_selected_item()
+        dictionary = self.app.workbooks.get_dictionary(workbook.id)
+        topics = dictionary.get_topics()
         self.log.debug("Displaying subtopics for topic '%s'", current_topic.id)
         data = []
         data.append(("ALL", "All subtopics"))
@@ -259,7 +292,9 @@ class Dashboard(Gtk.Box):
             return
 
         selected = []
-        tokens = self.app.dictionary.get_tokens()
+        workbook = self.ddWorkbooks.get_selected_item()
+        dictionary = self.app.workbooks.get_dictionary(workbook.id)
+        tokens = dictionary.get_tokens()
         for key in tokens.keys():
             if current_topic.id == 'ALL':
                 if current_subtopic.id == 'ALL':
@@ -304,7 +339,9 @@ class Dashboard(Gtk.Box):
 
 
     def _on_postag_selected(self, dropdown, gparam):
-        tokens = self.app.dictionary.get_tokens()
+        workbook = self.ddWorkbooks.get_selected_item()
+        dictionary = self.app.workbooks.get_dictionary(workbook.id)
+        tokens = dictionary.get_tokens()
         if len(dropdown.get_model()) > 0:
             current_postag = dropdown.get_selected_item()
             postag = current_postag.id
@@ -333,8 +370,8 @@ class Dashboard(Gtk.Box):
             self.hpaned.set_position(new_pos)
 
 
-    def _update_dashboard(self):
-        workbooks = self.app.workbooks.get_workbooks()
+    def update_dashboard(self, *args):
+        workbooks = self.app.workbooks.get_all()
         data = []
         for workbook in workbooks.keys():
             data.append((workbook, workbook))

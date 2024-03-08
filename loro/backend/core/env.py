@@ -20,11 +20,11 @@ try:
 except:
     ENV = {}
     ENV['Languages'] = {}
-    ENV['Languages']['de'] = {}
-    ENV['Languages']['de']['model'] = {}
-    ENV['Languages']['de']['model']['sm'] = 'de_core_news_sm'
-    ENV['Languages']['de']['model']['lg'] = 'de_core_news_lg'
-    ENV['Languages']['de']['model']['default'] = 'lg'
+    ENV['Languages']['DE'] = {}
+    ENV['Languages']['DE']['model'] = {}
+    ENV['Languages']['DE']['model']['sm'] = 'de_core_news_sm'
+    ENV['Languages']['DE']['model']['lg'] = 'de_core_news_lg'
+    ENV['Languages']['DE']['model']['default'] = 'lg'
     ENV['Projects'] = {}
     ENV['Projects']['Default'] = {}
     ENV['Projects']['Default']['Languages'] = ('DE', 'EN')

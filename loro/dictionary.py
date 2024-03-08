@@ -9,23 +9,25 @@ from spacy.tokens import Token
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import json_load, json_save
-from loro.backend.core.util import get_project_config_dir
+from loro.backend.core.util import get_project_target_dir
 from loro.backend.services.nlp.spacy import get_glossary_keys
 from loro.backend.services.nlp.spacy import get_glossary_term_explained
 from loro.backend.builders.excel import create_excel
 
 
 class Dictionary:
-    def __init__(self):
+    def __init__(self, workbook):
         self.log = get_logger('Dictionary')
         self.source, self.target = ENV['Projects']['Default']['Languages']
-        configdir = get_project_config_dir(self.source)
+        TARGET_DIR = get_project_target_dir(self.source, self.target)
+        WB_CONFIG_DIR = os.path.join(TARGET_DIR, workbook, '.config')
+        if not os.path.exists(WB_CONFIG_DIR):
+            os.makedirs(WB_CONFIG_DIR)
 
          # Dictionary in-memory dicts
         self.sentences = {}
         self.tokens = {}
         self.topics = {}
-        self.workbooks = {}
 
         # Initialize stats
         self.stats = {}
@@ -34,10 +36,9 @@ class Dictionary:
             self.stats[key] = {}
 
         # Dictionary configuration files
-        self.ftokens = os.path.join(get_project_config_dir(self.source), 'tokens_%s_%s.json' % (self.source, self.target))
-        self.fsents = os.path.join(get_project_config_dir(self.source), 'sentences.json')
-        self.ftopics = os.path.join(get_project_config_dir(self.source), 'topics.json')
-        self.fworkbooks = os.path.join(get_project_config_dir(self.source), 'workbooks.json')
+        self.ftokens = os.path.join(WB_CONFIG_DIR, 'tokens_%s_%s.json' % (self.source, self.target))
+        self.fsents = os.path.join(WB_CONFIG_DIR, 'sentences.json')
+        self.ftopics = os.path.join(WB_CONFIG_DIR, 'topics.json')
 
         # Load (or create) personal dictionary for current project
         self.__load_dictionary()
@@ -63,13 +64,6 @@ class Dictionary:
             json_save(self.ftopics, self.topics)
             self.log.debug("Created new config file for topics")
             self.log.debug(self.ftopics)
-
-        if os.path.exists(self.fworkbooks):
-            self.workbooks = json_load(self.fworkbooks)
-        else:
-            json_save(self.fworkbooks, self.workbooks)
-            self.log.debug("Created new config file for workbooks")
-            self.log.debug(self.fworkbooks)
 
         self.log.info("Tokens loaded: %d", len(self.tokens))
         self.log.info("Sentences loaded: %d", len(self.sentences))
@@ -152,60 +146,3 @@ class Dictionary:
     def get_sentences(self):
         return self.sentences
 
-    def get_workbooks(self):
-        return self.workbooks
-
-    def get_workbook_entries(self, wbname):
-        return self.workbooks[wbname]
-
-    def exists_workbook(self, name: str) -> bool:
-        return name.upper() in self.workbooks.keys()
-
-    def add_workbook(self, name: str) -> None:
-        self.workbooks[name.upper()] = []
-        self.log.debug("Workbook '%s' added", name)
-        self._save_workbooks()
-
-    def rename_workbook(self, old_name: str, new_name: str) -> bool:
-        self.workbooks[new_name] = self.workbooks[old_name]
-        self.delete_workbook(old_name)
-        self.log.debug("Workbook '%s' renamed to '%s'", old_name, new_name)
-
-    def update_workbook(self, wbname:str, fname:str, active:bool):
-        try:
-            fnames = self.workbooks[wbname]
-        except:
-            return
-        changes = False
-        if active:
-            if not fname in fnames:
-                fnames.append(fname)
-                self.workbooks[wbname] = fnames
-                changes = True
-        else:
-            if fname in fnames:
-                fnames.remove(fname)
-                self.workbooks[wbname] = fnames
-                changes = True
-
-        if changes:
-            self._save_workbooks()
-
-    def filename_in_workbook(self, wbname: str, fname: str) -> bool:
-        return fname in self.workbooks[wbname]
-
-    def delete_workbook(self, name:str) -> None:
-        if self.exists_workbook(name):
-            del(self.workbooks[name])
-            self.log.debug("Workbook '%s' deleted", name)
-            self._save_workbooks()
-
-    def _save_workbooks(self):
-        json_save(self.fworkbooks, self.workbooks)
-        self.workbooks = json_load(self.fworkbooks)
-        self.log.debug("%d workbooks saved", len(self.workbooks))
-
-
-
-    # ~ def __del__(self):
-        # ~ self.__save_dictionary()

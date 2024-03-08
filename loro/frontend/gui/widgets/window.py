@@ -6,10 +6,12 @@ from gi.repository import Gio, Adw, Gtk  # type:ignore
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
-from loro.frontend.gui.widgets.dashboard import Dashboard
+# ~ from loro.frontend.gui.widgets.dashboard import Dashboard
 from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.preferences import PreferencesWindow
 from loro.frontend.gui.widgets.status import StatusWindow
+from loro.frontend.gui.widgets.editor import Editor
+from loro.frontend.gui.widgets.dashboard import Dashboard
 
 
 # ~ WINDOW: Window = None
@@ -25,12 +27,16 @@ class Window(Adw.ApplicationWindow):
         # ~ WINDOW = self
         self._create_actions()
         self._build_ui()
+        self.editor.connect('workbooks-updated', self.dashboard.update_dashboard)
         self.present()
 
     def _build_ui(self):
         self.set_title(_("Loro"))
-
         mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+
+        # Widgets
+        self.editor = Editor(self.app)
+        self.dashboard = Dashboard(self.app)
 
         # Headerbar with ViewSwitcher
         headerbar = Adw.HeaderBar()
@@ -54,8 +60,8 @@ class Window(Adw.ApplicationWindow):
 
         # ViewSwitcher
         viewstack = Adw.ViewStack()
-        viewstack.add_titled_with_icon(Dashboard(self.app), 'dashboard', 'Dashboard', 'accessories-dictionary-symbolic')
-        viewstack.add_titled_with_icon(Editor(self.app), 'editor', 'Documents', 'emblem-documents-symbolic')
+        viewstack.add_titled_with_icon(self.dashboard, 'dashboard', 'Dashboard', 'accessories-dictionary-symbolic')
+        viewstack.add_titled_with_icon(self.editor, 'editor', 'Documents', 'emblem-documents-symbolic')
 
         viewswitcher = Adw.ViewSwitcher()
         viewswitcher.set_stack(viewstack)

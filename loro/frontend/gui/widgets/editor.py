@@ -6,7 +6,7 @@ import os
 
 import gi
 
-from gi.repository import Gio, Adw, Gtk  # type:ignore
+from gi.repository import Gio, GObject, Adw, Gtk  # type:ignore
 
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
@@ -30,9 +30,12 @@ class Editor(Gtk.Box):
         super(Editor, self).__init__(orientation=Gtk.Orientation.VERTICAL)
         self.log = get_logger('Editor')
         self.app = app
+        self.window = self.app.get_main_window()
         self.actions = WidgetActions(self.app)
         self.factory = WidgetFactory(self.app)
         self.selected_file = None
+        GObject.signal_new('workbooks-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
+        GObject.signal_new('filenames-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
         self._build_editor()
         self._update_editor()
         self._enable_renaming(False)
@@ -135,7 +138,7 @@ class Editor(Gtk.Box):
         active = toggle_button.get_active()
         filename = os.path.basename(filepath.id)
         self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, active)
-        self.app.dictionary.update_workbook(workbook.id, filename, active)
+        self.app.workbooks.update(workbook.id, filename, active)
 
     def _add_workbook(self, *args):
         def _confirm(_, res, entry):
@@ -143,12 +146,13 @@ class Editor(Gtk.Box):
                 return
             name = entry.get_text()
             self.log.debug("Accepted workbook name: %s", name)
-            self.app.workbooks.add_workbook(name)
+            self.app.workbooks.add(name)
             self._update_editor()
+            self.emit('workbooks-updated')
 
         def _allow(entry, gparam, dialog):
             name = entry.get_text()
-            exists = self.app.workbooks.exists_workbook(name)
+            exists = self.app.workbooks.exists(name)
             dialog.set_response_enabled("add", not exists)
 
         window = self.app.get_main_window()
@@ -180,12 +184,13 @@ class Editor(Gtk.Box):
                 return
             new_name = entry.get_text()
             self.log.debug("Accepted workbook name: %s", new_name)
-            self.app.workbooks.rename_workbook(old_name, new_name)
+            self.app.workbooks.rename(old_name, new_name)
             self._update_editor()
+            self.emit('workbooks-updated')
 
         def _allow(entry, gparam, dialog):
             name = entry.get_text()
-            exists = self.app.workbooks.exists_workbook(name)
+            exists = self.app.workbooks.exists(name)
             dialog.set_response_enabled("rename", not exists)
 
         workbook = self.ddWorkbooks.get_selected_item()
@@ -217,8 +222,9 @@ class Editor(Gtk.Box):
     def _delete_workbook(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
         if workbook is not None:
-            self.app.workbooks.delete_workbook(workbook.id)
+            self.app.workbooks.delete(workbook.id)
             self._update_editor()
+            self.emit('workbooks-updated')
 
     def _on_file_selected(self, selection, position, n_items):
         model = selection.get_model()
@@ -226,17 +232,21 @@ class Editor(Gtk.Box):
         for index in range(bitset.get_size()):
             pos = bitset.get_nth(index)
             filename = model.get_item(pos)
-            self.log.debug("File selected: %s", filename.title)
-            text = open(filename.id).read()
-            textbuffer = self.editorview.get_buffer()
-            textbuffer.set_text(text)
             self.selected_file = filename.id
+            self.log.debug("File selected: %s", filename.title)
+            self.display_file(filename.id)
             self._enable_renaming(True)
             self._enable_deleting(True)
+
+    def display_file(self, filename: str):
+        text = open(filename).read()
+        textbuffer = self.editorview.get_buffer()
+        textbuffer.set_text(text)
 
     def _on_workbook_selected(self, dropdown, gparam):
         workbook = dropdown.get_selected_item()
         if workbook is not None:
+            self.log.debug("Selected workbook: %s", workbook.id)
             if workbook.id == 'None':
                 self.cvfiles.set_column_belongs_visible(False)
             else:
@@ -254,7 +264,7 @@ class Editor(Gtk.Box):
             if wbname == 'None':
                 belongs = False
             else:
-                belongs = self.app.workbooks.filename_in_workbook(wbname, title)
+                belongs = self.app.workbooks.have_file(wbname, title)
             items.append(Filepath(
                                 id=filepath,
                                 title=title,
@@ -265,6 +275,12 @@ class Editor(Gtk.Box):
                             )
                         )
         self.cvfiles.update(items)
+        if len(files) > 0:
+            selection = self.cvfiles.get_selection()
+            selection.select_item(0, True)
+            filename = selection.get_selected_item()
+            self.log.debug("File selected: %s", filename.title)
+            self.display_file(filename.id)
 
     def _add_document(self, *args):
         def _update_filename(_, gparam, data):
@@ -302,7 +318,13 @@ class Editor(Gtk.Box):
         vbox = self.factory.create_box_vertical(margin=6, spacing=6)
         vbox.props.width_request = 800
         vbox.props.height_request = 600
-        topics = list(self.app.dictionary.get_topics().keys())
+        workbooks = self.app.workbooks.get_all()
+        topics = set()
+        for wbname in workbooks:
+            dictionary = self.app.workbooks.get_dictionary(wbname)
+            for topic in dictionary.get_topics():
+                topics.add(topic)
+        # ~ topics = list(self.app.dictionary.get_topics().keys())
         subtopics = []
         suffixes = []
 
@@ -368,7 +390,8 @@ class Editor(Gtk.Box):
         vbox = self.factory.create_box_vertical(margin=6, spacing=6)
         vbox.props.width_request = 800
         # ~ vbox.props.height_request = 600
-        topics = list(self.app.dictionary.get_topics().keys())
+        # ~ topics = list(self.app.dictionary.get_topics().keys())
+        topics = []
         subtopics = []
         suffixes = []
 
@@ -422,7 +445,7 @@ class Editor(Gtk.Box):
 
     def _update_editor(self, *args):
         # Update workbooks
-        workbooks = self.app.workbooks.get_workbooks()
+        workbooks = self.app.workbooks.get_all()
         items = []
         if len(workbooks) == 0:
             items.append(('None', 'No workbooks created yet'))
@@ -432,4 +455,6 @@ class Editor(Gtk.Box):
                 items.append((workbook, 'Workbook %s' % workbook))
         self.actions.dropdown_populate(self.ddWorkbooks, Workbook, items)
         self.ddWorkbooks.set_selected(0)
+
+
 

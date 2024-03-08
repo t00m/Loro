@@ -25,6 +25,8 @@ class Application(Adw.Application):
         self.set_resource_base_path("/com/github/t00m/Loro/")
         self.window = None
         self.workbooks = Workbook()
+        # ~ self.dashboard = Dashboard(self)
+        # ~ self.editor =
 
     def do_activate(self) -> None:
         from loro.frontend.gui.widgets.window import Window
