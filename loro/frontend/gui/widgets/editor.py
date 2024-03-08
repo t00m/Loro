@@ -227,7 +227,6 @@ class Editor(Gtk.Box):
             self.emit('workbooks-updated')
 
     def _on_filename_selected(self, selection, position, n_items):
-        self.log.debug("_on_file_select::start")
         model = selection.get_model()
         bitset = selection.get_selection()
         for index in range(bitset.get_size()):
@@ -235,10 +234,9 @@ class Editor(Gtk.Box):
             filename = model.get_item(pos)
             self.selected_file = filename.id
             self.log.debug("File selected: %s", filename.title)
-            # ~ self.display_file(filename.id)
+            self.display_file(filename.id)
             self._enable_renaming(True)
             self._enable_deleting(True)
-        self.log.debug("_on_file_select::end")
 
     def display_file(self, filename: str):
         text = open(filename).read()
@@ -278,12 +276,12 @@ class Editor(Gtk.Box):
                             )
                         )
         self.cvfiles.update(items)
-        # ~ if len(files) > 0:
-            # ~ selection = self.cvfiles.get_selection()
-            # ~ selection.select_item(0, True)
-            # ~ filename = selection.get_selected_item()
-            # ~ self.log.debug("File selected: %s", filename.title)
-            # ~ self.display_file(filename.id)
+        if len(files) > 0:
+            selection = self.cvfiles.get_selection()
+            selection.select_item(0, True)
+            filename = selection.get_selected_item()
+            self.log.debug("File selected: %s", filename.title)
+            self.display_file(filename.id)
 
     def _add_document(self, *args):
         def _update_filename(_, gparam, data):

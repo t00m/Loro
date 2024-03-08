@@ -69,6 +69,16 @@ class Dictionary:
         self.log.info("Sentences loaded: %d", len(self.sentences))
         self.log.info("Topics loaded: %d", len(self.topics))
 
+    def initialize(self):
+        if os.path.exists(self.ftokens):
+            os.unlink(self.ftokens)
+
+        if os.path.exists(self.fsents):
+            os.unlink(self.fsents)
+
+        if os.path.exists(self.ftopics):
+            os.unlink(self.ftopics)
+
     def __save_dictionary(self):
         for thisfile, thisdict in [
                                     (self.ftokens, self.tokens),
@@ -130,6 +140,7 @@ class Dictionary:
                         self.topics[topic][subtopic] = sids
 
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
+        self.log.debug("Added token '%s'", token.text)
 
     def get_tokens(self):
         return self.tokens

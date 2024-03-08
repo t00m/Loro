@@ -70,6 +70,7 @@ class Workflow(GObject.GObject):
             return
         self.log.debug("Processing workbook: '%s'", workbook)
         self.dictionary = Dictionary(workbook)
+        self.dictionary.initialize()
         for filename in files:
             self.log.debug("Processing %s[%s]", workbook, filename)
             INPUT_DIR = get_project_input_dir(self.source)
@@ -87,14 +88,13 @@ class Workflow(GObject.GObject):
                     sentences = open(filepath, 'r').readlines()
                     task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
                     self.process_input(sentences, topic, subtopic, task)
+                    self.dictionary.save()
             else:
                 self.log.error("File will NOT be processed: '%s'", os.path.basename(filepath))
                 if lang.upper() != self.source.upper():
                     self.log.error("Language detected ('%s') differs from source language ('%s')", lang, self.source)
                 if score < 85:
                     self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
-
-        self.dictionary.save()
         self.emit('workflow-finished')
 
     def process_input(self, sentences: [], topic, subtopic, task) -> None:
