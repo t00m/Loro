@@ -77,6 +77,10 @@ class ColumnView(Gtk.Box):
         self.log = get_logger('ColumnView')
         self.selected_items = []
 
+        self.search_entry = Gtk.SearchEntry()
+        self.search_entry.connect("search-changed", self._on_search_entry_changed)
+        self.append(self.search_entry)
+
         self.viewport = Gtk.Viewport()
         self.scrwin = Gtk.ScrolledWindow()
         self.scrwin.set_hexpand(True)
@@ -122,6 +126,11 @@ class ColumnView(Gtk.Box):
         # Connect signals
         self.cv.connect("activate", self._on_selected_item_notify)
         self.selection.connect('selection-changed', self._on_selection_changed)
+
+        self.set_filter(self._do_filter_view)
+
+    def _on_search_entry_changed(self, search_entry):
+        self.filter.emit('changed', Gtk.FilterChange.DIFFERENT)
 
     def get_columnview(self):
         return self.cv
@@ -175,13 +184,22 @@ class ColumnView(Gtk.Box):
         self.filter_model.set_filter(self.filter)
         return self.filter
 
+    def _do_filter_view(self, item, filter_list_model):
+        text = self.search_entry.get_text()
+        if text.upper() in item.title.upper():
+            return True
+        return False
+
     def refilter(self):
         self.filter.emit('changed', Gtk.FilterChange.DIFFERENT)
+
+    def clear(self):
+        self.store.remove_all()
 
     def update(self, items):
         self.selected_items = []
         ds = datetime.now()
-        self.store.remove_all()
+        self.clear()
         self.store.splice(0, 0, items)
         de = datetime.now()
         dt = de - ds
