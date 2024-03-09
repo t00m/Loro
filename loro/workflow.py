@@ -143,7 +143,6 @@ class Workflow(GObject.GObject):
             if is_valid_word(token.text):
                 thistoken = self.dictionary.add_token(token, sid, topic, subtopic)
                 sid_tokens.append(token.text)
-
         self.dictionary.add_sentence(sid, sentence.strip(), sid_tokens)
 
         return (jid, task)

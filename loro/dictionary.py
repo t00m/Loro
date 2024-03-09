@@ -36,9 +36,9 @@ class Dictionary:
             self.stats[key] = {}
 
         # Dictionary configuration files
-        self.ftokens = os.path.join(WB_CONFIG_DIR, 'tokens_%s_%s.json' % (self.source, self.target))
-        self.fsents = os.path.join(WB_CONFIG_DIR, 'sentences.json')
-        self.ftopics = os.path.join(WB_CONFIG_DIR, 'topics.json')
+        self.ftokens = os.path.join(WB_CONFIG_DIR, '%s_tokens_%s_%s.json' % (workbook, self.source, self.target))
+        self.fsents = os.path.join(WB_CONFIG_DIR, '%s_sentences.json' % workbook)
+        self.ftopics = os.path.join(WB_CONFIG_DIR, '%s_topics.json' % workbook)
 
         # Load (or create) personal dictionary for current project
         self.__load_dictionary()
@@ -64,10 +64,7 @@ class Dictionary:
             json_save(self.ftopics, self.topics)
             self.log.debug("Created new config file for topics")
             self.log.debug(self.ftopics)
-
-        self.log.info("Tokens loaded: %d", len(self.tokens))
-        self.log.info("Sentences loaded: %d", len(self.sentences))
-        self.log.info("Topics loaded: %d", len(self.topics))
+        self.log.info("Loaded %d tokens, %d sentences and %d topics", len(self.tokens), len(self.sentences), len(self.topics))
 
     def initialize(self):
         if os.path.exists(self.ftokens):
@@ -80,6 +77,7 @@ class Dictionary:
             os.unlink(self.ftopics)
 
     def __save_dictionary(self):
+        self.log.debug("Dictionary config dir: '%s'", os.path.dirname(self.ftokens))
         for thisfile, thisdict in [
                                     (self.ftokens, self.tokens),
                                     (self.fsents, self.sentences),
@@ -140,7 +138,7 @@ class Dictionary:
                         self.topics[topic][subtopic] = sids
 
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
-        self.log.debug("Added token '%s'", token.text)
+        # ~ self.log.debug("Added token '%s'", token.text)
 
     def get_tokens(self):
         return self.tokens
