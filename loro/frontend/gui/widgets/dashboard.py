@@ -194,7 +194,6 @@ class Dashboard(Gtk.Box):
         for index in range(bitset.get_size()):
             pos = bitset.get_nth(index)
             token = model.get_item(pos)
-            self.log.info("%s > %s", token.id, token.title)
             self._update_sentences(token)
 
             # ~ self.selected_tokens.append(item.id)
@@ -210,6 +209,7 @@ class Dashboard(Gtk.Box):
         self._update_analysis(sentence.id)
 
     def _on_workbook_selected(self, *args):
+        self.clear_dashboard()
         workbook = self.ddWorkbooks.get_selected_item()
         if workbook is None:
             return
@@ -221,6 +221,12 @@ class Dashboard(Gtk.Box):
         for topic in topics:
             data.append((topic.upper(), topic.title()))
         self.actions.dropdown_populate(self.ddTopics, Topic, data)
+
+    def clear_dashboard(self):
+        self.cvtokens.clear()
+        self.cvsentences.clear()
+        self.cvanalysis.clear()
+        self.log.debug("Dashboard cleared")
 
     def _update_workbook(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
