@@ -13,7 +13,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import setup_project_dirs
 from loro.backend.core.util import get_project_input_dir
-from loro.backend.core.util import delete_project_config_files
+from loro.backend.core.util import delete_project_target_dirs
 from loro.backend.core.util import get_inputs
 
 def main(params: argparse.Namespace):
@@ -34,8 +34,8 @@ def main(params: argparse.Namespace):
         sys.exit(-1)
 
     if params.RESET:
-        deleted_files = delete_project_config_files(source, target)
-        log.warning("Configuration reset (deleted %d config files)", len(deleted_files))
+        delete_project_target_dirs(source, target)
+        log.warning("Target reset")
 
     setup_project_dirs(source, target)
     if params.GUI:

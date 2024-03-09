@@ -67,12 +67,18 @@ def get_inputs(source: str) -> []:
     input_dir = get_project_input_dir(source)
     return glob.glob(os.path.join(input_dir, '*.txt'))
 
-def delete_project_config_files(source: str):
-    config_dir = get_project_config_dir(source)
-    config_files = glob.glob(os.path.join(config_dir, '*.json'))
-    for config_file in config_files:
-        os.remove(config_file)
-    return config_files
+def delete_project_target_dirs(source: str, target: str):
+    import shutil
+    target_dir = get_project_target_dir(source, target)
+    try:
+        shutil.rmtree(target_dir)
+    except FileNotFoundError:
+        pass
+    # ~ log.debug("All directories under '%s' have been deleted", target_dir)
+    # ~ target_files = glob.glob(os.path.join(config_dir, '*.json'))
+    # ~ for config_file in config_files:
+    # ~ os.remove(config_file)
+    # ~ return config_files
 
 def get_metadata_from_filepath(filepath:str) -> ():
     basename = os.path.basename(filepath)
