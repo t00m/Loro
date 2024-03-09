@@ -69,8 +69,9 @@ class Workflow(GObject.GObject):
             self.log.warning("Spacy model still loading")
             return
         self.log.debug("Processing workbook: '%s'", workbook)
-        self.dictionary = Dictionary(workbook)
-        self.dictionary.initialize()
+        self.dictionary = Dictionary()
+        self.dictionary.initialize(workbook)
+        return
         for filename in files:
             self.log.debug("Processing %s[%s]", workbook, filename)
             INPUT_DIR = get_project_input_dir(self.source)
@@ -87,7 +88,7 @@ class Workflow(GObject.GObject):
                     topic, subtopic, suffix = get_metadata_from_filepath(filepath)
                     sentences = open(filepath, 'r').readlines()
                     task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
-                    self.process_input(sentences, topic, subtopic, task)
+                    self.process_input(workbook, sentences, topic, subtopic, task)
                     self.dictionary.save()
             else:
                 self.log.error("File will NOT be processed: '%s'", os.path.basename(filepath))
@@ -97,14 +98,13 @@ class Workflow(GObject.GObject):
                     self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
         self.emit('workflow-finished')
 
-    def process_input(self, sentences: [], topic, subtopic, task) -> None:
-        workbook = {}
+    def process_input(self, workbook:str, sentences: [], topic, subtopic, task) -> None:
         jobs = []
         jid = 1
         MAX_WORKERS = 40
         with Executor(max_workers=MAX_WORKERS) as exe:
             for sentence in sentences:
-                data = (sentence, jid, topic, subtopic, task)
+                data = (workbook, sentence, jid, topic, subtopic, task)
                 job = exe.submit(self.process_sentence, data)
                 job.add_done_callback(self.__sentence_processed)
                 jobs.append(job)
@@ -131,7 +131,7 @@ class Workflow(GObject.GObject):
             return x
 
     def process_sentence(self, data: tuple) -> tuple:
-        (sentence, jid, topic, subtopic, task) = data
+        (workbook, sentence, jid, topic, subtopic, task) = data
         sid = get_hash(sentence)
 
         # Tokenize sentence
@@ -141,9 +141,9 @@ class Workflow(GObject.GObject):
         sid_tokens = []
         for token in tokens:
             if is_valid_word(token.text):
-                thistoken = self.dictionary.add_token(token, sid, topic, subtopic)
+                thistoken = self.dictionary.add_token(workbook, token, sid, topic, subtopic)
                 sid_tokens.append(token.text)
-        self.dictionary.add_sentence(sid, sentence.strip(), sid_tokens)
+        self.dictionary.add_sentence(workbook, sid, sentence.strip(), sid_tokens)
 
         return (jid, task)
 

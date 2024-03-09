@@ -17,9 +17,10 @@ from loro.dictionary import Dictionary
 class Workbook:
     def __init__(self):
         self.log = get_logger('Workbook')
+        self.dictionary = Dictionary()
 
     def get_dictionary(self, workbook):
-        return Dictionary(workbook)
+        return self.dictionary.get_cache(workbook)
 
     def get_all(self):
         source, target = ENV['Projects']['Default']['Languages']
