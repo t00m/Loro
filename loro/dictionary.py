@@ -16,33 +16,22 @@ from loro.backend.builders.excel import create_excel
 
 
 class Dictionary:
-    def __init__(self):
+    def __init__(self, app):
         self.log = get_logger('Dictionary')
+        self.app = app
         self.cache = {}
-        # ~ self.source, self.target = ENV['Projects']['Default']['Languages']
-        # ~ TARGET_DIR = get_project_target_dir(self.source, self.target)
-        # ~ WB_CONFIG_DIR = os.path.join(TARGET_DIR, workbook, '.config')
-        # ~ if not os.path.exists(WB_CONFIG_DIR):
-            # ~ os.makedirs(WB_CONFIG_DIR)
 
-         # ~ # Dictionary in-memory dicts
-        # ~ self.sentences = {}
-        # ~ self.tokens = {}
-        # ~ self.topics = {}
+    def get_topics(self, workbook: str):
+        cache = self.get_cache(workbook)
+        return cache['topics']['data']
 
-        # ~ # Initialize stats
-        # ~ self.stats = {}
-        # ~ self.posset = set()
-        # ~ for key in get_glossary_keys():
-            # ~ self.stats[key] = {}
+    def get_tokens(self, workbook: str):
+        cache = self.get_cache(workbook)
+        return cache['tokens']['data']
 
-        # ~ # Dictionary configuration files
-        # ~ self.ftokens = os.path.join(WB_CONFIG_DIR, '%s_tokens_%s_%s.json' % (workbook, self.source, self.target))
-        # ~ self.fsents = os.path.join(WB_CONFIG_DIR, '%s_sentences.json' % workbook)
-        # ~ self.ftopics = os.path.join(WB_CONFIG_DIR, '%s_topics.json' % workbook)
-
-        # ~ # Load (or create) personal dictionary for current project
-        # ~ self.__load_dictionary()
+    def get_sentences(self, workbook: str):
+        cache = self.get_cache(workbook)
+        return cache['sentences']['data']
 
     def set_cache(self, workbook:str, data = {}):
         key = self.get_cache_key(workbook)
@@ -167,7 +156,9 @@ class Dictionary:
 
     def add_token(self, workbook:str, token: Token, sid: str, topic: str, subtopic: str):
         key = self.get_cache_key(workbook)
+        self.log.debug("Token[%s] Workbook Key[%s]", token.text, key)
         cache = self.get_cache(key)
+        self.log.debug("Token[%s] Cache[%s]", token.text, cache)
         try:
             token_data = cache[key]['tokens']['data'][token.text]
             if not sid in token_data['sentences']:
@@ -186,14 +177,18 @@ class Dictionary:
             token_data['sentences']= [sid]
             token_data['lemmas'] = [token.lemma_]
             token_data['postags'] = [token.pos_]
-            token_data['topics'] = [topic]
+            token_data['topics'] = {}
+            token_data['topics'][topic] = {}
+            token_data['topics'][topic][subtopic] = [sid]
             token_data['subtopics'] = [subtopic]
             token_data['count'] = 1
         finally:
             if not topic in token_data['topics']:
+                self.log.debug("IF- Token[%s] > Topic[%s] in Token[%s]? %s", token.text, topic, token_data['topics'], topic in token_data['topics'])
                 token_data['topics'][topic] = {}
                 token_data['topics'][topic][subtopic] = [sid]
             else:
+                self.log.debug("ELSE- Token[%s] > Topic[%s] in Token[%s]? %s", token.text, topic, token_data['topics'], topic in token_data['topics'])
                 if not subtopic in token_data['topics'][topic]:
                     token_data['topics'][topic][subtopic] = [sid]
                 else:
@@ -207,18 +202,9 @@ class Dictionary:
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
         # ~ self.log.debug("Added token '%s'", token.text)
 
-    def get_tokens(self):
-        return {}
-
     def get_token(name: str) -> {}:
         try:
             return self.tokens[name]
         except KeyError:
             return {}
-
-    def get_topics(self):
-        return []
-
-    def get_sentences(self):
-        return []
 

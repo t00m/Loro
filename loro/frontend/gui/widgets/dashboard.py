@@ -18,7 +18,6 @@ from loro.backend.services.nlp.spacy import explain_term
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_project_target_dir
-from loro.workflow import Workflow
 from loro.frontend.gui.icons import ICON
 
 class Dashboard(Gtk.Box):
@@ -36,7 +35,7 @@ class Dashboard(Gtk.Box):
         self.current_postag = 'ALL'
         self.selected = []
         self.selected_tokens = []
-        self.workflow = Workflow()
+        # ~ self.workflow = Workflow()
         self._build_dashboard()
         self.update_dashboard()
 
@@ -125,11 +124,8 @@ class Dashboard(Gtk.Box):
 
     def _update_analysis(self, sid: str):
         workbook = self.ddWorkbooks.get_selected_item()
-        dictionary = self.app.workbooks.get_dictionary(workbook.id)
-        tokens = dictionary['tokens']['data']
-        # ~ tokens = dictionary.get_tokens()
-        sentences = dictionary['sentences']['data']
-        # ~ sentences = dictionary.get_sentences()
+        tokens = self.app.dictionary.get_tokens(workbook.id)
+        sentences = self.app.dictionary.get_sentences(workbook.id)
         items = []
         for token in sentences[sid]['tokens']:
             items.append(Analysis(
@@ -145,11 +141,8 @@ class Dashboard(Gtk.Box):
 
     def _update_sentences(self, token: Token):
         workbook = self.ddWorkbooks.get_selected_item()
-        dictionary = self.app.workbooks.get_dictionary(workbook.id)
-        tokens = dictionary['tokens']['data']
-        # ~ topics = dictionary['topics']['data']
-        # ~ all_topics = dictionary.get_topics()
-        all_topics = dictionary['topics']['data']
+        tokens = self.app.dictionary.get_tokens(workbook.id)
+        all_topics = self.app.dictionary.get_topics(workbook.id)
         selected_topic = self.ddTopics.get_selected_item().id
         selected_subtopic = self.ddSubtopics.get_selected_item().id
         matches = []
@@ -174,12 +167,8 @@ class Dashboard(Gtk.Box):
                     if token_sid in all_topics[selected_topic][selected_subtopic]:
                         matches.append(token_sid)
 
-                # ~ for sid in topics[topic.id][subtopic.id]:
-                # ~ if token_sid == sid:
-                    # ~ matches.append(sid)
         self.log.debug("Displaying sentences for Topic['%s'] and Subtopic['%s']", selected_topic, selected_subtopic)
-        # ~ sentences = dictionary.get_sentences()
-        sentences = dictionary['sentences']['data']
+        sentences = self.app.dictionary.get_sentences(workbook.id)
         items = []
         for sid in matches:
             sentence = sentences[sid]['DE']
@@ -219,9 +208,7 @@ class Dashboard(Gtk.Box):
         if workbook is None:
             return
         self.log.debug("Workbook selected: '%s'", workbook.id)
-        dictionary = self.app.workbooks.get_dictionary(workbook.id)
-        topics = dictionary['topics']['data']
-        # ~ self.log.debug(dictionary)
+        topics = self.app.dictionary.get_topics(workbook.id)
         data = []
         data.append(("ALL", "All topics"))
         for topic in topics:
@@ -236,9 +223,9 @@ class Dashboard(Gtk.Box):
 
     def _update_workbook(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
-        self.workflow.connect('workflow-finished', self.update_dashboard)
+        self.app.workflow.connect('workflow-finished', self.update_dashboard)
         files = self.app.workbooks.get_files(workbook.id)
-        GLib.idle_add(self.workflow.start, workbook.id, files)
+        GLib.idle_add(self.app.workflow.start, workbook.id, files)
 
 
         # ~ files = self.app.workbooks.get_files(workbook.id)
@@ -274,10 +261,7 @@ class Dashboard(Gtk.Box):
             return
         self.log.debug("Topic selected: '%s'", current_topic.id)
         workbook = self.ddWorkbooks.get_selected_item()
-        dictionary = self.app.workbooks.get_dictionary(workbook.id)
-        topics = dictionary['topics']['data']
-        # ~ dictionary = self.app.workbooks.get_dictionary(workbook.id)
-        # ~ topics = dictionary.get_topics()
+        topics = self.app.dictionary.get_topics(workbook.id)
         self.log.debug("Displaying subtopics for topic '%s'", current_topic.id)
         data = []
         data.append(("ALL", "All subtopics"))
@@ -307,9 +291,7 @@ class Dashboard(Gtk.Box):
 
         selected = []
         workbook = self.ddWorkbooks.get_selected_item()
-        dictionary = self.app.workbooks.get_dictionary(workbook.id)
-        tokens = dictionary['tokens']['data']
-        # ~ tokens = dictionary.get_tokens()
+        tokens = self.app.dictionary.get_tokens(workbook.id)
         for key in tokens.keys():
             if current_topic.id == 'ALL':
                 if current_subtopic.id == 'ALL':
@@ -355,8 +337,7 @@ class Dashboard(Gtk.Box):
 
     def _on_postag_selected(self, dropdown, gparam):
         workbook = self.ddWorkbooks.get_selected_item()
-        dictionary = self.app.workbooks.get_dictionary(workbook.id)
-        tokens = dictionary['tokens']['data']
+        tokens = self.app.dictionary.get_tokens(workbook.id)
         if len(dropdown.get_model()) > 0:
             current_postag = dropdown.get_selected_item()
             postag = current_postag.id

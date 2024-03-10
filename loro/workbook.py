@@ -11,16 +11,16 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import json_load, json_save
 from loro.backend.core.util import get_project_config_dir
-from loro.dictionary import Dictionary
 
 
 class Workbook:
-    def __init__(self):
+    def __init__(self, app):
         self.log = get_logger('Workbook')
-        self.dictionary = Dictionary()
+        self.app = app
+        # ~ self.dictionary = Dictionary()
 
     def get_dictionary(self, workbook):
-        return self.dictionary.get_cache(workbook)
+        return self.app.dictionary.get_cache(workbook)
 
     def get_all(self):
         source, target = ENV['Projects']['Default']['Languages']

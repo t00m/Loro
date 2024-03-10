@@ -25,7 +25,6 @@ from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import get_hash
 from loro.backend.core.log import get_logger
 from loro import dictionary
-from loro.dictionary import Dictionary
 from loro.workbook import Workbook
 
 # ~ DIR_PROJECT_TARGET =
@@ -33,15 +32,15 @@ from loro.workbook import Workbook
 # ~ DIR_WORKBOOK_CONFIG = os.path.join(dir_project_target, "<#WORKBOOK#>", .config)
 
 class Workflow(GObject.GObject):
-    def __init__(self):
+    def __init__(self, app):
         super().__init__()
         sig = GObject.signal_lookup('workflow-finished', Workflow)
         if sig == 0:
             GObject.GObject.__init__(self)
             GObject.signal_new('workflow-finished', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
             GObject.signal_new('model-loaded', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
-
         self.log = get_logger('Workflow')
+        self.app = app
         self.source, self.target = ENV['Projects']['Default']['Languages']
         self.model_type = ENV['Languages'][self.source]['model']['default']
         self.model_name = ENV['Languages'][self.source]['model'][self.model_type]
@@ -51,7 +50,7 @@ class Workflow(GObject.GObject):
         GLib.idle_add(self.load_spacy_model)
 
         self.log.info("Model '%s' loaded", self.model_name)
-        self.dictionary = None
+        # ~ self.dictionary = None
         self.progress = None
 
     def spacy_model_loaded(self, *args):
@@ -65,15 +64,15 @@ class Workflow(GObject.GObject):
         self.log.info("SpaCy model loaded successfully")
 
     def start(self, workbook: str, files: []):
+        self.log.debug("Processing workbook: '%s'", workbook)
         if not self.model_loaded:
             self.log.warning("Spacy model still loading")
             return
-        self.log.debug("Processing workbook: '%s'", workbook)
-        self.dictionary = Dictionary()
-        self.dictionary.initialize(workbook)
-        return
+
+        self.app.dictionary.initialize(workbook)
+
         for filename in files:
-            self.log.debug("Processing %s[%s]", workbook, filename)
+            self.log.debug("Processing %s[%s]", workbook, os.path.basename(filename))
             INPUT_DIR = get_project_input_dir(self.source)
             filepath = os.path.join(INPUT_DIR, filename)
 
@@ -89,7 +88,7 @@ class Workflow(GObject.GObject):
                     sentences = open(filepath, 'r').readlines()
                     task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
                     self.process_input(workbook, sentences, topic, subtopic, task)
-                    self.dictionary.save()
+                    self.app.dictionary.save()
             else:
                 self.log.error("File will NOT be processed: '%s'", os.path.basename(filepath))
                 if lang.upper() != self.source.upper():
@@ -141,32 +140,9 @@ class Workflow(GObject.GObject):
         sid_tokens = []
         for token in tokens:
             if is_valid_word(token.text):
-                thistoken = self.dictionary.add_token(workbook, token, sid, topic, subtopic)
+                thistoken = self.app.dictionary.add_token(workbook, token, sid, topic, subtopic)
                 sid_tokens.append(token.text)
-        self.dictionary.add_sentence(workbook, sid, sentence.strip(), sid_tokens)
+        self.app.dictionary.add_sentence(workbook, sid, sentence.strip(), sid_tokens)
 
         return (jid, task)
-
-    # ~ def process_workbook(self, topic: str, subtopic: str, workbook: {}):
-        # ~ self.log.info("\tProcessing workbook")
-        # ~ self.log.info("\t\tTopic: %s", topic)
-        # ~ self.log.info("\t\tSubtopic: %s", subtopic)
-
-        # ~ # Save topic
-        # ~ self.dictionary.add_topic(topic, workbook)
-
-        # ~ # Save subtopic
-        # ~ self.dictionary.add_subtopic(subtopic, topic, workbook)
-
-        # ~ # Save sentences
-        # ~ nsents = 0
-        # ~ for sid in workbook:
-            # ~ saved = self.dictionary.add_sentence(sid, workbook[sid]['sentence'])
-            # ~ if saved:
-                # ~ nsents += 1
-        # ~ self.log.info("Added %d sentences", nsents)
-
-
-
-
 
