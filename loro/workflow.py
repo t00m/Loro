@@ -88,7 +88,7 @@ class Workflow(GObject.GObject):
                     sentences = open(filepath, 'r').readlines()
                     task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
                     self.process_input(workbook, sentences, topic, subtopic, task)
-                    self.app.dictionary.save()
+                    self.app.dictionary.save(workbook)
             else:
                 self.log.error("File will NOT be processed: '%s'", os.path.basename(filepath))
                 if lang.upper() != self.source.upper():
