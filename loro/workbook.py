@@ -17,7 +17,11 @@ class Workbook:
     def __init__(self, app):
         self.log = get_logger('Workbook')
         self.app = app
-        # ~ self.dictionary = Dictionary()
+
+        for workbook in self.get_all():
+            cache_dir = self.app.dictionary.get_cache_dir(workbook)
+            if not os.path.exists(cache_dir):
+                os.makedirs(cache_dir)
 
     def get_dictionary(self, workbook):
         return self.app.dictionary.get_cache(workbook)
@@ -28,7 +32,8 @@ class Workbook:
         workbooks_path = os.path.join(config_dir, 'workbooks.json')
         if not os.path.exists(workbooks_path):
             return {}
-        return json_load(workbooks_path)
+        workbooks = json_load(workbooks_path)
+        return workbooks
 
     def get_files(self, wbname):
         return self.get_all()[wbname]

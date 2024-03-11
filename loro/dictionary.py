@@ -58,8 +58,7 @@ class Dictionary:
 
     def get_cache(self, workbook:str) -> {}:
         source, target = ENV['Projects']['Default']['Languages']
-        TARGET_DIR = get_project_target_dir(source, target)
-        WB_CONFIG_DIR = os.path.join(TARGET_DIR, workbook, '.config')
+        WB_CONFIG_DIR = self.get_cache_dir(workbook)
         key = self.get_cache_key(workbook)
         try:
             self.cache[key]
@@ -75,7 +74,7 @@ class Dictionary:
                 self.cache[key]['tokens']['data'] = json_load(ftokens)
             else:
                 self.cache[key]['tokens']['data'] = {}
-
+            # ~ source, target = ENV['Projects']['Default']['Languages']
             fsents = os.path.join(WB_CONFIG_DIR, '%s_sentences_%s_%s.json' % (workbook, source, target))
             self.cache[key]['sentences'] = {}
             self.cache[key]['sentences']['file'] = fsents
@@ -96,11 +95,14 @@ class Dictionary:
 
             return self.cache[key]
 
-    def get_cache_files(self, workbook:str) -> []:
+    def get_cache_dir(self, workbook: str) -> str:
         source, target = ENV['Projects']['Default']['Languages']
         TARGET_DIR = get_project_target_dir(source, target)
         WB_CONFIG_DIR = os.path.join(TARGET_DIR, workbook, '.config')
-        key = "%s-%s-%s" % (workbook, source, target) # Cache name
+        return WB_CONFIG_DIR
+
+    def get_cache_files(self, workbook:str) -> []:
+        key = self.get_cache_key(workbook)
         files = []
         self.get_cache(workbook)
         for item in self.cache[key]:
