@@ -13,7 +13,8 @@ from gi.repository import Adw, Gio, Gtk  # type:ignore
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.workbook import Workbook
-# ~ from loro.dictionary import Dictionary
+from loro.workflow import Workflow
+from loro.dictionary import Dictionary
 
 
 class Application(Adw.Application):
@@ -24,7 +25,9 @@ class Application(Adw.Application):
         )
         self.set_resource_base_path("/com/github/t00m/Loro/")
         self.window = None
-        self.workbooks = Workbook()
+        self.dictionary = Dictionary(self)
+        self.workflow = Workflow(self)
+        self.workbooks = Workbook(self)
         # ~ self.dashboard = Dashboard(self)
         # ~ self.editor =
 

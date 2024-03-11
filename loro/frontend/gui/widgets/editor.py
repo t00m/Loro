@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 import os
+import shutil
 
 import gi
 
@@ -245,6 +246,7 @@ class Editor(Gtk.Box):
 
     def _on_workbook_selected(self, dropdown, gparam):
         workbook = dropdown.get_selected_item()
+        self.current_workbook = workbook.id
         if workbook is not None:
             self.log.debug("Selected workbook: %s", workbook.id)
             if workbook.id == 'None':
@@ -321,12 +323,13 @@ class Editor(Gtk.Box):
         vbox.props.height_request = 600
         workbooks = self.app.workbooks.get_all()
         topics = set()
+        subtopics = set()
         for wbname in workbooks:
             dictionary = self.app.workbooks.get_dictionary(wbname)
-            for topic in dictionary.get_topics():
+            for topic in self.app.dictionary.get_topics(wbname):
                 topics.add(topic)
-        # ~ topics = list(self.app.dictionary.get_topics().keys())
-        subtopics = []
+            for subtopic in self.app.dictionary.get_subtopics(wbname):
+                subtopics.add(subtopic)
         suffixes = []
 
         dialog = Adw.MessageDialog(
@@ -379,21 +382,35 @@ class Editor(Gtk.Box):
             dialog.set_response_enabled("add", enabled)
             # ~ self.log.debug("Document name: %s -> %s", label.get_text(), enabled)
 
-        def _confirm(_, res, lblFilename):
+        def _confirm(_, res, old_name, lblFilename):
             if res == "cancel":
                 return
-            filename = lblFilename.get_text()
-            self.log.debug("Accepted document name: %s", filename)
-            # ~ topic, subtopic, suffix = get_metadata_from_filename(filename)
-            return filename
+
+            source, target = ENV['Projects']['Default']['Languages']
+            input_dir = get_project_input_dir(source)
+            source_path = os.path.join(input_dir, old_name)
+            new_name = lblFilename.get_text()
+            target_path = os.path.join(input_dir, new_name)
+            self.log.debug("Renaming from %s to %s", source_path, target_path)
+            shutil.move(source_path, target_path)
+            self.log.debug("Document renamed from '%s' to '%s'", old_name, new_name)
+            self._update_files_view(self.current_workbook)
+
+            return new_name
 
         window = self.app.get_main_window()
         vbox = self.factory.create_box_vertical(margin=6, spacing=6)
         vbox.props.width_request = 800
-        # ~ vbox.props.height_request = 600
-        # ~ topics = list(self.app.dictionary.get_topics().keys())
-        topics = []
-        subtopics = []
+
+        workbooks = self.app.workbooks.get_all()
+        topics = set()
+        subtopics = set()
+        for wbname in workbooks:
+            dictionary = self.app.workbooks.get_dictionary(wbname)
+            for topic in self.app.dictionary.get_topics(wbname):
+                topics.add(topic)
+            for subtopic in self.app.dictionary.get_subtopics(wbname):
+                subtopics.add(subtopic)
         suffixes = []
 
         dialog = Adw.MessageDialog(
@@ -415,6 +432,12 @@ class Editor(Gtk.Box):
         etyTopic = cmbTopic.get_child()
         etySubtopic = cmbSubtopic.get_child()
         etySuffix = cmbSuffix.get_child()
+
+        topic, subtopic, suffix = get_metadata_from_filepath(self.selected_file)
+        etyTopic.set_text(topic)
+        etySubtopic.set_text(subtopic)
+        etySuffix.set_text(suffix)
+
         lblFilename = Gtk.Label()
         lblFilename.set_selectable(True)
         data = (dialog, lblFilename, etyTopic, etySubtopic, etySuffix)
@@ -426,7 +449,7 @@ class Editor(Gtk.Box):
         hbox.append(cmbSuffix)
         vbox.append(hbox)
         vbox.append(lblFilename)
-        dialog.connect("response", _confirm, lblFilename)
+        dialog.connect("response", _confirm, self.selected_file, lblFilename)
         dialog.present()
 
     def _import_document(self, *args):

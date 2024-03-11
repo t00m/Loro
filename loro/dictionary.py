@@ -16,142 +16,185 @@ from loro.backend.builders.excel import create_excel
 
 
 class Dictionary:
-    def __init__(self, workbook):
+    def __init__(self, app):
         self.log = get_logger('Dictionary')
-        self.source, self.target = ENV['Projects']['Default']['Languages']
-        TARGET_DIR = get_project_target_dir(self.source, self.target)
+        self.app = app
+        self.cache = {}
+
+    def __del__(self):
+        self.log.debug("Read from File[%d] / Read from Memory[%d]", self.stats['rff'], self.stats['rfm'])
+
+    def get_topics(self, workbook: str):
+        cache = self.get_cache(workbook)
+        return cache['topics']['data']
+
+    def get_subtopics(self, workbook: str):
+        subtopics = set()
+        cache = self.get_cache(workbook)
+        for topic in self.get_topics(workbook):
+            for subtopic in cache['topics']['data'][topic]:
+                subtopics.add(subtopic)
+        return subtopics
+
+    def get_tokens(self, workbook: str):
+        cache = self.get_cache(workbook)
+        return cache['tokens']['data']
+
+    def get_sentences(self, workbook: str):
+        cache = self.get_cache(workbook)
+        return cache['sentences']['data']
+
+    def set_cache(self, workbook:str, data = {}):
+        key = self.get_cache_key(workbook)
+        self.cache[key] = data
+        self._save_cache(workbook)
+
+    def _save_cache(self, workbook: str):
+        key = self.get_cache_key(workbook)
+        for item in self.cache[key]:
+            filepath = self.cache[key][item]['file']
+            data = self.cache[key][item]['data']
+            json_save(filepath, data)
+
+    def get_cache(self, workbook:str) -> {}:
+        source, target = ENV['Projects']['Default']['Languages']
+        TARGET_DIR = get_project_target_dir(source, target)
         WB_CONFIG_DIR = os.path.join(TARGET_DIR, workbook, '.config')
-        if not os.path.exists(WB_CONFIG_DIR):
-            os.makedirs(WB_CONFIG_DIR)
+        key = self.get_cache_key(workbook)
+        try:
+            self.cache[key]
+            return self.cache[key]
+        except KeyError:
+            self.log.debug("Creating new cache for workbook '%s'", workbook)
+            self.cache[key] = {}
 
-         # Dictionary in-memory dicts
-        self.sentences = {}
-        self.tokens = {}
-        self.topics = {}
+            ftokens = os.path.join(WB_CONFIG_DIR, '%s_tokens_%s_%s.json' % (workbook, source, target))
+            self.cache[key]['tokens'] = {}
+            self.cache[key]['tokens']['file'] = ftokens
+            if os.path.exists(ftokens):
+                self.cache[key]['tokens']['data'] = json_load(ftokens)
+            else:
+                self.cache[key]['tokens']['data'] = {}
 
-        # Initialize stats
-        self.stats = {}
-        self.posset = set()
-        for key in get_glossary_keys():
-            self.stats[key] = {}
+            fsents = os.path.join(WB_CONFIG_DIR, '%s_sentences_%s_%s.json' % (workbook, source, target))
+            self.cache[key]['sentences'] = {}
+            self.cache[key]['sentences']['file'] = fsents
+            if os.path.exists(fsents):
+                self.cache[key]['sentences']['data'] = json_load(fsents)
+            else:
+                self.cache[key]['sentences']['data'] = {}
 
-        # Dictionary configuration files
-        self.ftokens = os.path.join(WB_CONFIG_DIR, '%s_tokens_%s_%s.json' % (workbook, self.source, self.target))
-        self.fsents = os.path.join(WB_CONFIG_DIR, '%s_sentences.json' % workbook)
-        self.ftopics = os.path.join(WB_CONFIG_DIR, '%s_topics.json' % workbook)
+            ftopics = os.path.join(WB_CONFIG_DIR, '%s_topics_%s_%s.json' % (workbook, source, target))
+            self.cache[key]['topics'] = {}
+            self.cache[key]['topics']['file'] = ftopics
+            if os.path.exists(ftopics):
+                self.cache[key]['topics']['data'] = json_load(ftopics)
+            else:
+                self.cache[key]['topics']['data'] = {}
 
-        # Load (or create) personal dictionary for current project
-        self.__load_dictionary()
+            self.save(workbook)
 
-    def __load_dictionary(self):
-        if os.path.exists(self.ftokens):
-            self.tokens = json_load(self.ftokens)
-        else:
-            json_save(self.ftokens, self.tokens)
-            self.log.debug("Created new config file for tokens:")
-            self.log.debug(self.ftokens)
+            return self.cache[key]
 
-        if os.path.exists(self.fsents):
-            self.sentences = json_load(self.fsents)
-        else:
-            json_save(self.fsents, self.sentences)
-            self.log.debug("Created new config file for sentences:")
-            self.log.debug(self.fsents)
+    def get_cache_files(self, workbook:str) -> []:
+        source, target = ENV['Projects']['Default']['Languages']
+        TARGET_DIR = get_project_target_dir(source, target)
+        WB_CONFIG_DIR = os.path.join(TARGET_DIR, workbook, '.config')
+        key = "%s-%s-%s" % (workbook, source, target) # Cache name
+        files = []
+        self.get_cache(workbook)
+        for item in self.cache[key]:
+            files.append(self.cache[key][item]['file'])
+        return files
 
-        if os.path.exists(self.ftopics):
-            self.topics = json_load(self.ftopics)
-        else:
-            json_save(self.ftopics, self.topics)
-            self.log.debug("Created new config file for topics")
-            self.log.debug(self.ftopics)
-        self.log.info("Loaded %d tokens, %d sentences and %d topics", len(self.tokens), len(self.sentences), len(self.topics))
+    def initialize(self, workbook):
+        self.log.debug("Initializing workbook '%s'", workbook)
+        cache_files = self.get_cache_files(workbook)
+        for filepath in cache_files:
+            if os.path.exists(filepath):
+                os.unlink(filepath)
+                self.log.debug("\tDeleting file '%s'", os.path.basename(filepath))
 
-    def initialize(self):
-        if os.path.exists(self.ftokens):
-            os.unlink(self.ftokens)
+        for filepath in cache_files:
+            dirpath = os.path.dirname(filepath)
+            if not os.path.exists(dirpath):
+                os.makedirs(dirpath, exist_ok=True)
+                self.log.debug("\tCreating directory '%s'", dirpath)
 
-        if os.path.exists(self.fsents):
-            os.unlink(self.fsents)
+        key = self.get_cache_key(workbook)
+        del(self.cache[key])
+        self.get_cache(workbook)
+        self._save_cache(workbook)
 
-        if os.path.exists(self.ftopics):
-            os.unlink(self.ftopics)
+    def get_cache_key(self, workbook):
+        source, target = ENV['Projects']['Default']['Languages']
+        return "%s-%s-%s" % (workbook, source, target)
 
-    def __save_dictionary(self):
-        self.log.debug("Dictionary config dir: '%s'", os.path.dirname(self.ftokens))
-        for thisfile, thisdict in [
-                                    (self.ftokens, self.tokens),
-                                    (self.fsents, self.sentences),
-                                    (self.ftopics, self.topics),
-                                ]:
-            json_save(thisfile, thisdict)
-            self.log.info("Dictionary '%s' saved with %d entries", os.path.basename(thisfile), len(thisdict))
+    def save(self, workbook):
+        self._save_cache(workbook)
+        self.log.debug("Workbook '%s' dictionary saved", workbook)
 
-    def save(self):
-        self.__save_dictionary()
-        self.log.debug("Dictionary saved")
-
-    def add_sentence(self, sid: str, sentence: str, tokens: []) -> bool:
+    def add_sentence(self, workbook:str, sid: str, sentence: str, tokens: []) -> bool:
+        source, target = ENV['Projects']['Default']['Languages']
+        cache = self.get_cache(workbook)
+        sentences = cache['sentences']['data']
         added = False
-        if not sid in self.sentences:
-            self.sentences[sid] = {}
-            self.sentences[sid][self.source] = sentence
+        if sid not in sentences:
+            sentences[sid] = {}
+            sentences[sid][source] = sentence
             sid_tokens = []
-            self.sentences[sid]['tokens'] = tokens
+            sentences[sid]['tokens'] = tokens
             added = True
+            cache['sentences']['data'] = sentences
+            self.set_cache(workbook, cache)
         return added
 
-    def add_token(self, token: Token, sid: str, topic: str, subtopic: str):
+    def add_token(self, workbook:str, token: Token, sid: str, topic: str, subtopic: str):
+        cache = self.get_cache(workbook)
         try:
-            metadata = self.tokens[token.text]
-            if not sid in metadata['sentences']:
-                metadata['sentences'].extend([sid])
-            if not token.lemma_ in metadata['lemmas']:
-                metadata['lemmas'].extend([token.lemma_])
-            if not token.pos_ in metadata['postags']:
-                metadata['postags'].extend([token.pos_])
-            if not topic in metadata['topics']:
-                metadata['topics'].extend([topic.upper()])
-            if not subtopic in metadata['subtopics']:
-                metadata['subtopics'].extend([subtopic.upper()])
-            metadata['count'] += 1
+            token_data = cache['tokens']['data'][token.text]
+            if not sid in token_data['sentences']:
+                token_data['sentences'].extend([sid])
+            if not token.lemma_ in token_data['lemmas']:
+                token_data['lemmas'].extend([token.lemma_])
+            if not token.pos_ in token_data['postags']:
+                token_data['postags'].extend([token.pos_])
+            if not topic in token_data['topics']:
+                token_data['topics'].extend([topic.upper()])
+            if not subtopic in token_data['subtopics']:
+                token_data['subtopics'].extend([subtopic.upper()])
+            token_data['count'] += 1
         except KeyError:
-            metadata = {}
-            metadata['sentences']= [sid]
-            metadata['lemmas'] = [token.lemma_]
-            metadata['postags'] = [token.pos_]
-            metadata['topics'] = [topic]
-            metadata['subtopics'] = [subtopic]
-            metadata['count'] = 1
+            token_data = {}
+            token_data['sentences']= [sid]
+            token_data['lemmas'] = [token.lemma_]
+            token_data['postags'] = [token.pos_]
+            token_data['topics'] = [topic]
+            token_data['subtopics'] = [subtopic]
+            token_data['count'] = 1
         finally:
-            self.tokens[token.text] = metadata
-
-            if not topic in self.topics:
-                self.topics[topic] = {}
-                self.topics[topic][subtopic] = [sid]
+            topic_data = cache['topics']['data']
+            if not topic in topic_data:
+                topic_data[topic] = {}
+                topic_data[topic][subtopic] = [sid]
             else:
-                if not subtopic in self.topics[topic]:
-                    self.topics[topic][subtopic] = [sid]
+                if not subtopic in topic_data[topic]:
+                    topic_data[subtopic] = [sid]
                 else:
-                    sids = self.topics[topic][subtopic]
+                    sids = topic_data[topic][subtopic]
                     if not sid in sids:
                         sids.append(sid)
-                        self.topics[topic][subtopic] = sids
+                        topic_data[topic][subtopic] = sids
+            cache['topics']['data'] = topic_data
+            cache['tokens']['data'][token.text] = token_data
+            self.set_cache(workbook, cache)
 
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
         # ~ self.log.debug("Added token '%s'", token.text)
-
-    def get_tokens(self):
-        return self.tokens
 
     def get_token(name: str) -> {}:
         try:
             return self.tokens[name]
         except KeyError:
             return {}
-
-    def get_topics(self):
-        return self.topics
-
-    def get_sentences(self):
-        return self.sentences
 
