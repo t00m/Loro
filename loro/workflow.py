@@ -134,7 +134,7 @@ class Workflow(GObject.GObject):
         sid = get_hash(sentence)
 
         # Tokenize sentence
-        tokens = tokenize_sentence(sentence.lower())
+        tokens = tokenize_sentence(sentence)
 
         # Tokens
         sid_tokens = []
