@@ -27,43 +27,39 @@ from loro.backend.core.log import get_logger
 from loro import dictionary
 from loro.workbook import Workbook
 
-# ~ DIR_PROJECT_TARGET =
-# ~ DIR_WORKBOOK_OUTPUT = os.path.join(dir_project_target, "<#WORKBOOK#>")
-# ~ DIR_WORKBOOK_CONFIG = os.path.join(dir_project_target, "<#WORKBOOK#>", .config)
 
 class Workflow(GObject.GObject):
     def __init__(self, app):
         super().__init__()
-        sig = GObject.signal_lookup('workflow-finished', Workflow)
-        if sig == 0:
-            GObject.GObject.__init__(self)
-            GObject.signal_new('workflow-finished', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
-            GObject.signal_new('model-loaded', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
-        self.log = get_logger('Workflow')
         self.app = app
-        self.source, self.target = ENV['Projects']['Default']['Languages']
-        self.model_type = ENV['Languages'][self.source]['model']['default']
-        self.model_name = ENV['Languages'][self.source]['model'][self.model_type]
-        self.log.info("Workflow configured for source '%s' and target '%s' languages", self.source, self.target)
+        self.log = get_logger('Workflow')
+
+        GObject.GObject.__init__(self)
+        GObject.signal_new('workflow-finished', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
+        GObject.signal_new('model-loaded', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
+
+        source, target = ENV['Projects']['Default']['Languages']
+        self.model_type = ENV['Languages'][source]['model']['default']
+        self.model_name = ENV['Languages'][source]['model'][self.model_type]
+        self.log.info("Workflow configured for source '%s' and target '%s' languages", source, target)
         self.model_loaded = False
         self.connect('model-loaded', self.spacy_model_loaded)
-        GLib.idle_add(self.load_spacy_model)
-
-        self.log.info("Model '%s' loaded", self.model_name)
-        # ~ self.dictionary = None
+        GLib.idle_add(self.__load_spacy_model)
         self.progress = None
 
     def spacy_model_loaded(self, *args):
         self.model_loaded = True
 
-    def load_spacy_model(self):
+    def __load_spacy_model(self):
         """SpaCy model lazy loading"""
-        self.log.info("Loading model '%s' for language '%s'", self.model_name, self.source)
+        source, target = ENV['Projects']['Default']['Languages']
+        self.log.info("Loading model '%s' for language '%s'", self.model_name, source)
         load_model(self.model_name)
         self.emit('model-loaded')
         self.log.info("SpaCy model loaded successfully")
 
     def start(self, workbook: str, files: []):
+        source, target = ENV['Projects']['Default']['Languages']
         self.log.debug("Processing workbook: '%s'", workbook)
         if not self.model_loaded:
             self.log.warning("Spacy model still loading")
@@ -73,14 +69,14 @@ class Workflow(GObject.GObject):
 
         for filename in files:
             self.log.debug("Processing %s[%s]", workbook, os.path.basename(filename))
-            INPUT_DIR = get_project_input_dir(self.source)
+            INPUT_DIR = get_project_input_dir(source)
             filepath = os.path.join(INPUT_DIR, filename)
 
             # Detect language of file and validate
             result = detect_language(open(filepath).read())
             lang = result['language']
             score = int((result['score']*100))
-            valid = lang.upper() == self.source.upper() and score >= 85
+            valid = lang.upper() == source.upper() and score >= 85
 
             if valid:
                 with Progress() as self.progress:
@@ -91,8 +87,8 @@ class Workflow(GObject.GObject):
                     self.app.dictionary.save(workbook)
             else:
                 self.log.error("File will NOT be processed: '%s'", os.path.basename(filepath))
-                if lang.upper() != self.source.upper():
-                    self.log.error("Language detected ('%s') differs from source language ('%s')", lang, self.source)
+                if lang.upper() != source.upper():
+                    self.log.error("Language detected ('%s') differs from source language ('%s')", lang, source)
                 if score < 85:
                     self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
         self.emit('workflow-finished')
@@ -112,13 +108,6 @@ class Workflow(GObject.GObject):
             if jid-1 > 0:
                 for job in jobs:
                     jid, task = job.result()
-                    # ~ self.log.debug("\tJob[%d] finished: %d tokens processed", jid, len(metadata['tokens']))
-                    # ~ sid = metadata['sid']
-                    # ~ workbook[sid] = {}
-                    # ~ workbook[sid]['sentence'] = metadata['sentence']
-                    # ~ workbook[sid]['tokens'] = list(metadata['tokens'])
-                    # ~ workbook[sid]['entities'] = list(metadata['entities'])
-        # ~ return workbook
 
     def __sentence_processed(self, future):
         time.sleep(random.random())
@@ -132,11 +121,8 @@ class Workflow(GObject.GObject):
     def process_sentence(self, data: tuple) -> tuple:
         (workbook, sentence, jid, topic, subtopic, task) = data
         sid = get_hash(sentence)
+        tokens = tokenize_sentence(sentence)
 
-        # Tokenize sentence
-        tokens = tokenize_sentence(sentence.lower())
-
-        # Tokens
         sid_tokens = []
         for token in tokens:
             if is_valid_word(token.text):
@@ -145,4 +131,3 @@ class Workflow(GObject.GObject):
         self.app.dictionary.add_sentence(workbook, sid, sentence.strip(), sid_tokens)
 
         return (jid, task)
-
