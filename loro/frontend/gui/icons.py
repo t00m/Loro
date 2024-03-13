@@ -30,6 +30,9 @@ ICON['REFRESH'] = 'com.github.t00m.Loro-view-refresh-symbolic'
 ICON['DOC_NEW'] = 'com.github.t00m.Loro-document-new-symbolic'
 ICON['DOC_EDIT'] = 'com.github.t00m.Loro-document-edit-symbolic'
 ICON['DOC_DELETE'] = 'com.github.t00m.Loro-user-trash-symbolic'
+ICON['WB_NEW'] = 'com.github.t00m.Loro-workbook-add-symbolic'
+ICON['WB_EDIT'] = 'com.github.t00m.Loro-document-edit-symbolic'
+ICON['WB_DELETE'] = 'com.github.t00m.Loro-workbook-delete-symbolic'
 
 
 class IconManager(GObject.GObject):
