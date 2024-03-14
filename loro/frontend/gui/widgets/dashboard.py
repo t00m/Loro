@@ -57,11 +57,6 @@ class Dashboard(Gtk.Box):
         # ~ self.ddSubtopics.set_hexpand(False)
         # ~ toolbox.append(self.ddSubtopics)
 
-        # ~ self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=True)
-        # ~ self.ddPos.connect("notify::selected-item", self._on_postag_selected)
-        # ~ self.ddPos.set_hexpand(False)
-        # ~ toolbox.append(self.ddPos)
-
         # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
         # ~ self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_workbook)
         # ~ toolbox.append(expander)
@@ -92,11 +87,18 @@ class Dashboard(Gtk.Box):
         dashboard.append(self.hpaned)
 
         frame = Gtk.Frame()
+        vbox = self.factory.create_box_vertical(vexpand=True, hexpand=True)
+        self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=True)
+        self.ddPos.connect("notify::selected-item", self._on_postag_selected)
+        self.ddPos.set_hexpand(False)
+        vbox.append(self.ddPos)
+
         self.cvtokens = ColumnViewToken(self.app)
         self.cvtokens.get_style_context().add_class(class_name='monospace')
         selection = self.cvtokens.get_selection()
         selection.connect('selection-changed', self._on_tokens_selected)
-        frame.set_child(self.cvtokens)
+        vbox.append(self.cvtokens)
+        frame.set_child(vbox)
         self.sidebar_left.append(frame)
 
         frame = Gtk.Frame()
@@ -174,8 +176,25 @@ class Dashboard(Gtk.Box):
     def _on_workbook_selected(self, *args):
         self.clear_dashboard()
         workbook = self.window.ddWorkbooks.get_selected_item()
+        if workbook is None:
+            return
+
         tokens = self.app.dictionary.get_tokens(workbook.id)
         visible = len(tokens) == 0
+
+        # Update POS Dropbox
+        postags = set()
+        for key in tokens:
+            for postag in tokens[key]['postags']:
+                postags.add(postag)
+
+        data = []
+        data.append(("ALL", "All Parts Of Speech"))
+        for postag in postags:
+            title = explain_term(postag).title()
+            data.append((postag, explain_term(postag).title()))
+        self.actions.dropdown_populate(self.ddPos, POSTag, data)
+
         self.log.debug("Status Page visible? %s", visible)
         if self.window is not None:
             self.window.status_page.set_visible(visible)
@@ -184,23 +203,22 @@ class Dashboard(Gtk.Box):
             else:
                 self.window.viewstack.set_visible_child_name('dashboard')
 
-        if workbook is None:
-            return
 
-        items = []
-        lenmax = 25
-        for key in tokens:
-            lemma = tokens[key]['lemmas'][0]
-            items.append(Token(id=key, title=key))
-            if len(key) > lenmax:
-                lenmax = len(key)
-        self.cvtokens.update(items)
-        self.log.info("Workbook['%s']: %d tokens", workbook.id, len(tokens.keys()))
-        if lenmax < 25:
-            lenmax = 25
-        cur_pos = self.hpaned.get_position()
-        new_pos = lenmax*8
-        self.hpaned.set_position(new_pos)
+
+        # ~ items = []
+        # ~ lenmax = 25
+        # ~ for key in tokens:
+            # ~ lemma = tokens[key]['lemmas'][0]
+            # ~ items.append(Token(id=key, title=key))
+            # ~ if len(key) > lenmax:
+                # ~ lenmax = len(key)
+        # ~ self.cvtokens.update(items)
+        # ~ self.log.info("Workbook['%s']: %d tokens", workbook.id, len(tokens.keys()))
+        # ~ if lenmax < 25:
+            # ~ lenmax = 25
+        # ~ cur_pos = self.hpaned.get_position()
+        # ~ new_pos = lenmax*8
+        # ~ self.hpaned.set_position(new_pos)
 
         # ~ self.log.debug("Workbook selected: '%s'", workbook.id)
         # ~ topics = self.app.dictionary.get_topics(workbook.id)
@@ -330,35 +348,32 @@ class Dashboard(Gtk.Box):
 
 
     def _on_postag_selected(self, dropdown, gparam):
-        workbook = self.window.ddWorkbooks.get_selected_item()
-        topic = self.ddTopics.get_selected_item()
-        subtopic = self.ddSubtopics.get_selected_item()
-        tokens = self.app.dictionary.get_tokens(workbook.id)
         if len(dropdown.get_model()) > 0:
+            workbook = self.window.ddWorkbooks.get_selected_item()
             current_postag = dropdown.get_selected_item()
             postag = current_postag.id
-            selected = []
-            for key in self.selected_tokens:
-                if postag == 'ALL':
-                    selected.append(key)
-                else:
-                    if postag in tokens[key]['postags']:
-                        selected.append(key)
-                        # ~ self.log.debug("Key['%s'], POS['%s']", key, tokens[key]['postags'])
+            stats = self.app.stats.get(workbook.id)
+
+            if postag =='ALL':
+                tokens = self.app.dictionary.get_tokens(workbook.id)
+                selected = list(tokens.keys())
+            else:
+                selected = []
+                for token in stats['postags'][postag]['tokens']:
+                    selected.append(token)
 
             items = []
             lenmax = 25
             for key in selected:
-                lemma = tokens[key]['lemmas'][0]
                 items.append(Token(id=key, title=key))
                 if len(key) > lenmax:
                     lenmax = len(key)
             self.cvtokens.update(items)
-            self.log.info("Workbook['%s'] Topic['%s'] Subtopic['%s'] POStag['%s']: %d tokens", workbook.id, topic.id, subtopic.id, postag, len(selected))
+            self.log.info("Workbook['%s'] POStag['%s']: %d tokens", workbook.id, postag, len(selected))
             if lenmax < 25:
                 lenmax = 25
             cur_pos = self.hpaned.get_position()
-            new_pos = lenmax*8
+            new_pos = lenmax*10
             self.hpaned.set_position(new_pos)
 
     def update_dashboard(self, *args):
