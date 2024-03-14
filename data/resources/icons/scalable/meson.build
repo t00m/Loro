@@ -11,5 +11,17 @@ install_data(
   'application-x-addon-symbolic.svg',
   'com.github.t00m.Loro-add-symbolic.svg',
   'com.github.t00m.Loro-user-trash-symbolic.svg',
+  'com.github.t00m.Loro-workbook-add-symbolic.svg',
+  'com.github.t00m.Loro-workbook-delete-symbolic.svg',
+  'com.github.t00m.Loro-workbooks.svg',
+  'com.github.t00m.Loro-dashboard-symbolic.svg',
+  'com.github.t00m.Loro-sidebar-show-up-symbolic.svg',
+  'com.github.t00m.Loro-sidebar-show-down-symbolic.svg',
+  'com.github.t00m.Loro-sidebar-show-left-symbolic.svg',
+  'com.github.t00m.Loro-sidebar-show-right-symbolic.svg',
+  'com.github.t00m.Loro-document-open-symbolic.svg',
+  'com.github.t00m.Loro-view-pin-symbolic.svg',
+  'com.github.t00m.Loro-dialog-question-symbolic.svg',
   install_dir: join_paths(get_option('datadir'), 'loro', 'resources', 'icons', 'scalable')
 )
+

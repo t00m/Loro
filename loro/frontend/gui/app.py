@@ -16,6 +16,8 @@ from loro.workbook import Workbook
 from loro.workflow import Workflow
 from loro.dictionary import Dictionary
 from loro.stats import Stats
+from loro.frontend.gui.factory import WidgetFactory
+
 
 
 class Application(Adw.Application):
@@ -30,8 +32,7 @@ class Application(Adw.Application):
         self.workflow = Workflow(self)
         self.workbooks = Workbook(self)
         self.stats = Stats(self)
-        # ~ self.dashboard = Dashboard(self)
-        # ~ self.editor =
+        self.factory = WidgetFactory(self)
 
     def do_activate(self) -> None:
         from loro.frontend.gui.widgets.window import Window

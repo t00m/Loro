@@ -150,7 +150,7 @@ class Dictionary:
 
     def save(self, workbook):
         self._save_cache(workbook)
-        self.log.debug("Workbook '%s' dictionary saved", workbook)
+        # ~ self.log.debug("Workbook '%s' dictionary saved", workbook)
 
     def add_sentence(self, workbook:str, sid: str, sentence: str, tokens: []) -> bool:
         source, target = ENV['Projects']['Default']['Languages']

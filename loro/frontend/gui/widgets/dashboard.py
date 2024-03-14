@@ -35,95 +35,93 @@ class Dashboard(Gtk.Box):
         self.current_postag = 'ALL'
         self.selected = []
         self.selected_tokens = []
-        # ~ self.workflow = Workflow()
         self._build_dashboard()
-        self.update_dashboard()
-
-
+        GLib.timeout_add(interval=500, function=self.update_dashboard)
 
     def _build_dashboard(self):
-        self.set_margin_top(margin=6)
+        self.set_margin_top(margin=0)
         self.set_margin_end(margin=6)
         self.set_margin_bottom(margin=6)
-        self.set_margin_start(margin=6)
+        self.set_margin_start(margin=0)
 
         # Toolbox
-        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+        # ~ toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
 
-        self.ddWorkbooks = self.factory.create_dropdown_generic(Workbook, enable_search=True)
-        self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
-        self.ddWorkbooks.set_hexpand(False)
-        toolbox.append(self.ddWorkbooks)
+        # ~ self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=True)
+        # ~ self.ddTopics.connect("notify::selected-item", self._on_topic_selected)
+        # ~ self.ddTopics.set_hexpand(False)
+        # ~ toolbox.append(self.ddTopics)
 
-        self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=True)
-        self.ddTopics.connect("notify::selected-item", self._on_topic_selected)
-        self.ddTopics.set_hexpand(False)
-        toolbox.append(self.ddTopics)
+        # ~ self.ddSubtopics = self.factory.create_dropdown_generic(Item, enable_search=True)
+        # ~ self.ddSubtopics.connect("notify::selected-item", self._on_subtopic_selected)
+        # ~ self.ddSubtopics.set_hexpand(False)
+        # ~ toolbox.append(self.ddSubtopics)
 
-        self.ddSubtopics = self.factory.create_dropdown_generic(Item, enable_search=True)
-        self.ddSubtopics.connect("notify::selected-item", self._on_subtopic_selected)
-        self.ddSubtopics.set_hexpand(False)
-        toolbox.append(self.ddSubtopics)
+        # ~ self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=True)
+        # ~ self.ddPos.connect("notify::selected-item", self._on_postag_selected)
+        # ~ self.ddPos.set_hexpand(False)
+        # ~ toolbox.append(self.ddPos)
 
-        self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=True)
-        self.ddPos.connect("notify::selected-item", self._on_postag_selected)
-        self.ddPos.set_hexpand(False)
-        toolbox.append(self.ddPos)
+        # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
+        # ~ self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_workbook)
+        # ~ toolbox.append(expander)
+        # ~ toolbox.append(self.btnRefresh)
 
-        expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
-        self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_workbook)
-        toolbox.append(expander)
-        toolbox.append(self.btnRefresh)
-
-        self.append(toolbox)
+        # ~ self.append(toolbox)
 
         # Content View
         dashboard = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True, vexpand=True)
         dashboard.set_margin_top(margin=6)
 
         ## Wdigets distribution
-        self.boxLeft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
-        self.boxLeft.set_margin_end(margin=6)
-        self.boxRightUp = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
-        self.boxRightUp.set_margin_bottom(margin=6)
-        self.boxRightUp.set_margin_start(margin=6)
-        self.boxRightDown = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
-        self.boxRightDown.set_margin_top(margin=6)
-        self.boxRightDown.set_margin_start(margin=6)
+        self.sidebar_left = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
+        # ~ self.sidebar_left.set_margin_end(margin=6)
+        # ~ self.sidebar_left.set_margin_end(margin=0)
+        self.sidebar_right_up = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.sidebar_right_up.set_margin_bottom(margin=6)
+        self.sidebar_right_up.set_margin_start(margin=6)
+        self.sidebar_right_down = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.sidebar_right_down.set_margin_top(margin=6)
+        self.sidebar_right_down.set_margin_start(margin=6)
         self.vpaned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         self.hpaned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
-        self.hpaned.set_start_child(self.boxLeft)
+        self.hpaned.set_start_child(self.sidebar_left)
         self.hpaned.set_end_child(self.vpaned)
-        self.vpaned.set_start_child(self.boxRightUp)
-        self.vpaned.set_end_child(self.boxRightDown)
+        self.vpaned.set_start_child(self.sidebar_right_up)
+        self.vpaned.set_end_child(self.sidebar_right_down)
         dashboard.append(self.hpaned)
 
+        frame = Gtk.Frame()
         self.cvtokens = ColumnViewToken(self.app)
         self.cvtokens.get_style_context().add_class(class_name='monospace')
         selection = self.cvtokens.get_selection()
         selection.connect('selection-changed', self._on_tokens_selected)
-        self.boxLeft.append(self.cvtokens)
+        frame.set_child(self.cvtokens)
+        self.sidebar_left.append(frame)
 
+        frame = Gtk.Frame()
         self.cvsentences = ColumnViewSentences(self.app)
         self.cvsentences.get_style_context().add_class(class_name='monospace')
         selection = self.cvsentences.get_selection()
         selection.connect('selection-changed', self._on_sentence_selected)
         self.cvsentences.set_hexpand(True)
         self.cvsentences.set_vexpand(True)
-        self.boxRightUp.append(self.cvsentences)
+        frame.set_child(self.cvsentences)
+        self.sidebar_right_up.append(frame)
 
+        frame = Gtk.Frame()
         self.cvanalysis = ColumnViewAnalysis(self.app)
         self.cvanalysis.get_style_context().add_class(class_name='monospace')
         self.cvanalysis.set_hexpand(True)
         self.cvanalysis.set_vexpand(True)
-        self.boxRightDown.append(self.cvanalysis)
+        frame.set_child(self.cvanalysis)
+        self.sidebar_right_down.append(frame)
 
         self.append(dashboard)
 
 
-
     def _update_analysis(self, sid: str):
-        workbook = self.ddWorkbooks.get_selected_item()
+        workbook = self.window.ddWorkbooks.get_selected_item()
         tokens = self.app.dictionary.get_tokens(workbook.id)
         sentences = self.app.dictionary.get_sentences(workbook.id)
         items = []
@@ -140,47 +138,19 @@ class Dashboard(Gtk.Box):
         self.cvanalysis.update(items)
 
     def _update_sentences(self, token: Token):
-        workbook = self.ddWorkbooks.get_selected_item()
+        workbook = self.window.ddWorkbooks.get_selected_item()
         tokens = self.app.dictionary.get_tokens(workbook.id)
-        all_topics = self.app.dictionary.get_topics(workbook.id)
-        selected_topic = self.ddTopics.get_selected_item().id
-        selected_subtopic = self.ddSubtopics.get_selected_item().id
-        selected_postag = self.ddPos.get_selected_item().id
         matches = []
         token_sids = tokens[token.id]['sentences']
         for token_sid in token_sids:
-            if selected_topic == 'ALL':
-                for this_topic in all_topics:
-                    if selected_subtopic == 'ALL':
-                        for this_subtopic in all_topics[this_topic]:
-                            if token_sid in all_topics[this_topic][this_subtopic]:
-                                matches.append(token_sid)
-                    else:
-                        if token_sid in all_topics[this_topic][selected_subtopic]:
-                            matches.append(token_sid)
-            else:
-                if selected_subtopic == 'ALL':
-                    for this_subtopic in all_topics[selected_topic]:
-                        if token_sid in all_topics[selected_topic][this_subtopic]:
-                            matches.append(token_sid)
-                else:
-                    if token_sid in all_topics[selected_topic][selected_subtopic]:
-                        matches.append(token_sid)
-
+            matches.append(token_sid)
         sentences = self.app.dictionary.get_sentences(workbook.id)
         items = []
         for sid in matches:
             sentence = sentences[sid]['DE']
             items.append(Sentence(id=sid, title=sentence))
         self.cvsentences.update(items)
-        self.log.info("Workbook['%s'] Topic['%s'] Subtopic['%s'] POStag['%s'] Token['%s']: %d sentences", workbook.id, selected_topic, selected_subtopic, selected_postag, token.id, len(matches))
-
-        # ~ for topic in token_topics:
-            # ~ for subtopic in topics[topic]:
-                # ~ for sid in tokens[token.id]['sentences']:
-                    # ~ if sid in topics[topic][subtopic]:
-                        # ~ self.log.info("Token %s found in %s > %s:", token.id, topic, subtopic)
-                        # ~ self.log.info("\t%s", sid)
+        self.log.info("Workbook['%s'] Token['%s']: %d sentences", workbook.id, token.id, len(matches))
 
     def _on_tokens_selected(self, selection, position, n_items):
         model = selection.get_model()
@@ -199,21 +169,46 @@ class Dashboard(Gtk.Box):
         for index in range(bitset.get_size()):
             pos = bitset.get_nth(index)
             sentence = model.get_item(pos)
-            self.log.info("%s", sentence.title)
         self._update_analysis(sentence.id)
 
     def _on_workbook_selected(self, *args):
         self.clear_dashboard()
-        workbook = self.ddWorkbooks.get_selected_item()
+        workbook = self.window.ddWorkbooks.get_selected_item()
+        tokens = self.app.dictionary.get_tokens(workbook.id)
+        visible = len(tokens) == 0
+        self.log.debug("Status Page visible? %s", visible)
+        if self.window is not None:
+            self.window.status_page.set_visible(visible)
+            if visible:
+                self.window.viewstack.set_visible_child_name('status')
+            else:
+                self.window.viewstack.set_visible_child_name('dashboard')
+
         if workbook is None:
             return
+
+        items = []
+        lenmax = 25
+        for key in tokens:
+            lemma = tokens[key]['lemmas'][0]
+            items.append(Token(id=key, title=key))
+            if len(key) > lenmax:
+                lenmax = len(key)
+        self.cvtokens.update(items)
+        self.log.info("Workbook['%s']: %d tokens", workbook.id, len(tokens.keys()))
+        if lenmax < 25:
+            lenmax = 25
+        cur_pos = self.hpaned.get_position()
+        new_pos = lenmax*8
+        self.hpaned.set_position(new_pos)
+
         # ~ self.log.debug("Workbook selected: '%s'", workbook.id)
-        topics = self.app.dictionary.get_topics(workbook.id)
-        data = []
-        data.append(("ALL", "All topics"))
-        for topic in topics:
-            data.append((topic.upper(), topic.title()))
-        self.actions.dropdown_populate(self.ddTopics, Topic, data)
+        # ~ topics = self.app.dictionary.get_topics(workbook.id)
+        # ~ data = []
+        # ~ data.append(("ALL", "All topics"))
+        # ~ for topic in topics:
+            # ~ data.append((topic.upper(), topic.title()))
+        # ~ self.actions.dropdown_populate(self.ddTopics, Topic, data)
 
     def clear_dashboard(self):
         self.cvtokens.clear()
@@ -221,7 +216,7 @@ class Dashboard(Gtk.Box):
         self.cvanalysis.clear()
 
     def _update_workbook(self, *args):
-        workbook = self.ddWorkbooks.get_selected_item()
+        workbook = self.window.ddWorkbooks.get_selected_item()
         self.app.workflow.connect('workflow-finished', self.update_dashboard)
         files = self.app.workbooks.get_files(workbook.id)
         GLib.idle_add(self.app.workflow.start, workbook.id, files)
@@ -259,7 +254,7 @@ class Dashboard(Gtk.Box):
         if current_topic is None:
             return
         # ~ self.log.debug("Topic selected: '%s'", current_topic.id)
-        workbook = self.ddWorkbooks.get_selected_item()
+        workbook = self.window.ddWorkbooks.get_selected_item()
         topics = self.app.dictionary.get_topics(workbook.id)
         # ~ self.log.debug("Displaying subtopics for topic '%s'", current_topic.id)
         data = []
@@ -289,7 +284,7 @@ class Dashboard(Gtk.Box):
             return
 
         selected = []
-        workbook = self.ddWorkbooks.get_selected_item()
+        workbook = self.window.ddWorkbooks.get_selected_item()
         tokens = self.app.dictionary.get_tokens(workbook.id)
         for key in tokens.keys():
             if current_topic.id == 'ALL':
@@ -335,7 +330,7 @@ class Dashboard(Gtk.Box):
 
 
     def _on_postag_selected(self, dropdown, gparam):
-        workbook = self.ddWorkbooks.get_selected_item()
+        workbook = self.window.ddWorkbooks.get_selected_item()
         topic = self.ddTopics.get_selected_item()
         subtopic = self.ddSubtopics.get_selected_item()
         tokens = self.app.dictionary.get_tokens(workbook.id)
@@ -366,27 +361,15 @@ class Dashboard(Gtk.Box):
             new_pos = lenmax*8
             self.hpaned.set_position(new_pos)
 
-
     def update_dashboard(self, *args):
+        self.window = self.app.get_main_window()
+        if self.window is None:
+            # ~ self.log.warning("Window still not ready! Keep waiting...")
+            return True
         workbooks = self.app.workbooks.get_all()
         data = []
         for workbook in workbooks.keys():
             data.append((workbook, workbook))
-        self.actions.dropdown_populate(self.ddWorkbooks, Workbook, data)
-
-        # ~ # Update topics
-        # ~ topics = self.app.dictionary.get_topics()
-        # ~ data = []
-        # ~ data.append(("ALL", "All topics"))
-        # ~ for topic in topics.keys():
-            # ~ data.append((topic.upper(), topic.title()))
-        # ~ self.actions.dropdown_populate(self.ddTopics, Topic, data)
-
-        # ~ # Update P-O-S
-        # ~ fpos = self.app.dictionary.get_file_pos()
-        # ~ adict = json_load(fpos)
-        # ~ data = []
-        # ~ for key in adict.keys():
-            # ~ title = explain_term(key).title()
-            # ~ data.append((key, title))
-        # ~ self.actions.dropdown_populate(self.ddPos, Item, data)
+        dd_workbooks = self.window.get_dropdown_workbooks()
+        self.actions.dropdown_populate(dd_workbooks, Workbook, data)
+        return False
