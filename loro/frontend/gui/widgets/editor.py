@@ -59,13 +59,13 @@ class Editor(Gtk.Box):
         editor.set_margin_top(margin=6)
 
         ## Wdigets distribution
-        self.boxLeft = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
-        self.boxLeft.set_margin_end(margin=6)
-        self.boxRight = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
-        self.boxRight.set_margin_start(margin=6)
+        self.sidebar_left = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
+        self.sidebar_left.set_margin_end(margin=6)
+        self.sidebar_right = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.sidebar_right.set_margin_start(margin=6)
         self.hpaned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
-        self.hpaned.set_start_child(self.boxLeft)
-        self.hpaned.set_end_child(self.boxRight)
+        self.hpaned.set_start_child(self.sidebar_left)
+        self.hpaned.set_end_child(self.sidebar_right)
         self.hpaned.set_position(450)
         self.hpaned.set_resize_start_child(False)
         editor.append(self.hpaned)
@@ -78,26 +78,26 @@ class Editor(Gtk.Box):
         self.ddWorkbooks.set_hexpand(False)
         hbox.append(self.ddWorkbooks)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
-        self.btnWBAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], tooltip='Add a new workbook', callback=self._add_workbook)
-        self.btnWBEdit = self.factory.create_button(icon_name=ICON['DOC_EDIT'], tooltip='Edit workbook name', callback=self._edit_workbook)
-        self.btnWBDel = self.factory.create_button(icon_name=ICON['DOC_DELETE'], tooltip='Delete selected workbook', callback=self._delete_workbook)
+        self.btnWBAdd = self.factory.create_button(icon_name=ICON['WB_NEW'], width=16, tooltip='Add a new workbook', callback=self._add_workbook)
+        self.btnWBEdit = self.factory.create_button(icon_name=ICON['WB_EDIT'], width=16, tooltip='Edit workbook name', callback=self._edit_workbook)
+        self.btnWBDel = self.factory.create_button(icon_name=ICON['WB_DELETE'], width=16, tooltip='Delete selected workbook', callback=self._delete_workbook)
         hbox.append(expander)
         hbox.append(self.btnWBAdd)
         hbox.append(self.btnWBEdit)
         hbox.append(self.btnWBDel)
-        self.boxLeft.append(hbox)
+        self.sidebar_left.append(hbox)
 
         ### Files Toolbox
         vbox = self.factory.create_box_horizontal(spacing=6, margin=6, vexpand=True, hexpand=False)
         toolbox = self.factory.create_box_vertical()
         toolbox.set_margin_bottom(margin=6)
-        self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], tooltip='Add new document', callback=self._add_document)
-        self.btnRename = self.factory.create_button(icon_name=ICON['DOC_EDIT'], tooltip='Rename document', callback=self._rename_document)
-        self.btnImport= self.factory.create_button(icon_name=ICON['DOC_DELETE'], tooltip='Import docs', callback=self._import_document)
+        self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], width=16, tooltip='Add new document', callback=self._add_document)
+        self.btnRename = self.factory.create_button(icon_name=ICON['DOC_EDIT'], width=16, tooltip='Rename document', callback=self._rename_document)
+        self.btnImport= self.factory.create_button(icon_name=ICON['DOC_DELETE'], width=16, tooltip='Import docs', callback=self._import_document)
         separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-        self.btnDelete = self.factory.create_button(icon_name=ICON['TRASH'], tooltip='Delete doc', callback=self._delete_document)
+        self.btnDelete = self.factory.create_button(icon_name=ICON['TRASH'], width=16, tooltip='Delete doc', callback=self._delete_document)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
-        self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_editor)
+        self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], width=16, tooltip='Refresh', callback=self._update_editor)
         toolbox.append(self.btnAdd)
         toolbox.append(self.btnRename)
         toolbox.append(self.btnImport)
@@ -117,7 +117,7 @@ class Editor(Gtk.Box):
         selection = self.cvfiles.get_selection()
         selection.connect('selection-changed', self._on_filename_selected)
         vbox.append(self.cvfiles)
-        self.boxLeft.append(vbox)
+        self.sidebar_left.append(vbox)
 
         ## Right: Editor view
         ### Editor Toolbox
@@ -125,13 +125,13 @@ class Editor(Gtk.Box):
         toolbox.set_margin_bottom(margin=6)
         self.btnSave = self.factory.create_button(icon_name='document-save-symbolic', tooltip='Save changes', callback=self._save_document)
         toolbox.append(self.btnSave)
-        self.boxRight.append(toolbox)
+        self.sidebar_right.append(toolbox)
 
         ### Editor GtkSource
         scrwindow = Gtk.ScrolledWindow()
         self.editorview = self.factory.create_editor_view()
         scrwindow.set_child(self.editorview)
-        self.boxRight.append(scrwindow)
+        self.sidebar_right.append(scrwindow)
         self.append(editor)
 
     def _on_filename_toggled(self, toggle_button, filepath):
@@ -257,7 +257,6 @@ class Editor(Gtk.Box):
 
     def _update_files_view(self, wbname: str):
         # Update files
-        self.log.debug("Eo!!!")
         source, target = ENV['Projects']['Default']['Languages']
         files = get_inputs(source)
         items = []

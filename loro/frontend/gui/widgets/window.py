@@ -2,12 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from gi.repository import Gio, Adw, Gtk  # type:ignore
+from gi.repository import Gio, Adw, GObject, Gtk  # type:ignore
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
-# ~ from loro.frontend.gui.widgets.dashboard import Dashboard
-from loro.frontend.gui.widgets.editor import Editor
+from loro.frontend.gui.models import Workbook
 from loro.frontend.gui.widgets.preferences import PreferencesWindow
 from loro.frontend.gui.widgets.status import StatusWindow
 from loro.frontend.gui.widgets.editor import Editor
@@ -22,24 +21,60 @@ class Window(Adw.ApplicationWindow):
     def __init__(self, **kwargs) -> None:
         self.log = get_logger('Window')
         super().__init__(**kwargs)
+        GObject.GObject.__init__(self)
+        GObject.signal_new('window-presented', Window, GObject.SignalFlags.RUN_LAST, None, () )
+        self.connect('window-presented', self._finish_loading)
         self.app = kwargs['application']
-        # ~ global WINDOW
-        # ~ WINDOW = self
         self._create_actions()
         self._build_ui()
-        self.editor.connect('workbooks-updated', self.dashboard.update_dashboard)
         self.present()
+        self.emit('window-presented')
 
-    def _build_ui(self):
-        self.set_title(_("Loro"))
-        mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-
+    def _finish_loading(self, *args):
+        # ViewSwitcher
         # Widgets
         self.editor = Editor(self.app)
         self.dashboard = Dashboard(self.app)
+        self.status = Adw.StatusPage()
+        spinner = Gtk.Spinner()
+        spinner.set_spinning(True)
+        spinner.start()
+        self.status.set_title('Loading spaCy')
+        self.status.set_child(spinner)
+        self.viewstack = Adw.ViewStack()
+        self.viewstack.connect("notify::visible-child", self._stack_page_changed)
+        self.viewstack.add_titled_with_icon(self.dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
+        self.stack_page_editor = self.viewstack.add_titled_with_icon(self.editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
+
+        self.status_page = self.viewstack.add_titled_with_icon(self.status, 'status', 'Status', 'com.github.t00m.Loro-dialog-question-symbolic')
+        self.status_page.set_visible(True)
+        self.viewstack.set_visible_child_name('status')
+
+        viewswitcher = Adw.ViewSwitcher()
+        viewswitcher.set_stack(self.viewstack)
+        self.headerbar.set_title_widget(viewswitcher)
+        self.mainbox.append(self.headerbar)
+        self.mainbox.append(self.viewstack)
+        self.set_content(self.mainbox)
+        self.dashboard.update_dashboard()
+        self.editor.connect('workbooks-updated', self.dashboard.update_dashboard)
+
+        # Set widgets state
+        self.btnSidebarLeft.set_active(True)
+
+    def _stack_page_changed(self, viewstack, gparam):
+        page = viewstack.get_visible_child_name()
+        if page == 'workbooks':
+            self.hboxDashboard.set_visible(False)
+        else:
+            self.hboxDashboard.set_visible(True)
+
+    def _build_ui(self):
+        self.set_title(_("Loro"))
+        self.mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         # Headerbar with ViewSwitcher
-        headerbar = Adw.HeaderBar()
+        self.headerbar = Adw.HeaderBar()
 
         # Menu
         menu: Gio.Menu = Gio.Menu.new()
@@ -56,19 +91,18 @@ class Window(Adw.ApplicationWindow):
             icon_name="open-menu-symbolic",
             tooltip_text=_("Main Menu"),
         )
-        headerbar.pack_start(menu_btn)
+        self.headerbar.pack_start(menu_btn)
 
-        # ViewSwitcher
-        viewstack = Adw.ViewStack()
-        viewstack.add_titled_with_icon(self.dashboard, 'dashboard', 'Dashboard', 'accessories-dictionary-symbolic')
-        viewstack.add_titled_with_icon(self.editor, 'editor', 'Documents', 'emblem-documents-symbolic')
+        self.hboxDashboard = self.app.factory.create_box_horizontal(spacing=3, margin=0)
+        self.btnSidebarLeft = self.app.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', callback=self.toggle_sidebar_left)
+        self.hboxDashboard.append(self.btnSidebarLeft)
 
-        viewswitcher = Adw.ViewSwitcher()
-        viewswitcher.set_stack(viewstack)
-        headerbar.set_title_widget(viewswitcher)
-        mainbox.append(headerbar)
-        mainbox.append(viewstack)
-        self.set_content(mainbox)
+        self.ddWorkbooks = self.app.factory.create_dropdown_generic(Workbook, enable_search=True)
+        self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
+        self.ddWorkbooks.set_hexpand(False)
+        self.hboxDashboard.append(self.ddWorkbooks)
+
+        self.headerbar.pack_start(self.hboxDashboard)
 
         # TODO:
         # ~ from loro.frontend.gui.gsettings import GSettings
@@ -81,12 +115,26 @@ class Window(Adw.ApplicationWindow):
         # Setup theme
         # ~ Adw.StyleManager.get_default().set_color_scheme(GSettings.get("theme"))
 
+    def toggle_sidebar_left(self, toggle_button, data):
+        visible = toggle_button.get_active()
+        self.dashboard.sidebar_left.set_visible(visible)
+        if visible:
+            self.dashboard.sidebar_left.set_margin_start(6)
+            self.dashboard.sidebar_left.set_margin_end(6)
+        else:
+            self.dashboard.sidebar_left.set_margin_start(0)
+            self.dashboard.sidebar_left.set_margin_end(0)
+
+    def get_dropdown_workbooks(self):
+        return self.ddWorkbooks
+
+    def _on_workbook_selected(self, *args):
+        self.dashboard._on_workbook_selected()
+
     def _create_actions(self) -> None:
         """
         Create actions for main menu
         """
-        self.log.debug("Creating actions")
-
         def _create_action(name: str, callback: callable, shortcuts=None) -> None:
             action: Gio.SimpleAction = Gio.SimpleAction.new(name, None)
             action.connect("activate", callback)

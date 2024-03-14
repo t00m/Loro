@@ -173,6 +173,15 @@ class WidgetFactory:
             button.connect('toggled', callback)
         return button
 
+    def create_button_check_icon(self, icon_name: str = '', active: bool = False, callback=None) -> Gtk.CheckButton:
+        icon = self.icons.get_image_by_name(name=icon_name)
+        button = Gtk.CheckButton()
+        button.set_child(icon)
+        button.set_active(active)
+        if callback is not None:
+            button.connect('toggled', callback)
+        return button
+
     def create_button_menu(self, icon_name: str = '', title:str = '', css_classes: list = [], menu: Gio.Menu = None)-> Gtk.MenuButton:
         """Gtk.Menubutton with a menu"""
         child=self.create_button_content(icon_name=icon_name, title=title, css_classes=css_classes)
