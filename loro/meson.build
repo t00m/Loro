@@ -9,10 +9,11 @@ configure_file(
 
 # Python sources
 sources = [
-  'main.py',
-  'workflow.py',
   'dictionary.py',
-  'workbook.py'
+  'main.py',
+  'stats.py',
+  'workbook.py',
+  'workflow.py'
 ]
 
 install_data(sources, install_dir: moduledir)
