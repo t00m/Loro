@@ -13,6 +13,7 @@ class Stats(GObject.GObject):
         super().__init__()
         self.app = app
         self.log = get_logger('Stats')
+        self.workbooks = {}
 
         GObject.GObject.__init__(self)
         GObject.signal_new('stats-finished', Stats, GObject.SignalFlags.RUN_LAST, None, () )
@@ -55,6 +56,13 @@ class Stats(GObject.GObject):
                             stats['lemmas'][lemma]['tokens'].append(token)
             except Exception as error:
                 self.log.error(error)
-                raise
+                stats = {}
 
+        self.workbooks[workbook] = stats
         return stats
+
+    def get(self, workbook: str) -> {}:
+        try:
+            return self.workbooks[workbook]
+        except KeyError:
+            return self.analyze(workbook)
