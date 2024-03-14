@@ -39,33 +39,33 @@ class Dashboard(Gtk.Box):
         GLib.timeout_add(interval=500, function=self.update_dashboard)
 
     def _build_dashboard(self):
-        self.set_margin_top(margin=6)
+        self.set_margin_top(margin=0)
         self.set_margin_end(margin=6)
         self.set_margin_bottom(margin=6)
-        self.set_margin_start(margin=6)
+        self.set_margin_start(margin=0)
 
         # Toolbox
-        toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+        # ~ toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
 
-        self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=True)
-        self.ddTopics.connect("notify::selected-item", self._on_topic_selected)
-        self.ddTopics.set_hexpand(False)
-        toolbox.append(self.ddTopics)
+        # ~ self.ddTopics = self.factory.create_dropdown_generic(Item, enable_search=True)
+        # ~ self.ddTopics.connect("notify::selected-item", self._on_topic_selected)
+        # ~ self.ddTopics.set_hexpand(False)
+        # ~ toolbox.append(self.ddTopics)
 
-        self.ddSubtopics = self.factory.create_dropdown_generic(Item, enable_search=True)
-        self.ddSubtopics.connect("notify::selected-item", self._on_subtopic_selected)
-        self.ddSubtopics.set_hexpand(False)
-        toolbox.append(self.ddSubtopics)
+        # ~ self.ddSubtopics = self.factory.create_dropdown_generic(Item, enable_search=True)
+        # ~ self.ddSubtopics.connect("notify::selected-item", self._on_subtopic_selected)
+        # ~ self.ddSubtopics.set_hexpand(False)
+        # ~ toolbox.append(self.ddSubtopics)
 
-        self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=True)
-        self.ddPos.connect("notify::selected-item", self._on_postag_selected)
-        self.ddPos.set_hexpand(False)
-        toolbox.append(self.ddPos)
+        # ~ self.ddPos = self.factory.create_dropdown_generic(Item, enable_search=True)
+        # ~ self.ddPos.connect("notify::selected-item", self._on_postag_selected)
+        # ~ self.ddPos.set_hexpand(False)
+        # ~ toolbox.append(self.ddPos)
 
-        expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
-        self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_workbook)
-        toolbox.append(expander)
-        toolbox.append(self.btnRefresh)
+        # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
+        # ~ self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_workbook)
+        # ~ toolbox.append(expander)
+        # ~ toolbox.append(self.btnRefresh)
 
         # ~ self.append(toolbox)
 
@@ -75,7 +75,8 @@ class Dashboard(Gtk.Box):
 
         ## Wdigets distribution
         self.sidebar_left = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
-        self.sidebar_left.set_margin_end(margin=6)
+        # ~ self.sidebar_left.set_margin_end(margin=6)
+        # ~ self.sidebar_left.set_margin_end(margin=0)
         self.sidebar_right_up = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
         self.sidebar_right_up.set_margin_bottom(margin=6)
         self.sidebar_right_up.set_margin_start(margin=6)
@@ -90,25 +91,31 @@ class Dashboard(Gtk.Box):
         self.vpaned.set_end_child(self.sidebar_right_down)
         dashboard.append(self.hpaned)
 
+        frame = Gtk.Frame()
         self.cvtokens = ColumnViewToken(self.app)
         self.cvtokens.get_style_context().add_class(class_name='monospace')
         selection = self.cvtokens.get_selection()
         selection.connect('selection-changed', self._on_tokens_selected)
-        self.sidebar_left.append(self.cvtokens)
+        frame.set_child(self.cvtokens)
+        self.sidebar_left.append(frame)
 
+        frame = Gtk.Frame()
         self.cvsentences = ColumnViewSentences(self.app)
         self.cvsentences.get_style_context().add_class(class_name='monospace')
         selection = self.cvsentences.get_selection()
         selection.connect('selection-changed', self._on_sentence_selected)
         self.cvsentences.set_hexpand(True)
         self.cvsentences.set_vexpand(True)
-        self.sidebar_right_up.append(self.cvsentences)
+        frame.set_child(self.cvsentences)
+        self.sidebar_right_up.append(frame)
 
+        frame = Gtk.Frame()
         self.cvanalysis = ColumnViewAnalysis(self.app)
         self.cvanalysis.get_style_context().add_class(class_name='monospace')
         self.cvanalysis.set_hexpand(True)
         self.cvanalysis.set_vexpand(True)
-        self.sidebar_right_down.append(self.cvanalysis)
+        frame.set_child(self.cvanalysis)
+        self.sidebar_right_down.append(frame)
 
         self.append(dashboard)
 

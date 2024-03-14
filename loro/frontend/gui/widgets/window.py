@@ -42,8 +42,10 @@ class Window(Adw.ApplicationWindow):
         self.status.set_title('Loading spaCy')
         self.status.set_child(spinner)
         self.viewstack = Adw.ViewStack()
+        self.viewstack.connect("notify::visible-child", self._stack_page_changed)
         self.viewstack.add_titled_with_icon(self.dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
-        self.viewstack.add_titled_with_icon(self.editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
+        self.stack_page_editor = self.viewstack.add_titled_with_icon(self.editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
+
         self.status_page = self.viewstack.add_titled_with_icon(self.status, 'status', 'Status', 'com.github.t00m.Loro-dialog-question-symbolic')
         self.status_page.set_visible(True)
         self.viewstack.set_visible_child_name('status')
@@ -59,6 +61,13 @@ class Window(Adw.ApplicationWindow):
 
         # Set widgets state
         self.btnSidebarLeft.set_active(True)
+
+    def _stack_page_changed(self, viewstack, gparam):
+        page = viewstack.get_visible_child_name()
+        if page == 'workbooks':
+            self.hboxDashboard.set_visible(False)
+        else:
+            self.hboxDashboard.set_visible(True)
 
     def _build_ui(self):
         self.set_title(_("Loro"))
@@ -84,13 +93,16 @@ class Window(Adw.ApplicationWindow):
         )
         self.headerbar.pack_start(menu_btn)
 
+        self.hboxDashboard = self.app.factory.create_box_horizontal(spacing=3, margin=0)
         self.btnSidebarLeft = self.app.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', callback=self.toggle_sidebar_left)
-        self.headerbar.pack_start(self.btnSidebarLeft)
+        self.hboxDashboard.append(self.btnSidebarLeft)
 
         self.ddWorkbooks = self.app.factory.create_dropdown_generic(Workbook, enable_search=True)
         self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
         self.ddWorkbooks.set_hexpand(False)
-        self.headerbar.pack_start(self.ddWorkbooks)
+        self.hboxDashboard.append(self.ddWorkbooks)
+
+        self.headerbar.pack_start(self.hboxDashboard)
 
         # TODO:
         # ~ from loro.frontend.gui.gsettings import GSettings
