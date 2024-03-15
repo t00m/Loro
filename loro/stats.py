@@ -13,7 +13,7 @@ class Stats(GObject.GObject):
         super().__init__()
         self.app = app
         self.log = get_logger('Stats')
-        self.workbooks = {}
+        # ~ self.workbooks = {}
 
         GObject.GObject.__init__(self)
         GObject.signal_new('stats-finished', Stats, GObject.SignalFlags.RUN_LAST, None, () )
@@ -26,8 +26,8 @@ class Stats(GObject.GObject):
         stats = {}
         stats['postags'] = {}
         stats['lemmas'] = {}
-        for token in tokens:
 
+        for token in tokens:
             # Analyze POS Tags
             try:
                 for postag in tokens[token]['postags']:
@@ -58,11 +58,13 @@ class Stats(GObject.GObject):
                 self.log.error(error)
                 stats = {}
 
-        self.workbooks[workbook] = stats
+        # ~ self.workbooks[workbook] = stats
+        self.emit('stats-finished')
         return stats
 
     def get(self, workbook: str) -> {}:
-        try:
-            return self.workbooks[workbook]
-        except KeyError:
-            return self.analyze(workbook)
+        return self.analyze(workbook)
+        # ~ try:
+            # ~ return self.workbooks[workbook]
+        # ~ except KeyError:
+            # ~ return self.analyze(workbook)

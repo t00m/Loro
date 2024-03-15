@@ -143,14 +143,22 @@ class Dashboard(Gtk.Box):
         workbook = self.window.ddWorkbooks.get_selected_item()
         tokens = self.app.dictionary.get_tokens(workbook.id)
         matches = []
-        token_sids = tokens[token.id]['sentences']
-        for token_sid in token_sids:
-            matches.append(token_sid)
-        sentences = self.app.dictionary.get_sentences(workbook.id)
-        items = []
-        for sid in matches:
-            sentence = sentences[sid]['DE']
-            items.append(Sentence(id=sid, title=sentence))
+        try:
+            token_sids = tokens[token.id]['sentences']
+            for token_sid in token_sids:
+                matches.append(token_sid)
+            sentences = self.app.dictionary.get_sentences(workbook.id)
+            items = []
+            for sid in matches:
+                self.log.debug(sid)
+                sentence = sentences[sid]['DE']
+                items.append(Sentence(id=sid, title=sentence))
+        except Exception as error:
+            self.log.error(error)
+            raise
+            items = []
+            items.append(Sentence(id='#ERROR#', title=error))
+        self.log.debug(items)
         self.cvsentences.update(items)
         self.log.info("Workbook['%s'] Token['%s']: %d sentences", workbook.id, token.id, len(matches))
 
@@ -179,6 +187,7 @@ class Dashboard(Gtk.Box):
         if workbook is None:
             return
 
+        self.app.stats.get(workbook.id)
         tokens = self.app.dictionary.get_tokens(workbook.id)
         visible = len(tokens) == 0
 
@@ -234,7 +243,12 @@ class Dashboard(Gtk.Box):
         self.cvanalysis.clear()
 
     def _update_workbook(self, *args):
+        self.window = self.app.get_main_window()
+        if self.window is None:
+            # ~ self.log.warning("Window still not ready! Keep waiting...")
+            return True
         workbook = self.window.ddWorkbooks.get_selected_item()
+        self.log.debug("Workbook['%s'] update requested", workbook.id)
         self.app.workflow.connect('workflow-finished', self.update_dashboard)
         files = self.app.workbooks.get_files(workbook.id)
         GLib.idle_add(self.app.workflow.start, workbook.id, files)
@@ -352,7 +366,15 @@ class Dashboard(Gtk.Box):
             workbook = self.window.ddWorkbooks.get_selected_item()
             current_postag = dropdown.get_selected_item()
             postag = current_postag.id
+            self.log.debug("POStag: '%s'", postag)
             stats = self.app.stats.get(workbook.id)
+            # ~ self.log.debug("Stats: %s", stats)
+            # ~ return
+
+            # ~ if stats is None:
+                # ~ self._update_workbook()
+                # ~ return
+            # ~ self.log.debug(stats['postags'])
 
             if postag =='ALL':
                 tokens = self.app.dictionary.get_tokens(workbook.id)
@@ -379,7 +401,7 @@ class Dashboard(Gtk.Box):
     def update_dashboard(self, *args):
         self.window = self.app.get_main_window()
         if self.window is None:
-            # ~ self.log.warning("Window still not ready! Keep waiting...")
+            self.log.warning("Window still not ready! Keep waiting...")
             return True
         workbooks = self.app.workbooks.get_all()
         data = []

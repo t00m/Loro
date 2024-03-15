@@ -34,6 +34,9 @@ def get_project_output_dir(source: str) -> str:
 def get_project_target_dir(source: str, target: str) -> str:
     return os.path.join(get_project_output_dir(source), target)
 
+def get_project_target_workbook_dir(source: str, target: str, workbook: str):
+    return os.path.join(get_project_target_dir(source, target), workbook)
+
 def setup_project_dirs(source: str, target: str) -> None:
     dir_project_source = get_project_dir(source)
     dir_project_config = get_project_config_dir(source)

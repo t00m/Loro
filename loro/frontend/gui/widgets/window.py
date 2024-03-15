@@ -11,6 +11,7 @@ from loro.frontend.gui.widgets.preferences import PreferencesWindow
 from loro.frontend.gui.widgets.status import StatusWindow
 from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.dashboard import Dashboard
+from loro.frontend.gui.icons import ICON
 
 
 # ~ WINDOW: Window = None
@@ -61,6 +62,7 @@ class Window(Adw.ApplicationWindow):
 
         # Set widgets state
         self.btnSidebarLeft.set_active(True)
+        self.btnRefresh.connect('clicked', self.dashboard._update_workbook)
 
     def _stack_page_changed(self, viewstack, gparam):
         page = viewstack.get_visible_child_name()
@@ -103,6 +105,11 @@ class Window(Adw.ApplicationWindow):
         self.hboxDashboard.append(self.ddWorkbooks)
 
         self.headerbar.pack_start(self.hboxDashboard)
+
+        # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
+        self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh') #, callback=self._update_workbook)
+        # ~ toolbox.append(expander)
+        self.headerbar.pack_end(self.btnRefresh)
 
         # TODO:
         # ~ from loro.frontend.gui.gsettings import GSettings
