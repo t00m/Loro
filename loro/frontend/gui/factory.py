@@ -145,7 +145,7 @@ class WidgetFactory:
 
         return button
 
-    def create_button_toggle(self, icon_name: str = '', title: str = '', callback=None, css_classes=[], data=None) -> Gtk.ToggleButton:
+    def create_button_toggle(self, icon_name: str = '', title: str = '', tooltip: str = '', callback=None, css_classes=[], data=None) -> Gtk.ToggleButton:
         button = Gtk.ToggleButton(css_classes=css_classes)
         hbox = self.create_box_horizontal()
         if len(icon_name.strip()) == 0:
@@ -156,6 +156,9 @@ class WidgetFactory:
         label = Gtk.Label()
         if len(title) > 0:
             label.set_markup(title)
+
+        if len(tooltip) > 0:
+            button.set_tooltip_markup(tooltip)
 
         hbox.append(icon)
         hbox.append(label)

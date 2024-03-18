@@ -33,6 +33,9 @@ class ColLabel(Gtk.Box):
     def __init__(self):
         super(ColLabel, self).__init__()
         label = Gtk.Label()
+        label.set_single_line_mode(False)
+        label.set_selectable(False)
+        label.set_ellipsize(False)
         self.append(label)
 
 class ColButton(Gtk.Box):

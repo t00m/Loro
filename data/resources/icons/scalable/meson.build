@@ -26,6 +26,8 @@ install_data(
   'com.github.t00m.Loro-selector-add-all.svg',
   'com.github.t00m.Loro-selector-remove.svg',
   'com.github.t00m.Loro-selector-remove-all.svg',
+  'com.github.t00m.Loro-document-open-symbolic.svg',
+  'com.github.t00m.Loro-document-save-symbolic.svg',
   install_dir: join_paths(get_option('datadir'), 'loro', 'resources', 'icons', 'scalable')
 )
 

@@ -33,97 +33,71 @@ class ColumnViewFiles(ColumnView):
         self.cv.append_column(self.column_title)
         self.column_title.set_title(_('Filename'))
         self.column_title.set_expand(True)
-        self.column_title.set_visible(False)
+        self.column_title.set_visible(True)
         self.set_has_frame(True)
 
-        self.factory_topic = Gtk.SignalListItemFactory()
-        self.factory_topic.connect("setup", self._on_factory_setup_topic)
-        self.factory_topic.connect("bind", self._on_factory_bind_topic)
+        # ~ self.factory_topic = Gtk.SignalListItemFactory()
+        # ~ self.factory_topic.connect("setup", self._on_factory_setup_topic)
+        # ~ self.factory_topic.connect("bind", self._on_factory_bind_topic)
 
-        self.factory_subtopic = Gtk.SignalListItemFactory()
-        self.factory_subtopic.connect("setup", self._on_factory_setup_subtopic)
-        self.factory_subtopic.connect("bind", self._on_factory_bind_subtopic)
+        # ~ self.factory_subtopic = Gtk.SignalListItemFactory()
+        # ~ self.factory_subtopic.connect("setup", self._on_factory_setup_subtopic)
+        # ~ self.factory_subtopic.connect("bind", self._on_factory_bind_subtopic)
 
-        self.factory_suffix = Gtk.SignalListItemFactory()
-        self.factory_suffix.connect("setup", self._on_factory_setup_suffix)
-        self.factory_suffix.connect("bind", self._on_factory_bind_suffix)
-
-        # ~ self.factory_belongsto = Gtk.SignalListItemFactory()
-        # ~ self.factory_belongsto.connect("setup", self._on_factory_setup_belongsto)
-        # ~ self.factory_belongsto.connect("bind", self._on_factory_bind_belongsto)
+        # ~ self.factory_suffix = Gtk.SignalListItemFactory()
+        # ~ self.factory_suffix.connect("setup", self._on_factory_setup_suffix)
+        # ~ self.factory_suffix.connect("bind", self._on_factory_bind_suffix)
 
         # Setup columnview columns
-        self.column_topic = Gtk.ColumnViewColumn.new(_('Topic'), self.factory_topic)
-        self.column_subtopic = Gtk.ColumnViewColumn.new(_('Subtopic'), self.factory_subtopic)
-        self.column_suffix = Gtk.ColumnViewColumn.new(_('Suffix'), self.factory_suffix)
-        # ~ self.column_belongsto = Gtk.ColumnViewColumn.new(_('Active?'), self.factory_belongsto)
+        # ~ self.column_topic = Gtk.ColumnViewColumn.new(_('Topic'), self.factory_topic)
+        # ~ self.column_subtopic = Gtk.ColumnViewColumn.new(_('Subtopic'), self.factory_subtopic)
+        # ~ self.column_suffix = Gtk.ColumnViewColumn.new(_('Suffix'), self.factory_suffix)
 
-        self.cv.append_column(self.column_topic)
-        self.cv.append_column(self.column_subtopic)
-        self.cv.append_column(self.column_suffix)
-        # ~ self.cv.append_column(self.column_belongsto)
+        # ~ self.cv.append_column(self.column_topic)
+        # ~ self.cv.append_column(self.column_subtopic)
+        # ~ self.cv.append_column(self.column_suffix)
 
-        self.column_topic.set_expand(True)
-        self.column_subtopic.set_expand(True)
+        # ~ self.column_topic.set_expand(True)
+        # ~ self.column_subtopic.set_expand(True)
 
         # Sorting
-        self.prop_topic_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='topic')
-        self.prop_subtopic_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='subtopic')
-        self.prop_count_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_number_func, user_data='count')
-        self.prop_translation_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='translation')
+        # ~ self.prop_topic_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='topic')
+        # ~ self.prop_subtopic_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='subtopic')
+        # ~ self.prop_count_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_number_func, user_data='count')
+        # ~ self.prop_translation_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='translation')
 
-        self.column_topic.set_sorter(self.prop_topic_sorter)
-        self.column_subtopic.set_sorter(self.prop_subtopic_sorter)
+        # ~ self.column_topic.set_sorter(self.prop_topic_sorter)
+        # ~ self.column_subtopic.set_sorter(self.prop_subtopic_sorter)
 
-        # Default sorting by date
-        # ~ self.cv.sort_by_column(self.column_title, Gtk.SortType.DESCENDING)
-
-    # ~ def set_toggle_button_callback(self, callback):
-        # ~ self.toggle_button_callback = callback
-
-    # ~ def set_column_belongs_visible(self, visible):
-        # ~ self.column_belongsto.set_visible(visible)
-
-    def _on_factory_setup_topic(self, factory, list_item):
-        box = ColLabel()
-        list_item.set_child(box)
-
-    def _on_factory_bind_topic(self, factory, list_item):
-        box = list_item.get_child()
-        item = list_item.get_item()
-        label = box.get_first_child()
-        label.set_markup(item.topic)
-
-    def _on_factory_setup_subtopic(self, factory, list_item):
-        box = ColLabel()
-        list_item.set_child(box)
-
-    def _on_factory_bind_subtopic(self, factory, list_item):
-        box = list_item.get_child()
-        item = list_item.get_item()
-        label = box.get_first_child()
-        label.set_markup(item.subtopic)
-
-    def _on_factory_setup_suffix(self, factory, list_item):
-        box = ColLabel()
-        list_item.set_child(box)
-
-    def _on_factory_bind_suffix(self, factory, list_item):
-        box = list_item.get_child()
-        item = list_item.get_item()
-        label = box.get_first_child()
-        label.set_markup(item.suffix)
-
-    # ~ def _on_factory_setup_belongsto(self, factory, list_item):
-        # ~ box = ColCheck()
+    # ~ def _on_factory_setup_topic(self, factory, list_item):
+        # ~ box = ColLabel()
         # ~ list_item.set_child(box)
 
-    # ~ def _on_factory_bind_belongsto(self, factory, list_item):
+    # ~ def _on_factory_bind_topic(self, factory, list_item):
         # ~ box = list_item.get_child()
         # ~ item = list_item.get_item()
-        # ~ checkbox = box.get_first_child()
-        # ~ checkbox.connect('toggled', self.toggle_button_callback, item)
-        # ~ checkbox.set_active(item.belongs)
+        # ~ label = box.get_first_child()
+        # ~ label.set_markup(item.topic)
+
+    # ~ def _on_factory_setup_subtopic(self, factory, list_item):
+        # ~ box = ColLabel()
+        # ~ list_item.set_child(box)
+
+    # ~ def _on_factory_bind_subtopic(self, factory, list_item):
+        # ~ box = list_item.get_child()
+        # ~ item = list_item.get_item()
+        # ~ label = box.get_first_child()
+        # ~ label.set_markup(item.subtopic)
+
+    # ~ def _on_factory_setup_suffix(self, factory, list_item):
+        # ~ box = ColLabel()
+        # ~ list_item.set_child(box)
+
+    # ~ def _on_factory_bind_suffix(self, factory, list_item):
+        # ~ box = list_item.get_child()
+        # ~ item = list_item.get_item()
+        # ~ label = box.get_first_child()
+        # ~ label.set_markup(item.suffix)
 
 class ColumnViewToken(ColumnView):
     """ Custom ColumnView widget for tokens """
@@ -201,9 +175,6 @@ class ColumnViewAnalysis(ColumnView):
         self.column_postag.set_sorter(self.prop_postag_sorter)
         self.column_count.set_sorter(self.prop_count_sorter)
         self.column_translation.set_sorter(self.prop_translation_sorter)
-
-        # Default sorting by date
-        # ~ self.cv.sort_by_column(self.column_title, Gtk.SortType.DESCENDING)
 
     def _on_factory_setup_lemma(self, factory, list_item):
         box = ColLabel()

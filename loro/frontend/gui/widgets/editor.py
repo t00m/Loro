@@ -50,11 +50,6 @@ class Editor(Gtk.Box):
         self.btnDelete.set_sensitive(enabled)
 
     def _build_editor(self):
-        # ~ self.set_margin_top(margin=6)
-        # ~ self.set_margin_end(margin=6)
-        # ~ self.set_margin_bottom(margin=6)
-        # ~ self.set_margin_start(margin=6)
-
         # Content View
 
         ## Workbooks
@@ -73,32 +68,42 @@ class Editor(Gtk.Box):
         hbox.append(self.btnWBDel)
         self.append(hbox)
 
+        line = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        self.append(line)
+
         ## Editor
         editor = self.factory.create_box_horizontal(hexpand=True, vexpand=True)
         editor.set_margin_top(margin=0)
+        selector = Selector(app=self.app)
 
         ### Files Toolbox
         vbox = self.factory.create_box_horizontal(spacing=6, margin=6, vexpand=True, hexpand=False)
         toolbox = self.factory.create_box_vertical()
         toolbox.set_margin_bottom(margin=6)
+        self.btnHideAv = self.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', tooltip='Show/Hide available files', callback=selector.hide_available)
+        self.btnHideAv.set_active(False)
+        selector.hide_available(self.btnHideAv, None)
+        separator1 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
         self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], width=16, tooltip='Add new document', callback=self._add_document)
         self.btnRename = self.factory.create_button(icon_name=ICON['DOC_EDIT'], width=16, tooltip='Rename document', callback=self._rename_document)
-        self.btnImport= self.factory.create_button(icon_name=ICON['DOC_DELETE'], width=16, tooltip='Import docs', callback=self._import_document)
-        separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        self.btnImport= self.factory.create_button(icon_name=ICON['DOC_IMPORT'], width=16, tooltip='Import docs', callback=self._import_document)
+        separator2 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
         self.btnDelete = self.factory.create_button(icon_name=ICON['TRASH'], width=16, tooltip='Delete doc', callback=self._delete_document)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
         self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], width=16, tooltip='Refresh', callback=self._update_editor)
+        toolbox.append(self.btnHideAv)
+        toolbox.append(separator1)
         toolbox.append(self.btnAdd)
         toolbox.append(self.btnRename)
         toolbox.append(self.btnImport)
-        toolbox.append(separator)
+        toolbox.append(separator2)
         toolbox.append(self.btnDelete)
         toolbox.append(expander)
         toolbox.append(self.btnRefresh)
         vbox.append(toolbox)
         editor.append(vbox)
 
-        selector = Selector(app=self.app)
+
         selector.set_action_add_to_used(self._on_add_to_used)
         selector.set_action_remove_from_used(self._on_remove_from_used)
         self.cvfilesAv = ColumnViewFiles(self.app)
@@ -107,7 +112,7 @@ class Editor(Gtk.Box):
         self.cvfilesAv.set_hexpand(True)
         self.cvfilesAv.set_vexpand(True)
         selection = self.cvfilesAv.get_selection()
-        selection.connect('selection-changed', self._on_filename_selected)
+        selection.connect('selection-changed', self._on_filename_available_selected)
         selector.add_columnview_available(self.cvfilesAv)
 
         self.cvfilesUsed = ColumnViewFiles(self.app)
@@ -116,7 +121,7 @@ class Editor(Gtk.Box):
         self.cvfilesUsed.set_hexpand(True)
         self.cvfilesUsed.set_vexpand(True)
         selection = self.cvfilesUsed.get_selection()
-        selection.connect('selection-changed', self._on_filename_selected)
+        selection.connect('selection-changed', self._on_filename_used_selected)
         selector.add_columnview_used(self.cvfilesUsed)
         editor.append(selector)
 
@@ -125,7 +130,7 @@ class Editor(Gtk.Box):
         vbox = self.factory.create_box_vertical(hexpand=True, vexpand=True)
         toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
         toolbox.set_margin_bottom(margin=6)
-        self.btnSave = self.factory.create_button(icon_name='document-save-symbolic', tooltip='Save changes', callback=self._save_document)
+        self.btnSave = self.factory.create_button(icon_name='com.github.t00m.Loro-document-save-symbolic', tooltip='Save changes', callback=self._save_document)
         toolbox.append(self.btnSave)
         vbox.append(toolbox)
 
@@ -317,7 +322,7 @@ class Editor(Gtk.Box):
             self._update_editor()
             self.emit('workbooks-updated')
 
-    def _on_filename_selected(self, selection, position, n_items):
+    def _on_filename_available_selected(self, selection, position, n_items):
         model = self.cvfilesAv.get_model_filter()
         # ~ model = selection.get_model()
         bitset = selection.get_selection()
@@ -325,7 +330,22 @@ class Editor(Gtk.Box):
             pos = bitset.get_nth(index)
             filename = model.get_item(pos)
             self.selected_file = filename.id
-            self.log.debug("File selected: %s", filename.title)
+            self.log.debug("Selected available: '%s'", self.selected_file)
+            self.log.debug("File available selected: %s", filename.title)
+            self.display_file(filename.id)
+            # ~ self._enable_renaming(True)
+            # ~ self._enable_deleting(True)
+
+    def _on_filename_used_selected(self, selection, position, n_items):
+        model = self.cvfilesUsed.get_model_filter()
+        # ~ model = selection.get_model()
+        bitset = selection.get_selection()
+        for index in range(bitset.get_size()):
+            pos = bitset.get_nth(index)
+            filename = model.get_item(pos)
+            self.selected_file = filename.id
+            self.log.debug("Selected used: '%s'", self.selected_file)
+            self.log.debug("File used selected: %s", filename.title)
             self.display_file(filename.id)
             # ~ self._enable_renaming(True)
             # ~ self._enable_deleting(True)
@@ -360,11 +380,11 @@ class Editor(Gtk.Box):
                 belongs = self.app.workbooks.have_file(wbname, title)
             item = Filepath(
                                 id=filepath,
-                                title=title,
-                                topic=topic.title(),
-                                subtopic=subtopic.title(),
-                                suffix=suffix,
-                                belongs=belongs
+                                title=title
+                                # ~ topic=topic.title(),
+                                # ~ subtopic=subtopic.title(),
+                                # ~ suffix=suffix,
+                                # ~ belongs=belongs
                             )
             itemsAv.append(item)
             if belongs:

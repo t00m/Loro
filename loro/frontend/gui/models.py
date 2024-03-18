@@ -103,33 +103,33 @@ class Filepath(Item):
 
     def __init__(self,
                     id: str,                 # Filepath
-                    title: str = '',         # Basename
-                    topic: str = '',         # Topic
-                    subtopic: str = '',      # Subtopic
-                    suffix: str = '',        # Suffix
-                    belongs: bool = False    # Belong to active workbook
+                    title: str = ''         # Basename
+                    # ~ topic: str = '',         # Topic
+                    # ~ subtopic: str = '',      # Subtopic
+                    # ~ suffix: str = '',        # Suffix
+                    # ~ belongs: bool = False    # Belong to active workbook
                 ):
         super().__init__(id, title)
-        self._topic = topic
-        self._subtopic = subtopic
-        self._suffix = suffix
-        self._belongs = belongs
+        # ~ self._topic = topic
+        # ~ self._subtopic = subtopic
+        # ~ self._suffix = suffix
+        # ~ self._belongs = belongs
 
-    @GObject.Property
-    def topic(self):
-        return self._topic
+    # ~ @GObject.Property
+    # ~ def topic(self):
+        # ~ return self._topic
 
-    @GObject.Property
-    def subtopic(self):
-        return self._subtopic
+    # ~ @GObject.Property
+    # ~ def subtopic(self):
+        # ~ return self._subtopic
 
-    @GObject.Property
-    def suffix(self):
-        return self._suffix
+    # ~ @GObject.Property
+    # ~ def suffix(self):
+        # ~ return self._suffix
 
-    @GObject.Property
-    def belongs(self):
-        return self._belongs
+    # ~ @GObject.Property
+    # ~ def belongs(self):
+        # ~ return self._belongs
 
 class Analysis(Item):
     """Custom data model sentence analysis"""
