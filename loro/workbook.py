@@ -17,11 +17,15 @@ class Workbook:
     def __init__(self, app):
         self.log = get_logger('Workbook')
         self.app = app
+        self._check()
 
+    def _check(self, *args):
         for workbook in self.get_all():
             cache_dir = self.app.dictionary.get_cache_dir(workbook)
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
+                self.log.debug("Cache directory created for workbook '%s':", workbook)
+                self.log.debug("%s", cache_dir)
 
     def get_dictionary(self, workbook):
         return self.app.dictionary.get_cache(workbook)
@@ -46,6 +50,7 @@ class Workbook:
         workbooks[name.upper()] = []
         self._save(workbooks)
         self.log.debug("Workbook '%s' added", name)
+        self._check()
 
     def rename(self, old_name: str, new_name: str) -> bool:
         workbooks = self.get_all()
@@ -53,6 +58,7 @@ class Workbook:
         del(workbooks[old_name])
         self._save(workbooks)
         self.log.debug("Workbook '%s' renamed to '%s'", old_name, new_name)
+        self._check()
 
     def update(self, wbname:str, fname:str, active:bool):
         workbooks = self.get_all()

@@ -1,10 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-import pprint
-
 from gi.repository import GObject
-from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 
 
@@ -13,11 +10,8 @@ class Stats(GObject.GObject):
         super().__init__()
         self.app = app
         self.log = get_logger('Stats')
-        # ~ self.workbooks = {}
-
         GObject.GObject.__init__(self)
         GObject.signal_new('stats-finished', Stats, GObject.SignalFlags.RUN_LAST, None, () )
-        source, target = ENV['Projects']['Default']['Languages']
         self.log.debug("Stats initialized")
 
     def analyze(self, workbook: str) -> {}:
@@ -57,14 +51,8 @@ class Stats(GObject.GObject):
             except Exception as error:
                 self.log.error(error)
                 stats = {}
-
-        # ~ self.workbooks[workbook] = stats
         self.emit('stats-finished')
         return stats
 
     def get(self, workbook: str) -> {}:
         return self.analyze(workbook)
-        # ~ try:
-            # ~ return self.workbooks[workbook]
-        # ~ except KeyError:
-            # ~ return self.analyze(workbook)

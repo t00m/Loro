@@ -188,6 +188,9 @@ class ColumnView(Gtk.Box):
         self.filter_model.set_filter(self.filter)
         return self.filter
 
+    def set_has_frame(self, has_frame: bool):
+        self.scrwin.set_has_frame(has_frame)
+
     def _do_filter_view(self, item, filter_list_model):
         text = self.search_entry.get_text()
         if text.upper() in item.title.upper():

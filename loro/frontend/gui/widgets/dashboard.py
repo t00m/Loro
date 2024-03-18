@@ -150,7 +150,6 @@ class Dashboard(Gtk.Box):
             sentences = self.app.dictionary.get_sentences(workbook.id)
             items = []
             for sid in matches:
-                self.log.debug(sid)
                 sentence = sentences[sid]['DE']
                 items.append(Sentence(id=sid, title=sentence))
         except Exception as error:
@@ -158,7 +157,6 @@ class Dashboard(Gtk.Box):
             raise
             items = []
             items.append(Sentence(id='#ERROR#', title=error))
-        self.log.debug(items)
         self.cvsentences.update(items)
         self.log.info("Workbook['%s'] Token['%s']: %d sentences", workbook.id, token.id, len(matches))
 
