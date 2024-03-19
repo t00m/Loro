@@ -354,7 +354,7 @@ class WidgetFactory:
             frame.set_label_align(0.5)
         return frame
 
-    def create_label(self, text: str = None) -> Gtk.Label:
+    def create_label(self, text: str = '') -> Gtk.Label:
         label = Gtk.Label()
         label.set_property('ellipsize', Pango.EllipsizeMode.MIDDLE)
         if text is not None:

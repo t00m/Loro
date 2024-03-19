@@ -74,11 +74,11 @@ class ColumnView(Gtk.Box):
     __gtype_name__ = 'ColumnView'
 
     def __init__(self, app, item_type=Item):
-        super(ColumnView, self).__init__(orientation=Gtk.Orientation.VERTICAL, spacing=3, hexpand=True, vexpand=True)
-        self.set_margin_top(margin=3)
-        self.set_margin_end(margin=3)
-        self.set_margin_bottom(margin=3)
-        self.set_margin_start(margin=3)
+        super(ColumnView, self).__init__(orientation=Gtk.Orientation.VERTICAL, spacing=6, hexpand=True, vexpand=True)
+        # ~ self.set_margin_top(margin=3)
+        # ~ self.set_margin_end(margin=3)
+        # ~ self.set_margin_bottom(margin=3)
+        # ~ self.set_margin_start(margin=3)
         self.app = app
         self.item_type = item_type
         self.log = get_logger('ColumnView')
