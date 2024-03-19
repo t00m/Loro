@@ -11,6 +11,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import json_load, json_save
 from loro.backend.core.util import get_project_config_dir
+from loro.backend.core.util import get_project_input_dir
 
 
 class Workbook:
@@ -40,7 +41,17 @@ class Workbook:
         return workbooks
 
     def get_files(self, wbname):
-        return self.get_all()[wbname]
+        valid_files = []
+        source, target = ENV['Projects']['Default']['Languages']
+        INPUT_DIR = get_project_input_dir(source)
+        filenames = self.get_all()[wbname]
+        for filename in filenames:
+            filepath = os.path.join(INPUT_DIR, filename)
+            if os.path.exists(filepath):
+                valid_files.append(filename)
+            else:
+                self.log.warning("File '%s' skipped. It doesn't exist", filename)
+        return valid_files
 
     def exists(self, name: str) -> bool:
         return name.upper() in self.get_all().keys()

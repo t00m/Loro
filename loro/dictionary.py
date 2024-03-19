@@ -28,7 +28,9 @@ class Dictionary:
         subtopics = set()
         cache = self.get_cache(workbook)
         for topic in self.get_topics(workbook):
+            self.log.debug("Topic['%s']", topic)
             for subtopic in cache['topics']['data'][topic]:
+                self.log.debug("\tSubtopic['%s']", subtopic)
                 subtopics.add(subtopic)
         return subtopics
 

@@ -40,13 +40,13 @@ class Editor(Gtk.Box):
         GObject.signal_new('filenames-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
         self._build_editor()
         self._update_editor()
-        # ~ self._enable_renaming(False)
-        # ~ self._enable_deleting(False)
+        # ~ self._set_enable_renaming(False)
+        # ~ self._set_enable_deleting(False)
 
-    def _enable_renaming(self, enabled):
+    def _set_enable_renaming(self, enabled):
         self.btnRename.set_sensitive(enabled)
 
-    def _enable_deleting(self, enabled):
+    def _set_enable_deleting(self, enabled):
         self.btnDelete.set_sensitive(enabled)
 
     def _build_editor(self):
@@ -59,9 +59,9 @@ class Editor(Gtk.Box):
         self.ddWorkbooks.set_hexpand(False)
         hbox.append(self.ddWorkbooks)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
-        self.btnWBAdd = self.factory.create_button(icon_name=ICON['WB_NEW'], width=16, tooltip='Add a new workbook', callback=self._add_workbook)
-        self.btnWBEdit = self.factory.create_button(icon_name=ICON['WB_EDIT'], width=16, tooltip='Edit workbook name', callback=self._edit_workbook)
-        self.btnWBDel = self.factory.create_button(icon_name=ICON['WB_DELETE'], width=16, tooltip='Delete selected workbook', callback=self._delete_workbook)
+        self.btnWBAdd = self.factory.create_button(icon_name=ICON['WB_NEW'], width=16, tooltip='Add a new workbook', callback=self._on_workbook_add)
+        self.btnWBEdit = self.factory.create_button(icon_name=ICON['WB_EDIT'], width=16, tooltip='Edit workbook name', callback=self._on_workbook_edit)
+        self.btnWBDel = self.factory.create_button(icon_name=ICON['WB_DELETE'], width=16, tooltip='Delete selected workbook', callback=self._on_workbook_delete)
         hbox.append(expander)
         hbox.append(self.btnWBAdd)
         hbox.append(self.btnWBEdit)
@@ -85,11 +85,11 @@ class Editor(Gtk.Box):
         self.btnHideAv.set_active(False)
         selector.hide_available(self.btnHideAv, None)
         separator1 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-        self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], width=16, tooltip='Add new document', callback=self._add_document)
-        self.btnRename = self.factory.create_button(icon_name=ICON['DOC_EDIT'], width=16, tooltip='Rename document', callback=self._rename_document)
-        self.btnImport= self.factory.create_button(icon_name=ICON['DOC_IMPORT'], width=16, tooltip='Import docs', callback=self._import_document)
+        self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], width=16, tooltip='Add new document', callback=self._on_document_add)
+        self.btnRename = self.factory.create_button(icon_name=ICON['DOC_EDIT'], width=16, tooltip='Rename document', callback=self._on_document_rename)
+        self.btnImport= self.factory.create_button(icon_name=ICON['DOC_IMPORT'], width=16, tooltip='Import docs', callback=self._on_document_import)
         separator2 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
-        self.btnDelete = self.factory.create_button(icon_name=ICON['TRASH'], width=16, tooltip='Delete doc', callback=self._delete_document)
+        self.btnDelete = self.factory.create_button(icon_name=ICON['TRASH'], width=16, tooltip='Delete doc', callback=self._on_document_delete)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
         self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], width=16, tooltip='Refresh', callback=self._update_editor)
         LeftSidebarToolbox.append(self.btnHideAv)
@@ -104,15 +104,15 @@ class Editor(Gtk.Box):
         vboxLeftSidebar.append(LeftSidebarToolbox)
         editor.append(vboxLeftSidebar)
 
-        selector.set_action_add_to_used(self._on_add_to_used)
-        selector.set_action_remove_from_used(self._on_remove_from_used)
+        selector.set_action_add_to_used(self._on_view_used_add)
+        selector.set_action_remove_from_used(self._on_view_used_remove)
         self.cvfilesAv = ColumnViewFiles(self.app)
         self.cvfilesAv.set_single_selection()
         self.cvfilesAv.get_style_context().add_class(class_name='monospace')
         self.cvfilesAv.set_hexpand(True)
         self.cvfilesAv.set_vexpand(True)
         selection = self.cvfilesAv.get_selection()
-        selection.connect('selection-changed', self._on_filename_available_selected)
+        selection.connect('selection-changed', self._on_view_available_select_filename)
         selector.add_columnview_available(self.cvfilesAv)
 
         self.cvfilesUsed = ColumnViewFiles(self.app)
@@ -121,7 +121,7 @@ class Editor(Gtk.Box):
         self.cvfilesUsed.set_hexpand(True)
         self.cvfilesUsed.set_vexpand(True)
         selection = self.cvfilesUsed.get_selection()
-        selection.connect('selection-changed', self._on_filename_used_selected)
+        selection.connect('selection-changed', self._on_view_used_select_filename)
         selector.add_columnview_used(self.cvfilesUsed)
         editor.append(selector)
 
@@ -129,7 +129,7 @@ class Editor(Gtk.Box):
         ### Editor Toolbox
         vbox = self.factory.create_box_vertical(hexpand=True, vexpand=True)
         toolbox = self.factory.create_box_horizontal(spacing=6)
-        self.btnSave = self.factory.create_button(icon_name='com.github.t00m.Loro-document-save-symbolic', width=16, tooltip='Save changes', callback=self._save_document)
+        self.btnSave = self.factory.create_button(icon_name='com.github.t00m.Loro-document-save-symbolic', width=16, tooltip='Save changes', callback=self._on_document_save)
         self.lblFileName = self.factory.create_label()
         toolbox.append(self.btnSave)
         toolbox.append(self.lblFileName)
@@ -145,7 +145,7 @@ class Editor(Gtk.Box):
         self.append(editor)
         return
 
-    def _on_add_to_used(self, *args):
+    def _on_view_used_add(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
         filepath = self.cvfilesAv.get_item()
         filename = os.path.basename(filepath.id)
@@ -153,7 +153,7 @@ class Editor(Gtk.Box):
         self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, True)
         self._update_files_view(workbook.id)
 
-    def _on_remove_from_used(self, *args):
+    def _on_view_used_remove(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
         filepath = self.cvfilesUsed.get_item()
         filename = os.path.basename(filepath.id)
@@ -161,7 +161,7 @@ class Editor(Gtk.Box):
         self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, False)
         self._update_files_view(workbook.id)
 
-    def _add_workbook(self, *args):
+    def _on_workbook_add(self, *args):
         def _confirm(_, res, entry):
             if res == "cancel":
                 return
@@ -199,7 +199,7 @@ class Editor(Gtk.Box):
         etyWBName.connect("notify::text", _allow, dialog)
         dialog.present()
 
-    def _edit_workbook(self, *args):
+    def _on_workbook_edit(self, *args):
         def _confirm(_, res, entry, old_name):
             if res == "cancel":
                 return
@@ -240,14 +240,14 @@ class Editor(Gtk.Box):
         etyWBName.connect("notify::text", _allow, dialog)
         dialog.present()
 
-    def _delete_workbook(self, *args):
+    def _on_workbook_delete(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
         if workbook is not None:
             self.app.workbooks.delete(workbook.id)
             self._update_editor()
             self.emit('workbooks-updated')
 
-    def _on_filename_available_selected(self, selection, position, n_items):
+    def _on_view_available_select_filename(self, selection, position, n_items):
         model = self.cvfilesAv.get_model_filter()
         # ~ model = selection.get_model()
         bitset = selection.get_selection()
@@ -257,11 +257,11 @@ class Editor(Gtk.Box):
             self.selected_file = filename.id
             self.log.debug("Selected available: '%s'", self.selected_file)
             self.log.debug("File available selected: %s", filename.title)
-            self.display_file(filename.id)
-            # ~ self._enable_renaming(True)
-            # ~ self._enable_deleting(True)
+            self._on_display_file(filename.id)
+            # ~ self._set_enable_renaming(True)
+            # ~ self._set_enable_deleting(True)
 
-    def _on_filename_used_selected(self, selection, position, n_items):
+    def _on_view_used_select_filename(self, selection, position, n_items):
         model = self.cvfilesUsed.get_model_filter()
         # ~ model = selection.get_model()
         bitset = selection.get_selection()
@@ -271,11 +271,11 @@ class Editor(Gtk.Box):
             self.selected_file = filename.id
             self.log.debug("Selected used: '%s'", self.selected_file)
             self.log.debug("File used selected: %s", filename.title)
-            self.display_file(filename.id)
-            # ~ self._enable_renaming(True)
-            # ~ self._enable_deleting(True)
+            self._on_display_file(filename.id)
+            # ~ self._set_enable_renaming(True)
+            # ~ self._set_enable_deleting(True)
 
-    def display_file(self, filename: str):
+    def _on_display_file(self, filename: str):
         text = open(filename).read()
         textbuffer = self.editorview.get_buffer()
         textbuffer.set_text(text)
@@ -324,9 +324,9 @@ class Editor(Gtk.Box):
             selection.select_item(0, True)
             filename = selection.get_selected_item()
             self.log.debug("File selected: %s", filename.title)
-            self.display_file(filename.id)
+            self._on_display_file(filename.id)
 
-    def _add_document(self, *args):
+    def _on_document_add(self, *args):
         def _update_filename(_, gparam, data):
             enabled = False
             dialog, label, etyt, etys, etyu = data
@@ -410,7 +410,7 @@ class Editor(Gtk.Box):
         dialog.connect("response", _confirm, lblFilename, editorview)
         dialog.present()
 
-    def _rename_document(self, *args):
+    def _on_document_rename(self, *args):
         def _update_filename(_, gparam, data):
             enabled = False
             dialog, label, etyt, etys, etyu = data
@@ -432,14 +432,17 @@ class Editor(Gtk.Box):
             source_path = os.path.join(input_dir, old_name)
             new_name = lblFilename.get_text()
             target_path = os.path.join(input_dir, new_name)
-            self.log.debug("Renaming from %s to %s", source_path, target_path)
             shutil.move(source_path, target_path)
-            self.log.debug("Document renamed from '%s' to '%s'", old_name, new_name)
+            self.log.debug("Document renamed from '%s' to '%s'", os.path.basename(source_path), os.path.basename(target_path))
             self._update_files_view(self.current_workbook)
 
             return new_name
 
+        if self.selected_file is None:
+            return
+
         window = self.app.get_main_window()
+        basename = os.path.basename(self.selected_file)
         vbox = self.factory.create_box_vertical(margin=6, spacing=6)
         vbox.props.width_request = 800
 
@@ -457,7 +460,7 @@ class Editor(Gtk.Box):
         dialog = Adw.MessageDialog(
             transient_for=window,
             hide_on_close=True,
-            heading=_("Rename selected document"),
+            heading=_("Rename %s" % basename),
             default_response="add",
             close_response="cancel",
             extra_child=vbox,
@@ -493,13 +496,13 @@ class Editor(Gtk.Box):
         dialog.connect("response", _confirm, self.selected_file, lblFilename)
         dialog.present()
 
-    def _import_document(self, *args):
+    def _on_document_import(self, *args):
         self.log.debug(args)
 
-    def _delete_document(self, *args):
+    def _on_document_delete(self, *args):
         self.log.debug(args)
 
-    def _save_document(self, *args):
+    def _on_document_save(self, *args):
         textbuffer = self.editorview.get_buffer()
         start = textbuffer.get_start_iter()
         end = textbuffer.get_end_iter()

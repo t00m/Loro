@@ -22,9 +22,11 @@ from loro.frontend.gui.icons import ICON
 
 class Dashboard(Gtk.Box):
     __gtype_name__ = 'Dashboard'
+    counter = 0
 
     def __init__(self, app):
         super(Dashboard, self).__init__(orientation=Gtk.Orientation.VERTICAL)
+        __class__.counter += 1
         self.log = get_logger('Dashboard')
         self.app = app
         self.window = self.app.get_main_window()
@@ -360,6 +362,7 @@ class Dashboard(Gtk.Box):
 
 
     def _on_postag_selected(self, dropdown, gparam):
+        self.log.error(__class__.counter)
         if len(dropdown.get_model()) > 0:
             workbook = self.window.ddWorkbooks.get_selected_item()
             current_postag = dropdown.get_selected_item()
