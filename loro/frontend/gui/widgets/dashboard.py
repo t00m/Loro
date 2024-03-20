@@ -356,4 +356,7 @@ class Dashboard(Gtk.Box):
             data.append((workbook, workbook))
         dd_workbooks = self.window.get_dropdown_workbooks()
         self.actions.dropdown_populate(dd_workbooks, Workbook, data)
+
+        # Update report
+        self.app.report.build('A1')
         return False
