@@ -15,9 +15,12 @@ import json
 import hashlib
 import subprocess
 
+from loro.backend.core.log import get_logger
 from loro.backend.core.constants import LORO_USER_DIR
 from loro.backend.core.constants import LORO_USER_PROJECTS_DIR
 from loro.backend.core.constants import LORO_USER_CONFIG_DIR
+
+log = get_logger('Util')
 
 def get_project_dir(source: str) -> str:
     return os.path.join(os.path.join(LORO_USER_PROJECTS_DIR, source))
@@ -166,3 +169,17 @@ def valid_key(key: str) -> str:
     key = str(key).strip().replace('-', '_')
     key = str(key).strip().replace(' ', '_')
     return re.sub(r'(?u)[^-\w.]', '', key)
+
+def find_item(filter_model, item):
+    log.debug("Looking for item '%s'", item.title)
+    sorted_model = filter_model.get_model()
+    list_store = sorted_model.get_model()
+    pos = 0
+    for key in list_store:
+        found = key.id == item.id
+        log.debug("%s == %s? %s (%d)", key.title, item.title, found, pos)
+        if found:
+            log.debug("Item %s found in pos %d", item.title, pos)
+            return pos
+        pos += 1
+    return -1

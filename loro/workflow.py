@@ -26,6 +26,7 @@ from loro.backend.core.util import get_hash
 from loro.backend.core.log import get_logger
 from loro import dictionary
 from loro.workbook import Workbook
+from loro.backend.core.run_async import RunAsync
 
 
 class Workflow(GObject.GObject):
@@ -44,8 +45,11 @@ class Workflow(GObject.GObject):
         self.log.info("Workflow configured for source '%s' and target '%s' languages", source, target)
         self.model_loaded = False
         self.connect('model-loaded', self.spacy_model_loaded)
-        GLib.idle_add(self.__load_spacy_model)
+        # ~ GLib.idle_add(self.__load_spacy_model)
+        RunAsync(self.__load_spacy_model)
         self.progress = None
+        self.current_filename = ''
+        self.fraction = 0.0
 
     def spacy_model_loaded(self, *args):
         self.model_loaded = True
@@ -59,6 +63,8 @@ class Workflow(GObject.GObject):
         self.log.info("SpaCy model loaded successfully")
 
     def start(self, workbook: str, files: []):
+        self.current_filename = ''
+        self.fraction = 0.0
         source, target = ENV['Projects']['Default']['Languages']
         self.log.debug("Processing workbook: '%s'", workbook)
         if not self.model_loaded:
@@ -71,6 +77,7 @@ class Workflow(GObject.GObject):
             self.log.debug("Processing %s[%s]", workbook, os.path.basename(filename))
             INPUT_DIR = get_project_input_dir(source)
             filepath = os.path.join(INPUT_DIR, filename)
+            self.current_filename = os.path.basename(filepath)
 
             # Detect language of file and validate
             result = detect_language(open(filepath).read())
@@ -83,20 +90,22 @@ class Workflow(GObject.GObject):
                     topic, subtopic, suffix = get_metadata_from_filepath(filepath)
                     sentences = open(filepath, 'r').readlines()
                     task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
+                    # ~ self._set_progress(jid/len(jobs)*1.0)
                     self.process_input(workbook, sentences, topic, subtopic, task)
                     self.app.dictionary.save(workbook)
+                    self.fraction = 0.0
             else:
                 self.log.error("File will NOT be processed: '%s'", os.path.basename(filepath))
                 if lang.upper() != source.upper():
                     self.log.error("Language detected ('%s') differs from source language ('%s')", lang, source)
                 if score < 85:
                     self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
-        self.emit('workflow-finished')
+        # ~ self.emit('workflow-finished')
 
     def process_input(self, workbook:str, sentences: [], topic, subtopic, task) -> None:
         jobs = []
         jid = 1
-        MAX_WORKERS = 40
+        MAX_WORKERS = 10
         with Executor(max_workers=MAX_WORKERS) as exe:
             for sentence in sentences:
                 data = (workbook, sentence, jid, topic, subtopic, task)
@@ -108,9 +117,20 @@ class Workflow(GObject.GObject):
             if jid-1 > 0:
                 for job in jobs:
                     jid, task = job.result()
+                    self.set_progress(jid/len(jobs)*1.0)
+
+            if jid == 0:
+                self.emit('workflow-finished')
+
+    def set_progress(self, fraction):
+        self.fraction = fraction
+        # ~ self.log.debug("%s > %f", self.current_filename, fraction)
+
+    def get_progress(self):
+        return self.current_filename, self.fraction
 
     def __sentence_processed(self, future):
-        time.sleep(random.random())
+        time.sleep(0.5)
         cur_thread = threading.current_thread().name
         x = future.result()
         jid, task = x

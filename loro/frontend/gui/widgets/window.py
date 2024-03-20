@@ -2,10 +2,13 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
+import time
+import threading
 from gi.repository import Gio, Adw, GObject, Gtk  # type:ignore
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
+from loro.backend.core.run_async import RunAsync
 from loro.frontend.gui.models import Workbook
 from loro.frontend.gui.widgets.preferences import PreferencesWindow
 from loro.frontend.gui.widgets.status import StatusWindow
@@ -68,7 +71,7 @@ class Window(Adw.ApplicationWindow):
 
         # Set widgets state
         self.btnSidebarLeft.set_active(True)
-        self.btnRefresh.connect('clicked', self.dashboard._update_workbook)
+        self.btnRefresh.connect('clicked', self.update_workbook)
 
     def _stack_page_changed(self, viewstack, gparam):
         page = viewstack.get_visible_child_name()
@@ -117,6 +120,10 @@ class Window(Adw.ApplicationWindow):
         # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
         self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh') #, callback=self._update_workbook)
         # ~ toolbox.append(expander)
+        self.progressbar = Gtk.ProgressBar()
+        self.progressbar.set_show_text(False)
+        self.progressbar.set_visible(False)
+        self.headerbar.pack_end(self.progressbar)
         self.headerbar.pack_end(self.btnRefresh)
 
         # TODO:
@@ -193,3 +200,26 @@ class Window(Adw.ApplicationWindow):
             lambda *_: self.props.application.quit(),
             ["<primary>q", "<primary>w"],
         )
+
+    def update_workbook(self, *args):
+        self.progressbar.set_visible(True)
+        self.progressbar.set_show_text(True)
+        RunAsync(self.pulse)
+        RunAsync(self.dashboard._update_workbook)
+
+    def pulse(self):
+        # This function updates the progress bar every 1s.
+        # ~ running = True
+        while True:
+            time.sleep(0.5)
+            filename, fraction = self.app.workflow.get_progress()
+            running = fraction > 0.0
+            # ~ self.log.debug("progressbar visible? %s", running)
+            if running:
+                self.progressbar.set_fraction(fraction)
+                self.progressbar.set_text(filename)
+            else:
+                self.progressbar.set_fraction(0.0)
+            self.progressbar.set_visible(running)
+            # ~ self.log.debug("%s > %f", filename, fraction)
+

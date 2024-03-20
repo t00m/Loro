@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 import os
+import threading
 from gi.repository import Gio, Adw, GLib, Gtk  # type:ignore
 
 from loro.frontend.gui.factory import WidgetFactory
@@ -13,6 +14,7 @@ from loro.frontend.gui.widgets.views import ColumnViewSentences
 from loro.frontend.gui.widgets.views import ColumnViewAnalysis
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
+from loro.backend.core.util import find_item
 from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 from loro.backend.core.util import get_project_input_dir
@@ -37,6 +39,7 @@ class Dashboard(Gtk.Box):
         self.current_postag = 'ALL'
         self.selected = []
         self.selected_tokens = []
+        self.selected_workbook = None
         self._build_dashboard()
         GLib.timeout_add(interval=500, function=self.update_dashboard)
 
@@ -186,7 +189,6 @@ class Dashboard(Gtk.Box):
         workbook = self.window.ddWorkbooks.get_selected_item()
         if workbook is None:
             return
-
         self.app.stats.get(workbook.id)
         tokens = self.app.dictionary.get_tokens(workbook.id)
         visible = len(tokens) == 0
@@ -226,7 +228,12 @@ class Dashboard(Gtk.Box):
         self.log.debug("Workbook['%s'] update requested", workbook.id)
         self.app.workflow.connect('workflow-finished', self.update_dashboard)
         files = self.app.workbooks.get_files(workbook.id)
-        GLib.idle_add(self.app.workflow.start, workbook.id, files)
+        # ~ GLib.idle_add(self.app.workflow.start, workbook.id, files)
+        # ~ event = threading.Event()
+        self.app.workflow.start(workbook.id, files)
+        # ~ event.wait()
+        self.set_current_workbook(workbook)
+        self.log.debug("Current workbook: %s", workbook.title)
 
     def _on_topic_selected(self, *args):
         current_topic = self.ddTopics.get_selected_item()
@@ -346,10 +353,13 @@ class Dashboard(Gtk.Box):
             self.hpaned.set_position(new_pos)
 
     def update_dashboard(self, *args):
+        # ~ self.app.workflow.set_progress(0.0)
+        # ~ self.app.workflow.current_filename = ''
         self.window = self.app.get_main_window()
         if self.window is None:
             self.log.warning("Window still not ready! Keep waiting...")
             return True
+        self.window.progressbar.set_visible(False)
         workbooks = self.app.workbooks.get_all()
         data = []
         for workbook in workbooks.keys():
@@ -359,4 +369,18 @@ class Dashboard(Gtk.Box):
 
         # Update report
         self.app.report.build('A1')
+
+        if self.selected_workbook is not None:
+            self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)
+            model = self.window.ddWorkbooks.get_model()
+            pos = find_item(model, self.selected_workbook)
+            self.log.debug("Found workbook in positon %d", pos)
+            item = model[pos]
+            self.log.debug("Workbook: %s", item.title)
+            self.window.ddWorkbooks.set_selected(pos)
+
         return False
+
+    def set_current_workbook(self, workbook: Workbook):
+        self.selected_workbook = workbook
+        self.log.debug("Current workbook set to: %s", workbook.title)
