@@ -11,6 +11,7 @@ from loro.frontend.gui.widgets.preferences import PreferencesWindow
 from loro.frontend.gui.widgets.status import StatusWindow
 from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.dashboard import Dashboard
+from loro.frontend.gui.widgets.browser import Browser
 from loro.frontend.gui.icons import ICON
 
 
@@ -36,6 +37,7 @@ class Window(Adw.ApplicationWindow):
         # Widgets
         self.editor = Editor(self.app)
         self.dashboard = Dashboard(self.app)
+        self.browser = Browser(self.app)
         self.status = Adw.StatusPage()
         spinner = Gtk.Spinner()
         spinner.set_spinning(True)
@@ -46,12 +48,14 @@ class Window(Adw.ApplicationWindow):
         self.viewstack.connect("notify::visible-child", self._stack_page_changed)
         self.viewstack.add_titled_with_icon(self.dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
         self.stack_page_editor = self.viewstack.add_titled_with_icon(self.editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
+        self.viewstack.add_titled_with_icon(self.browser, 'browser', 'Reports', 'com.github.t00m.Loro-printer-symbolic')
 
         self.status_page = self.viewstack.add_titled_with_icon(self.status, 'status', 'Status', 'com.github.t00m.Loro-dialog-question-symbolic')
         self.status_page.set_visible(True)
         self.viewstack.set_visible_child_name('status')
 
         viewswitcher = Adw.ViewSwitcher()
+        viewswitcher.set_valign(Gtk.Align.CENTER)
         viewswitcher.set_stack(self.viewstack)
         self.headerbar.set_title_widget(viewswitcher)
         self.mainbox.append(self.headerbar)
@@ -59,6 +63,8 @@ class Window(Adw.ApplicationWindow):
         self.set_content(self.mainbox)
         self.dashboard.update_dashboard()
         self.editor.connect('workbooks-updated', self.dashboard.update_dashboard)
+
+
 
         # Set widgets state
         self.btnSidebarLeft.set_active(True)
@@ -100,6 +106,8 @@ class Window(Adw.ApplicationWindow):
         self.hboxDashboard.append(self.btnSidebarLeft)
 
         self.ddWorkbooks = self.app.factory.create_dropdown_generic(Workbook, enable_search=True)
+        # ~ self.ddWorkbooks.get_style_context().add_class(class_name='caption')
+        self.ddWorkbooks.set_valign(Gtk.Align.CENTER)
         self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
         self.ddWorkbooks.set_hexpand(False)
         self.hboxDashboard.append(self.ddWorkbooks)

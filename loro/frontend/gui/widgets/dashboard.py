@@ -212,31 +212,6 @@ class Dashboard(Gtk.Box):
             else:
                 self.window.viewstack.set_visible_child_name('dashboard')
 
-
-
-        # ~ items = []
-        # ~ lenmax = 25
-        # ~ for key in tokens:
-            # ~ lemma = tokens[key]['lemmas'][0]
-            # ~ items.append(Token(id=key, title=key))
-            # ~ if len(key) > lenmax:
-                # ~ lenmax = len(key)
-        # ~ self.cvtokens.update(items)
-        # ~ self.log.info("Workbook['%s']: %d tokens", workbook.id, len(tokens.keys()))
-        # ~ if lenmax < 25:
-            # ~ lenmax = 25
-        # ~ cur_pos = self.hpaned.get_position()
-        # ~ new_pos = lenmax*8
-        # ~ self.hpaned.set_position(new_pos)
-
-        # ~ self.log.debug("Workbook selected: '%s'", workbook.id)
-        # ~ topics = self.app.dictionary.get_topics(workbook.id)
-        # ~ data = []
-        # ~ data.append(("ALL", "All topics"))
-        # ~ for topic in topics:
-            # ~ data.append((topic.upper(), topic.title()))
-        # ~ self.actions.dropdown_populate(self.ddTopics, Topic, data)
-
     def clear_dashboard(self):
         self.cvtokens.clear()
         self.cvsentences.clear()
@@ -252,34 +227,6 @@ class Dashboard(Gtk.Box):
         self.app.workflow.connect('workflow-finished', self.update_dashboard)
         files = self.app.workbooks.get_files(workbook.id)
         GLib.idle_add(self.app.workflow.start, workbook.id, files)
-
-
-        # ~ files = self.app.workbooks.get_files(workbook.id)
-        # ~ self.log.debug("Files: %s", files)
-        # ~ source, target = ENV['Projects']['Default']['Languages']
-        # ~ inputdir = get_project_input_dir(source)
-        # ~ topics = set()
-        # ~ for filename in files:
-            # ~ filepath = os.path.join(inputdir, filename)
-            # ~ topic, subtopic, suffix = get_metadata_from_filepath(filepath)
-            # ~ topics.add(topic)
-        # ~ data = []
-        # ~ data.append(("ALL", "All topics"))
-        # ~ self.log.debug("Topics for these entries: %s", topics)
-
-        # Check if topic metada has been built for the current workbook
-
-        # ~ output_dir = get_project_target_dir(source, target)
-        # ~ workbook_dir = os.path.join(output_dir, workbook.id)
-        # ~ if not os.path.exists(workbook_dir):
-            # ~ self.log.error("Workbook dir '%s' doesn't exist", workbook_dir)
-        # ~ workflow = Workflow(workbook.id)
-        # ~ files = self.app.workbooks.get_files(workbook.id)
-        # ~ GLib.idle_add(workflow.start, files)
-
-        # ~ for topic in topics:
-            # ~ data.append((topic.upper(), topic.title()))
-        # ~ self.actions.dropdown_populate(self.ddTopics, Topic, data)
 
     def _on_topic_selected(self, *args):
         current_topic = self.ddTopics.get_selected_item()
@@ -359,7 +306,6 @@ class Dashboard(Gtk.Box):
             # ~ items = []
 
             # ~ for key in tokens.keys():
-
 
     def _on_postag_selected(self, dropdown, gparam):
         self.log.error(__class__.counter)

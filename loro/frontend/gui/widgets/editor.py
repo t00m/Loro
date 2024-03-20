@@ -13,7 +13,8 @@ from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
 from loro.frontend.gui.models import Filepath, Workbook
 from loro.frontend.gui.widgets.columnview import ColumnView
-from loro.frontend.gui.widgets.views import ColumnViewFiles
+from loro.frontend.gui.widgets.views import ColumnViewFilesAvailable
+from loro.frontend.gui.widgets.views import ColumnViewFilesUsed
 from loro.frontend.gui.icons import ICON
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
@@ -106,7 +107,8 @@ class Editor(Gtk.Box):
 
         selector.set_action_add_to_used(self._on_view_used_add)
         selector.set_action_remove_from_used(self._on_view_used_remove)
-        self.cvfilesAv = ColumnViewFiles(self.app)
+        self.cvfilesAv = ColumnViewFilesAvailable(self.app)
+        # ~ self.cvfilesAv.set_header_visible(False)
         self.cvfilesAv.set_single_selection()
         self.cvfilesAv.get_style_context().add_class(class_name='monospace')
         self.cvfilesAv.set_hexpand(True)
@@ -115,7 +117,7 @@ class Editor(Gtk.Box):
         selection.connect('selection-changed', self._on_view_available_select_filename)
         selector.add_columnview_available(self.cvfilesAv)
 
-        self.cvfilesUsed = ColumnViewFiles(self.app)
+        self.cvfilesUsed = ColumnViewFilesUsed(self.app)
         self.cvfilesUsed.set_single_selection()
         self.cvfilesUsed.get_style_context().add_class(class_name='monospace')
         self.cvfilesUsed.set_hexpand(True)
@@ -306,14 +308,7 @@ class Editor(Gtk.Box):
                 belongs = False
             else:
                 belongs = self.app.workbooks.have_file(wbname, title)
-            item = Filepath(
-                                id=filepath,
-                                title=title
-                                # ~ topic=topic.title(),
-                                # ~ subtopic=subtopic.title(),
-                                # ~ suffix=suffix,
-                                # ~ belongs=belongs
-                            )
+            item = Filepath(id=filepath, title=title)
             itemsAv.append(item)
             if belongs:
                 itemsUsed.append(item)
@@ -323,6 +318,7 @@ class Editor(Gtk.Box):
             selection = self.cvfilesAv.get_selection()
             selection.select_item(0, True)
             filename = selection.get_selected_item()
+            self.selected_file = filename.id
             self.log.debug("File selected: %s", filename.title)
             self._on_display_file(filename.id)
 
@@ -424,6 +420,7 @@ class Editor(Gtk.Box):
             # ~ self.log.debug("Document name: %s -> %s", label.get_text(), enabled)
 
         def _confirm(_, res, old_name, lblFilename):
+            # FIXME: document should be renamed also in worbooks
             if res == "cancel":
                 return
 
@@ -500,6 +497,8 @@ class Editor(Gtk.Box):
         self.log.debug(args)
 
     def _on_document_delete(self, *args):
+        # FIXME: Check if it exists in Workbooks, delete it from them
+        # and then, delete it from disk
         self.log.debug(args)
 
     def _on_document_save(self, *args):

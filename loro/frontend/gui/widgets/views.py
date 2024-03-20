@@ -36,68 +36,21 @@ class ColumnViewFiles(ColumnView):
         self.column_title.set_visible(True)
         self.set_has_frame(True)
 
-        # ~ self.factory_topic = Gtk.SignalListItemFactory()
-        # ~ self.factory_topic.connect("setup", self._on_factory_setup_topic)
-        # ~ self.factory_topic.connect("bind", self._on_factory_bind_topic)
+class ColumnViewFilesAvailable(ColumnViewFiles):
+    """ Custom ColumnView widget for managing files in the editor """
+    __gtype_name__ = 'ColumnViewFilesAvailable'
 
-        # ~ self.factory_subtopic = Gtk.SignalListItemFactory()
-        # ~ self.factory_subtopic.connect("setup", self._on_factory_setup_subtopic)
-        # ~ self.factory_subtopic.connect("bind", self._on_factory_bind_subtopic)
+    def __init__(self, app):
+        super().__init__(app)
+        self.column_title.set_title(_('Files available'))
 
-        # ~ self.factory_suffix = Gtk.SignalListItemFactory()
-        # ~ self.factory_suffix.connect("setup", self._on_factory_setup_suffix)
-        # ~ self.factory_suffix.connect("bind", self._on_factory_bind_suffix)
+class ColumnViewFilesUsed(ColumnViewFiles):
+    """ Custom ColumnView widget for managing files in the editor """
+    __gtype_name__ = 'ColumnViewFilesUsed'
 
-        # Setup columnview columns
-        # ~ self.column_topic = Gtk.ColumnViewColumn.new(_('Topic'), self.factory_topic)
-        # ~ self.column_subtopic = Gtk.ColumnViewColumn.new(_('Subtopic'), self.factory_subtopic)
-        # ~ self.column_suffix = Gtk.ColumnViewColumn.new(_('Suffix'), self.factory_suffix)
-
-        # ~ self.cv.append_column(self.column_topic)
-        # ~ self.cv.append_column(self.column_subtopic)
-        # ~ self.cv.append_column(self.column_suffix)
-
-        # ~ self.column_topic.set_expand(True)
-        # ~ self.column_subtopic.set_expand(True)
-
-        # Sorting
-        # ~ self.prop_topic_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='topic')
-        # ~ self.prop_subtopic_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='subtopic')
-        # ~ self.prop_count_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_number_func, user_data='count')
-        # ~ self.prop_translation_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='translation')
-
-        # ~ self.column_topic.set_sorter(self.prop_topic_sorter)
-        # ~ self.column_subtopic.set_sorter(self.prop_subtopic_sorter)
-
-    # ~ def _on_factory_setup_topic(self, factory, list_item):
-        # ~ box = ColLabel()
-        # ~ list_item.set_child(box)
-
-    # ~ def _on_factory_bind_topic(self, factory, list_item):
-        # ~ box = list_item.get_child()
-        # ~ item = list_item.get_item()
-        # ~ label = box.get_first_child()
-        # ~ label.set_markup(item.topic)
-
-    # ~ def _on_factory_setup_subtopic(self, factory, list_item):
-        # ~ box = ColLabel()
-        # ~ list_item.set_child(box)
-
-    # ~ def _on_factory_bind_subtopic(self, factory, list_item):
-        # ~ box = list_item.get_child()
-        # ~ item = list_item.get_item()
-        # ~ label = box.get_first_child()
-        # ~ label.set_markup(item.subtopic)
-
-    # ~ def _on_factory_setup_suffix(self, factory, list_item):
-        # ~ box = ColLabel()
-        # ~ list_item.set_child(box)
-
-    # ~ def _on_factory_bind_suffix(self, factory, list_item):
-        # ~ box = list_item.get_child()
-        # ~ item = list_item.get_item()
-        # ~ label = box.get_first_child()
-        # ~ label.set_markup(item.suffix)
+    def __init__(self, app):
+        super().__init__(app)
+        self.column_title.set_title(_('Files in workbook'))
 
 class ColumnViewToken(ColumnView):
     """ Custom ColumnView widget for tokens """

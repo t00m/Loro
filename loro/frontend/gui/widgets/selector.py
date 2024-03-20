@@ -48,13 +48,13 @@ class Selector(Gtk.Box):
         self.append(boxViews)
 
         # Available
-        label = Gtk.Label()
-        label.set_markup(_('<b>Files available</b>'))
-        button = self.factory.create_button()
-        button.set_child(label)
-        button.set_has_frame(False)
-        button.set_margin_bottom(margin=6)
-        self.boxLeft.append(button)
+        # ~ label = Gtk.Label()
+        # ~ label.set_markup(_('<b>Files available</b>'))
+        # ~ button = self.factory.create_button()
+        # ~ button.set_child(label)
+        # ~ button.set_has_frame(False)
+        # ~ button.set_margin_bottom(margin=6)
+        # ~ self.boxLeft.append(button)
 
         # Controls
         boxSel = self.factory.create_box_vertical()
@@ -65,13 +65,13 @@ class Selector(Gtk.Box):
         self.boxControls.set_center_widget(boxSel)
 
         # Used
-        label = Gtk.Label()
-        label.set_markup(_('<b>Files in this workbook</b>'))
-        button = self.factory.create_button()
-        button.set_child(label)
-        button.set_has_frame(False)
-        button.set_margin_bottom(margin=6)
-        self.boxRight.append(button)
+        # ~ label = Gtk.Label()
+        # ~ label.set_markup(_('<b>Files in this workbook</b>'))
+        # ~ button = self.factory.create_button()
+        # ~ button.set_child(label)
+        # ~ button.set_has_frame(False)
+        # ~ button.set_margin_bottom(margin=6)
+        # ~ self.boxRight.append(button)
 
     def set_action_add_to_used(self, callback):
         self.btnAddToUsed.connect('clicked', callback)

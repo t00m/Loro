@@ -194,6 +194,10 @@ class ColumnView(Gtk.Box):
     def set_has_frame(self, has_frame: bool):
         self.scrwin.set_has_frame(has_frame)
 
+    # ~ def set_header_visible(self, visible: bool):
+        # ~ header = self.get_first_child()
+        # ~ header.set_visible(visible)
+
     def _do_filter_view(self, item, filter_list_model):
         text = self.search_entry.get_text()
         if text.upper() in item.title.upper():
