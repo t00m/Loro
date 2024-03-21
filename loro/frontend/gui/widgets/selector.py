@@ -85,10 +85,10 @@ class Selector(Gtk.Box):
     def add_columnview_used(self, columnview):
         self.boxRight.append(columnview)
 
-    def hide_available(self, button, gparam):
-        visible = button.get_active()
-        self.boxLeft.set_visible(visible)
-        self.boxControls.set_visible(visible)
+    # ~ def hide_available(self, button, gparam):
+        # ~ visible = button.get_active()
+        # ~ self.boxLeft.set_visible(visible)
+        # ~ self.boxControls.set_visible(visible)
 
     def _setup_view_finish(self, *args):
         pass

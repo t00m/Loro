@@ -12,8 +12,10 @@ import os
 import re
 import glob
 import json
+import math
 import hashlib
 import subprocess
+import multiprocessing
 
 from loro.backend.core.log import get_logger
 from loro.backend.core.constants import LORO_USER_DIR
@@ -183,3 +185,12 @@ def find_item(filter_model, item):
             return pos
         pos += 1
     return -1
+
+def get_default_workers():
+    """Calculate default number or workers.
+    Workers = Number of CPU / 2
+    Minimum workers = 1
+    """
+    ncpu = multiprocessing.cpu_count()
+    workers = ncpu/2
+    return math.ceil(workers)

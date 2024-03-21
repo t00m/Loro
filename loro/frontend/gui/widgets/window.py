@@ -8,13 +8,14 @@ from gi.repository import Gio, Adw, GObject, Gtk  # type:ignore
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
-from loro.backend.core.run_async import RunAsync
 from loro.frontend.gui.models import Workbook
 from loro.frontend.gui.widgets.preferences import PreferencesWindow
-from loro.frontend.gui.widgets.status import StatusWindow
+from loro.frontend.gui.widgets.check import CheckWindow
 from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.dashboard import Dashboard
 from loro.frontend.gui.widgets.browser import Browser
+from loro.frontend.gui.widgets.status import StatusPageEmpty
+from loro.frontend.gui.widgets.status import StatusPageNoWorkbooks
 from loro.frontend.gui.icons import ICON
 
 
@@ -41,12 +42,13 @@ class Window(Adw.ApplicationWindow):
         self.editor = Editor(self.app)
         self.dashboard = Dashboard(self.app)
         self.browser = Browser(self.app)
-        self.status = Adw.StatusPage()
-        spinner = Gtk.Spinner()
-        spinner.set_spinning(True)
-        spinner.start()
-        self.status.set_title('Loading spaCy')
-        self.status.set_child(spinner)
+        self.status = StatusPageEmpty(self.app, False)
+        self.statusnw = StatusPageNoWorkbooks(self.app, True)
+        # ~ spinner = Gtk.Spinner()
+        # ~ spinner.set_spinning(True)
+        # ~ spinner.start()
+        # ~ self.status.set_title('Loading spaCy')
+        # ~ self.status.set_child(spinner)
         self.viewstack = Adw.ViewStack()
         self.viewstack.connect("notify::visible-child", self._stack_page_changed)
         self.viewstack.add_titled_with_icon(self.dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
@@ -54,11 +56,14 @@ class Window(Adw.ApplicationWindow):
         self.viewstack.add_titled_with_icon(self.browser, 'browser', 'Reports', 'com.github.t00m.Loro-printer-symbolic')
 
         self.status_page = self.viewstack.add_titled_with_icon(self.status, 'status', 'Status', 'com.github.t00m.Loro-dialog-question-symbolic')
-        self.status_page.set_visible(True)
-        self.viewstack.set_visible_child_name('status')
+        self.status_page.set_visible(False)
+        # ~ self.viewstack.set_visible_child_name('status')
+
+        self.status_page_nw = self.viewstack.add_titled_with_icon(self.statusnw, 'status-nw', 'Status Workbooks', 'com.github.t00m.Loro-dialog-question-symbolic')
+        self.status_page_nw.set_visible(False)
 
         viewswitcher = Adw.ViewSwitcher()
-        viewswitcher.set_valign(Gtk.Align.CENTER)
+        # ~ viewswitcher.set_valign(Gtk.Align.CENTER)
         viewswitcher.set_stack(self.viewstack)
         self.headerbar.set_title_widget(viewswitcher)
         self.mainbox.append(self.headerbar)
@@ -70,15 +75,17 @@ class Window(Adw.ApplicationWindow):
 
 
         # Set widgets state
-        self.btnSidebarLeft.set_active(True)
-        self.btnRefresh.connect('clicked', self.update_workbook)
+
+    def show_stack_page(self, page_name: str):
+        self.viewstack.set_visible_child_name(page_name)
 
     def _stack_page_changed(self, viewstack, gparam):
         page = viewstack.get_visible_child_name()
-        if page == 'workbooks':
-            self.hboxDashboard.set_visible(False)
-        else:
-            self.hboxDashboard.set_visible(True)
+        self.log.debug("Switched to page '%s'", page)
+        # ~ if page == 'workbooks':
+            # ~ self.hboxDashboard.set_visible(False)
+        # ~ else:
+            # ~ self.hboxDashboard.set_visible(True)
 
     def _build_ui(self):
         self.set_title(_("Loro"))
@@ -102,14 +109,13 @@ class Window(Adw.ApplicationWindow):
             icon_name="open-menu-symbolic",
             tooltip_text=_("Main Menu"),
         )
+        menu_btn.set_valign(Gtk.Align.CENTER)
         self.headerbar.pack_start(menu_btn)
 
         self.hboxDashboard = self.app.factory.create_box_horizontal(spacing=3, margin=0)
-        self.btnSidebarLeft = self.app.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', callback=self.toggle_sidebar_left)
-        self.hboxDashboard.append(self.btnSidebarLeft)
 
         self.ddWorkbooks = self.app.factory.create_dropdown_generic(Workbook, enable_search=True)
-        # ~ self.ddWorkbooks.get_style_context().add_class(class_name='caption')
+        self.app.add_widget('dd-workbooks', self.ddWorkbooks)
         self.ddWorkbooks.set_valign(Gtk.Align.CENTER)
         self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
         self.ddWorkbooks.set_hexpand(False)
@@ -118,13 +124,15 @@ class Window(Adw.ApplicationWindow):
         self.headerbar.pack_start(self.hboxDashboard)
 
         # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
-        self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh') #, callback=self._update_workbook)
+        # ~ self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh') #, callback=self._update_workbook)
         # ~ toolbox.append(expander)
         self.progressbar = Gtk.ProgressBar()
+        self.progressbar.set_hexpand(True)
+        self.progressbar.set_valign(Gtk.Align.CENTER)
         self.progressbar.set_show_text(False)
         self.progressbar.set_visible(False)
         self.headerbar.pack_end(self.progressbar)
-        self.headerbar.pack_end(self.btnRefresh)
+        # ~ self.headerbar.pack_end(self.btnRefresh)
 
         # TODO:
         # ~ from loro.frontend.gui.gsettings import GSettings
@@ -137,21 +145,12 @@ class Window(Adw.ApplicationWindow):
         # Setup theme
         # ~ Adw.StyleManager.get_default().set_color_scheme(GSettings.get("theme"))
 
-    def toggle_sidebar_left(self, toggle_button, data):
-        visible = toggle_button.get_active()
-        self.dashboard.sidebar_left.set_visible(visible)
-        if visible:
-            self.dashboard.sidebar_left.set_margin_start(6)
-            self.dashboard.sidebar_left.set_margin_end(6)
-        else:
-            self.dashboard.sidebar_left.set_margin_start(0)
-            self.dashboard.sidebar_left.set_margin_end(0)
-
     def get_dropdown_workbooks(self):
         return self.ddWorkbooks
 
-    def _on_workbook_selected(self, *args):
-        self.dashboard._on_workbook_selected()
+    def _on_workbook_selected(self, dropdown, gparam):
+        self.dashboard._on_workbook_selected(dropdown)
+        self.editor._on_workbook_selected(dropdown)
 
     def _create_actions(self) -> None:
         """
@@ -191,7 +190,7 @@ class Window(Adw.ApplicationWindow):
         )
         _create_action(
             "status",
-            lambda *_: StatusWindow(self).show(),
+            lambda *_: CheckWindow(self).show(),
             ["<primary>comma"],
         )
         _create_action("about", _about)
@@ -200,12 +199,6 @@ class Window(Adw.ApplicationWindow):
             lambda *_: self.props.application.quit(),
             ["<primary>q", "<primary>w"],
         )
-
-    def update_workbook(self, *args):
-        self.progressbar.set_visible(True)
-        self.progressbar.set_show_text(True)
-        RunAsync(self.pulse)
-        RunAsync(self.dashboard._update_workbook)
 
     def pulse(self):
         # This function updates the progress bar every 1s.

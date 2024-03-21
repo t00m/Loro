@@ -63,6 +63,10 @@ class Workflow(GObject.GObject):
         self.log.info("SpaCy model loaded successfully")
 
     def start(self, workbook: str, files: []):
+        if len(files) == 0:
+            self.log.debug("Workbook '%s' doesn't contain any file", workbook)
+            return
+
         self.current_filename = ''
         self.fraction = 0.0
         source, target = ENV['Projects']['Default']['Languages']

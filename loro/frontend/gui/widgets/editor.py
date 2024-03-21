@@ -25,6 +25,7 @@ from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import explain_term
 from loro.frontend.gui.widgets.selector import Selector
+from loro.frontend.gui.widgets.filedialog import open_file_dialog
 
 class Editor(Gtk.Box):
     __gtype_name__ = 'Editor'
@@ -40,7 +41,7 @@ class Editor(Gtk.Box):
         GObject.signal_new('workbooks-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
         GObject.signal_new('filenames-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
         self._build_editor()
-        self._update_editor()
+        # ~ self._update_editor()
         # ~ self._set_enable_renaming(False)
         # ~ self._set_enable_deleting(False)
 
@@ -55,10 +56,9 @@ class Editor(Gtk.Box):
 
         ## Workbooks
         hbox = self.factory.create_box_horizontal(spacing=6, margin=6, vexpand=False, hexpand=True)
-        self.ddWorkbooks = self.factory.create_dropdown_generic(Workbook, enable_search=True)
-        self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
-        self.ddWorkbooks.set_hexpand(False)
-        hbox.append(self.ddWorkbooks)
+        # ~ self.ddWorkbooks = self.factory.create_dropdown_generic(Workbook, enable_search=True)
+        # ~ self.ddWorkbooks.set_hexpand(False)
+        # ~ hbox.append(self.ddWorkbooks)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
         self.btnWBAdd = self.factory.create_button(icon_name=ICON['WB_NEW'], width=16, tooltip='Add a new workbook', callback=self._on_workbook_add)
         self.btnWBEdit = self.factory.create_button(icon_name=ICON['WB_EDIT'], width=16, tooltip='Edit workbook name', callback=self._on_workbook_edit)
@@ -75,16 +75,15 @@ class Editor(Gtk.Box):
         ## Editor
         editor = self.factory.create_box_horizontal(hexpand=True, vexpand=True)
         editor.set_margin_top(margin=0)
-        selector = Selector(app=self.app)
-        selector.set_margin_bottom(margin=0)
+        self.selector = Selector(app=self.app)
+        self.selector.set_margin_bottom(margin=0)
 
         ### Left toolbox
         vboxLeftSidebar = self.factory.create_box_horizontal(spacing=6, margin=0, vexpand=True, hexpand=False)
         LeftSidebarToolbox = self.factory.create_box_vertical()
         LeftSidebarToolbox.set_margin_top(margin=6)
-        self.btnHideAv = self.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', tooltip='Show/Hide available files', callback=selector.hide_available)
+        self.btnHideAv = self.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', tooltip='Show/Hide available files', callback=self._on_toggle_views)
         self.btnHideAv.set_active(False)
-        selector.hide_available(self.btnHideAv, None)
         separator1 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
         self.btnAdd = self.factory.create_button(icon_name=ICON['DOC_NEW'], width=16, tooltip='Add new document', callback=self._on_document_add)
         self.btnRename = self.factory.create_button(icon_name=ICON['DOC_EDIT'], width=16, tooltip='Rename document', callback=self._on_document_rename)
@@ -92,7 +91,7 @@ class Editor(Gtk.Box):
         separator2 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
         self.btnDelete = self.factory.create_button(icon_name=ICON['TRASH'], width=16, tooltip='Delete doc', callback=self._on_document_delete)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
-        self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], width=16, tooltip='Refresh', callback=self._update_editor)
+        # ~ self.btnRefresh = self.factory.create_button(icon_name=ICON['REFRESH'], width=16, tooltip='Refresh', callback=self._update_editor)
         LeftSidebarToolbox.append(self.btnHideAv)
         LeftSidebarToolbox.append(separator1)
         LeftSidebarToolbox.append(self.btnAdd)
@@ -101,12 +100,12 @@ class Editor(Gtk.Box):
         LeftSidebarToolbox.append(separator2)
         LeftSidebarToolbox.append(self.btnDelete)
         LeftSidebarToolbox.append(expander)
-        LeftSidebarToolbox.append(self.btnRefresh)
+        # ~ LeftSidebarToolbox.append(self.btnRefresh)
         vboxLeftSidebar.append(LeftSidebarToolbox)
         editor.append(vboxLeftSidebar)
 
-        selector.set_action_add_to_used(self._on_view_used_add)
-        selector.set_action_remove_from_used(self._on_view_used_remove)
+        self.selector.set_action_add_to_used(self._on_view_used_add)
+        self.selector.set_action_remove_from_used(self._on_view_used_remove)
         self.cvfilesAv = ColumnViewFilesAvailable(self.app)
         # ~ self.cvfilesAv.set_header_visible(False)
         self.cvfilesAv.set_single_selection()
@@ -115,7 +114,7 @@ class Editor(Gtk.Box):
         self.cvfilesAv.set_vexpand(True)
         selection = self.cvfilesAv.get_selection()
         selection.connect('selection-changed', self._on_view_available_select_filename)
-        selector.add_columnview_available(self.cvfilesAv)
+        self.selector.add_columnview_available(self.cvfilesAv)
 
         self.cvfilesUsed = ColumnViewFilesUsed(self.app)
         self.cvfilesUsed.set_single_selection()
@@ -124,28 +123,47 @@ class Editor(Gtk.Box):
         self.cvfilesUsed.set_vexpand(True)
         selection = self.cvfilesUsed.get_selection()
         selection.connect('selection-changed', self._on_view_used_select_filename)
-        selector.add_columnview_used(self.cvfilesUsed)
-        editor.append(selector)
+        self.selector.add_columnview_used(self.cvfilesUsed)
+        editor.append(self.selector)
 
         ## Right: Editor view
         ### Editor Toolbox
-        vbox = self.factory.create_box_vertical(hexpand=True, vexpand=True)
+        self.visor = self.factory.create_box_vertical(hexpand=True, vexpand=True)
         toolbox = self.factory.create_box_horizontal(spacing=6)
         self.btnSave = self.factory.create_button(icon_name='com.github.t00m.Loro-document-save-symbolic', width=16, tooltip='Save changes', callback=self._on_document_save)
         self.lblFileName = self.factory.create_label()
         toolbox.append(self.btnSave)
         toolbox.append(self.lblFileName)
-        vbox.append(toolbox)
+        self.visor.append(toolbox)
 
         ### Editor GtkSource
         scrwindow = Gtk.ScrolledWindow()
         self.editorview = self.factory.create_editor_view()
         scrwindow.set_child(self.editorview)
-        vbox.append(scrwindow)
-        editor.append(vbox)
+        self.visor.append(scrwindow)
+        editor.append(self.visor)
 
         self.append(editor)
+        # ~ self.app.window.connect('window-presented', self._finish_loading)
+        self._on_toggle_views(self.btnHideAv, None)
         return
+
+    # ~ def _finish_loading(self, *args):
+        # ~ window = self.app.get_main_window()
+        # ~ self.ddWorkbooks = window.ddWorkbooks
+        # ~ self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
+
+    def _on_toggle_views(self, button, gparam):
+        visible = button.get_active()
+        self.selector.boxLeft.set_visible(visible)
+        self.selector.set_hexpand(True)
+        self.selector.boxControls.set_visible(visible)
+        self.visor.set_visible(not visible)
+        if not visible:
+            self.selector.set_hexpand(False)
+        else:
+            self.selector.set_hexpand(True)
+
 
     def _on_view_used_add(self, *args):
         workbook = self.ddWorkbooks.get_selected_item()
@@ -216,11 +234,13 @@ class Editor(Gtk.Box):
             exists = self.app.workbooks.exists(name)
             dialog.set_response_enabled("rename", not exists)
 
-        workbook = self.ddWorkbooks.get_selected_item()
-        if workbook is None:
+        window = self.app.get_widget('window')
+        ddWorkbooks = self.app.get_widget('dd-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
+        if workbook.id is None:
             return
 
-        window = self.app.get_main_window()
+        # ~ window = self.app.get_main_window()
         vbox = self.factory.create_box_vertical(margin=6, spacing=6)
         etyWBName = Gtk.Entry()
         etyWBName.set_text(workbook.id)
@@ -243,8 +263,9 @@ class Editor(Gtk.Box):
         dialog.present()
 
     def _on_workbook_delete(self, *args):
-        workbook = self.ddWorkbooks.get_selected_item()
-        if workbook is not None:
+        ddWorkbooks = self.app.get_widget('dd-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
+        if workbook.id is not None:
             self.app.workbooks.delete(workbook.id)
             self._update_editor()
             self.emit('workbooks-updated')
@@ -285,7 +306,7 @@ class Editor(Gtk.Box):
         self.lblFileName.set_markup(basename)
         self.lblFileName.get_style_context().add_class(class_name='caption')
 
-    def _on_workbook_selected(self, dropdown, gparam):
+    def _on_workbook_selected(self, dropdown):
         workbook = dropdown.get_selected_item()
         if workbook is None:
             return
@@ -294,6 +315,7 @@ class Editor(Gtk.Box):
             self.log.debug("Selected workbook: %s", workbook.id)
             if workbook.id != 'None':
                 self._update_files_view(workbook.id)
+                self.cvfilesUsed.set_title("On workbook %s" % workbook.id)
 
     def _update_files_view(self, wbname: str):
         # Update files
@@ -494,7 +516,20 @@ class Editor(Gtk.Box):
         dialog.present()
 
     def _on_document_import(self, *args):
-        self.log.debug(args)
+        def open_files(*args):
+            self.log.debug(args)
+
+        window = self.app.get_widget('window')
+        loro_filter = Gtk.FileFilter.new()
+        loro_filter.set_name('Text files')
+        loro_filter.add_pattern('*.txt')
+        open_file_dialog(
+            _("Import file"),
+            open_files,
+            parent=window,
+            dirname=None,
+            filters=loro_filter,
+        )
 
     def _on_document_delete(self, *args):
         # FIXME: Check if it exists in Workbooks, delete it from them
@@ -520,6 +555,8 @@ class Editor(Gtk.Box):
             items = []
             for workbook in workbooks:
                 items.append((workbook, 'Workbook %s' % workbook))
+        window = self.app.get_main_window()
+        self.ddWorkbooks = window.ddWorkbooks
         self.actions.dropdown_populate(self.ddWorkbooks, Workbook, items)
         self.ddWorkbooks.set_selected(0)
 

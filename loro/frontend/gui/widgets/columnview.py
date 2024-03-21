@@ -160,6 +160,9 @@ class ColumnView(Gtk.Box):
         self.selection.unselect_all()
         self.cv.set_model(self.selection)
 
+    def set_title(self, title: str):
+        self.column_title.set_title(title)
+
     def get_item(self):
         selection = self.get_selection()
         selected = selection.get_selection()

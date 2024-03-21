@@ -27,6 +27,7 @@ class Application(Adw.Application):
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
         )
         self.set_resource_base_path("/com/github/t00m/Loro/")
+        self._widgets = {}
         self.window = None
         self.dictionary = Dictionary(self)
         self.workflow = Workflow(self)
@@ -38,9 +39,32 @@ class Application(Adw.Application):
     def do_activate(self) -> None:
         from loro.frontend.gui.widgets.window import Window
         self.window = Window(application=self)
+        self.add_widget('window', self.window)
 
     def get_main_window(self):
         return self.window
+
+    def add_widget(self, name: str, widget):
+        # Add widget, but do not overwrite
+        if name not in self._widgets:
+            self._widgets[name] = widget
+            return widget
+        else:
+            self.log.error("A widget with name '%s' already exists", name)
+
+    def set_widget(self, name: str, widget):
+        # Overwrite existing widget
+        if name in self._widgets:
+            self._widgets[name] = widget
+            return widget
+        else:
+            self.log.error("A widget with name '%s' doesn't exists", name)
+
+    def get_widget(self, name):
+        try:
+            return self._widgets[name]
+        except KeyError:
+            return None
 
 def start():
     resource = Gio.Resource.load(os.path.join(ENV['APP']['PGKDATADIR'], 'loro.gresource'))

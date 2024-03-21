@@ -5,6 +5,7 @@ import os
 import threading
 from gi.repository import Gio, Adw, GLib, Gtk  # type:ignore
 
+from loro.backend.core.run_async import RunAsync
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
 from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence, Analysis, Workbook
@@ -70,17 +71,26 @@ class Dashboard(Gtk.Box):
         # ~ self.append(toolbox)
 
         # Content View
-        dashboard = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True, vexpand=True)
+        dashboard = self.factory.create_box_horizontal(hexpand=True, vexpand=True)
         dashboard.set_margin_top(margin=6)
 
         ## Wdigets distribution
-        self.sidebar_left = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=False, vexpand=True)
-        # ~ self.sidebar_left.set_margin_end(margin=6)
-        # ~ self.sidebar_left.set_margin_end(margin=0)
-        self.sidebar_right_up = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.btnSidebarLeft = self.app.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', callback=self.toggle_sidebar_left)
+        self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', width=16, callback=self.update_workbook)
+        # ~ self.btnRefresh.connect('clicked', self.update_workbook)
+        self.toolbar_left = self.factory.create_box_vertical(spacing=6, hexpand=False, vexpand=True)
+        self.toolbar_left.set_margin_start(margin=0)
+        self.toolbar_left.set_margin_end(margin=0)
+        self.toolbar_left.append(self.btnSidebarLeft)
+        self.toolbar_left.append(self.btnRefresh)
+        self.sidebar_left = self.factory.create_box_horizontal(spacing=6, hexpand=False, vexpand=True)
+        self.sidebar_left.append(self.toolbar_left)
+        self.sidebar_left.set_margin_start(margin=0)
+        self.sidebar_left.set_margin_end(margin=6)
+        self.sidebar_right_up = self.factory.create_box_vertical(spacing=6, hexpand=True, vexpand=True)
         self.sidebar_right_up.set_margin_bottom(margin=6)
         self.sidebar_right_up.set_margin_start(margin=6)
-        self.sidebar_right_down = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True, vexpand=True)
+        self.sidebar_right_down = self.factory.create_box_vertical(spacing=6, hexpand=True, vexpand=True)
         self.sidebar_right_down.set_margin_top(margin=6)
         self.sidebar_right_down.set_margin_start(margin=6)
         self.vpaned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
@@ -125,7 +135,23 @@ class Dashboard(Gtk.Box):
         self.sidebar_right_down.append(frame)
 
         self.append(dashboard)
+        self.btnSidebarLeft.set_active(True)
 
+    def toggle_sidebar_left(self, toggle_button, data):
+        visible = toggle_button.get_active()
+        self.log.debug("Left sidebar visible? %s", visible)
+        # ~ if visible:
+            # ~ self.hpaned.set_position(self.cur_pos)
+        # ~ else:
+            # ~ self.hpaned.set_position(0)
+        # ~ self.hpaned.set_visible(visible)
+
+        # ~ if visible:
+            # ~ self.dashboard.sidebar_left.set_margin_start(6)
+            # ~ self.dashboard.sidebar_left.set_margin_end(6)
+        # ~ else:
+            # ~ self.dashboard.sidebar_left.set_margin_start(0)
+            # ~ self.dashboard.sidebar_left.set_margin_end(0)
 
     def _update_analysis(self, sid: str):
         workbook = self.window.ddWorkbooks.get_selected_item()
@@ -184,14 +210,28 @@ class Dashboard(Gtk.Box):
             sentence = model.get_item(pos)
         self._update_analysis(sentence.id)
 
-    def _on_workbook_selected(self, *args):
+    def _on_workbook_selected(self, dropdown):
         self.clear_dashboard()
-        workbook = self.window.ddWorkbooks.get_selected_item()
+
+        # Don't mistake workbook and workbook.id 'is None' comparison
+        workbook = dropdown.get_selected_item()
         if workbook is None:
             return
+
+        self.log.debug("Workbook selected? %s", workbook.id)
+        if workbook.id is None:
+            window = self.app.get_widget('window')
+            window.show_stack_page('workbooks')
+            window.editor._on_workbook_add()
+            return
+
+        self.log.debug("Workbook? %s", workbook.id)
+        # ~ if workbook.id is None:
+            # ~ self.window.set_status_page('status-nw')
+            # ~ return
         self.app.stats.get(workbook.id)
         tokens = self.app.dictionary.get_tokens(workbook.id)
-        visible = len(tokens) == 0
+        workbook_empty = len(tokens) == 0
 
         # Update POS Dropbox
         postags = set()
@@ -206,13 +246,16 @@ class Dashboard(Gtk.Box):
             data.append((postag, explain_term(postag).title()))
         self.actions.dropdown_populate(self.ddPos, POSTag, data)
 
-        self.log.debug("Status Page visible? %s", visible)
-        if self.window is not None:
-            self.window.status_page.set_visible(visible)
-            if visible:
-                self.window.viewstack.set_visible_child_name('status')
-            else:
-                self.window.viewstack.set_visible_child_name('dashboard')
+        # ~ self.log.debug("Workbook empty? %s", workbook_empty)
+        # ~ if workbook_empty:
+            # ~ self.window.set_status_page('status-nw')
+
+        # ~ if self.window is not None:
+            # ~ self.window.status_page.set_visible(visible)
+            # ~ if visible:
+                # ~ self.window.viewstack.set_visible_child_name('status')
+            # ~ else:
+                # ~ self.window.viewstack.set_visible_child_name('dashboard')
 
     def clear_dashboard(self):
         self.cvtokens.clear()
@@ -348,13 +391,17 @@ class Dashboard(Gtk.Box):
             self.log.info("Workbook['%s'] POStag['%s']: %d tokens", workbook.id, postag, len(selected))
             if lenmax < 25:
                 lenmax = 25
-            cur_pos = self.hpaned.get_position()
+            self.cur_pos = self.hpaned.get_position()
             new_pos = lenmax*10
             self.hpaned.set_position(new_pos)
 
+    def update_workbook(self, *args):
+        self.window.progressbar.set_visible(True)
+        self.window.progressbar.set_show_text(True)
+        RunAsync(self.window.pulse)
+        RunAsync(self._update_workbook)
+
     def update_dashboard(self, *args):
-        # ~ self.app.workflow.set_progress(0.0)
-        # ~ self.app.workflow.current_filename = ''
         self.window = self.app.get_main_window()
         if self.window is None:
             self.log.warning("Window still not ready! Keep waiting...")
@@ -362,13 +409,17 @@ class Dashboard(Gtk.Box):
         self.window.progressbar.set_visible(False)
         workbooks = self.app.workbooks.get_all()
         data = []
-        for workbook in workbooks.keys():
-            data.append((workbook, workbook))
+        wbnames = workbooks.keys()
+        if len(wbnames) == 0:
+            data.append((None, 'No workbooks available'))
+        else:
+            for workbook in wbnames:
+                data.append((workbook, "Workbook %s" % workbook))
         dd_workbooks = self.window.get_dropdown_workbooks()
         self.actions.dropdown_populate(dd_workbooks, Workbook, data)
 
-        # Update report
-        self.app.report.build('A1')
+        # ~ # Update report
+        # ~ self.app.report.build('A1')
 
         if self.selected_workbook is not None:
             self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)

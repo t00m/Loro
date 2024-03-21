@@ -47,7 +47,7 @@ class RunAsync(threading.Thread):
         result = None
         error = None
 
-        logging.debug(f"Running async job [{self.task_func}].")
+        # ~ logging.debug(f"Running async job [{self.task_func}].")
 
         try:
             result = self.task_func(*args, **kwargs)

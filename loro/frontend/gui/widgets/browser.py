@@ -4,7 +4,7 @@
 # File: browser.py
 # Author: Tomás Vírseda
 # License: GPL v3
-# Description: Web browser module based on
+# Description: Web browser module based on WebKit
 # https://lazka.github.io/pgi-docs/WebKit2-4.0/classes/WebView.html
 # https://lazka.github.io/pgi-docs/WebKit2-4.0/classes/PolicyDecision.html#WebKit2.PolicyDecision
 # https://lazka.github.io/pgi-docs/WebKit2-4.0/enums.html#WebKit2.PolicyDecisionType
@@ -29,7 +29,7 @@ class Browser(WebKit.WebView):
         self.log = get_logger('Browser')
         self._setup_widget()
         self.log.debug("Browser initialized")
-        self.load_url('file:///tmp/test.html')
+        # ~ self.load_url('file:///tmp/test.html')
 
     def _setup_widget(self):
         # Webkit context

@@ -19,6 +19,8 @@ class Workbook:
         self.log = get_logger('Workbook')
         self.app = app
         self._check()
+        self.log.debug('Workbooks initializated')
+        self.log.debug('Workbooks found: %d', len(self.get_all()))
 
     def _check(self, *args):
         for workbook in self.get_all():
