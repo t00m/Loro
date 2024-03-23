@@ -50,7 +50,8 @@ class Application(Adw.Application):
             self._widgets[name] = widget
             return widget
         else:
-            self.log.error("A widget with name '%s' already exists", name)
+            self.log.error("A widget with name '%s' already exists with type(%s)", name, type(self._widgets[name]))
+            return None
 
     def set_widget(self, name: str, widget):
         # Overwrite existing widget

@@ -1,8 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
+import os
+
 from gi.repository import GObject
 from loro.backend.core.log import get_logger
+from loro.backend.core.util import json_load, json_save
 
 
 class Stats(GObject.GObject):
@@ -55,4 +58,8 @@ class Stats(GObject.GObject):
         return stats
 
     def get(self, workbook: str) -> {}:
-        return self.analyze(workbook)
+        stats = self.analyze(workbook)
+        DIR_WB_CONFIG = self.app.dictionary.get_cache_dir(workbook)
+        FILE_WB_STATS = os.path.join(DIR_WB_CONFIG, 'stats.json')
+        json_save(FILE_WB_STATS, stats)
+        return stats

@@ -41,7 +41,7 @@ class Window(Adw.ApplicationWindow):
         # Widgets
         self.editor = Editor(self.app)
         self.dashboard = Dashboard(self.app)
-        self.browser = Browser(self.app)
+        # ~ self.browser = Browser(self.app)
         self.status = StatusPageEmpty(self.app, False)
         self.statusnw = StatusPageNoWorkbooks(self.app, True)
         # ~ spinner = Gtk.Spinner()
@@ -53,7 +53,7 @@ class Window(Adw.ApplicationWindow):
         self.viewstack.connect("notify::visible-child", self._stack_page_changed)
         self.viewstack.add_titled_with_icon(self.dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
         self.stack_page_editor = self.viewstack.add_titled_with_icon(self.editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
-        self.viewstack.add_titled_with_icon(self.browser, 'browser', 'Reports', 'com.github.t00m.Loro-printer-symbolic')
+        # ~ self.viewstack.add_titled_with_icon(self.browser, 'browser', 'Reports', 'com.github.t00m.Loro-printer-symbolic')
 
         self.status_page = self.viewstack.add_titled_with_icon(self.status, 'status', 'Status', 'com.github.t00m.Loro-dialog-question-symbolic')
         self.status_page.set_visible(False)
@@ -82,6 +82,8 @@ class Window(Adw.ApplicationWindow):
     def _stack_page_changed(self, viewstack, gparam):
         page = viewstack.get_visible_child_name()
         self.log.debug("Switched to page '%s'", page)
+        # ~ if page == 'browser':
+            # ~ self.browser.load_report()
         # ~ if page == 'workbooks':
             # ~ self.hboxDashboard.set_visible(False)
         # ~ else:

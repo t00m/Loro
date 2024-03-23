@@ -10,6 +10,8 @@
 # https://lazka.github.io/pgi-docs/WebKit2-4.0/enums.html#WebKit2.PolicyDecisionType
 """
 
+import os
+
 import gi
 gi.require_version('Gtk', '4.0')
 gi.require_version('Soup', '3.0')
@@ -20,7 +22,10 @@ from gi.repository import Gtk
 from gi.repository import Soup
 from gi.repository import WebKit
 
+from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
+from loro.backend.core.run_async import RunAsync
+from loro.backend.core.util import get_project_target_workbook_dir
 
 class Browser(WebKit.WebView):
     def __init__(self, app):
@@ -29,23 +34,24 @@ class Browser(WebKit.WebView):
         self.log = get_logger('Browser')
         self._setup_widget()
         self.log.debug("Browser initialized")
-        # ~ self.load_url('file:///tmp/test.html')
+        self.app.report.connect('report-finished', self.load_report)
+        self.load_url('file:///home/t00m/Documentos/Loro/Projects/DE/output/EN/A1/A1.html')
 
     def _setup_widget(self):
         # Webkit context
-        self.web_context = WebKit.WebContext.get_default()
+        # ~ self.web_context = WebKit.WebContext.get_default()
         # ~ self.web_context.set_cache_model(WebKit.CacheModel.DOCUMENT_VIEWER)
         # ~ self.web_context.set_process_model(WebKit.ProcessModel.MULTIPLE_SECONDARY_PROCESSES)
         # ~ web_context.register_uri_scheme('basico', self._on_basico_scheme)
 
         # Webkit settings
-        self.web_settings = WebKit.Settings()
-        self.web_settings.set_enable_smooth_scrolling(True)
+        # ~ self.web_settings = WebKit.Settings()
+        # ~ self.web_settings.set_enable_smooth_scrolling(True)
         # ~ self.web_settings.set_enable_plugins(False)
 
-        WebKit.WebView.__init__(self,
-                                 web_context=self.web_context,
-                                 settings=self.web_settings)
+        # ~ WebKit.WebView.__init__(self,
+                                 # ~ web_context=self.web_context,
+                                 # ~ settings=self.web_settings)
         # ~ self.connect('context-menu', self._on_append_items)
         # ~ self.connect('decide-policy', self._on_decide_policy)
         # ~ self.connect('load-changed', self._on_load_changed)
@@ -78,9 +84,27 @@ class Browser(WebKit.WebView):
         pass
 
 
-    def load_url(self, url):
+    def load_url(self, url: str):
         self.log.debug("Loading url: %s", url)
         self.load_uri(url)
+
+    def load_report(self, *args):
+        ddWorkbooks = self.app.get_widget('dd-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
+        self.log.debug("Loading report for Workbook '%s'", workbook.id)
+        source, target = ENV['Projects']['Default']['Languages']
+        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
+        report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
+        self.log.debug(report_url)
+        self.load_url(report_url)
+        # ~ self.load_url('file:///home/t00m/Documentos/Loro/Projects/DE/output/EN/A1/A1.html')
+        # ~ GLib.idle_add(self.load_report_url)
+        # ~ self.log.debug("Report loaded")
+
+    def load_report_url(self):
+        # ~ content = open(self.report_url, 'r').read()
+        # ~ self.load_html(content=content)
+        self.load_url(self.report_url)
 
     def _on_decide_policy(self, webview, decision, decision_type):
         """Decide what to do when clicked on link
@@ -111,4 +135,4 @@ class Browser(WebKit.WebView):
                 self.log.debug("Url not loaded")
 
     def _on_load_failed(self, webview, load_event, failing_uri, error):
-        pass
+        self.log.error(error)

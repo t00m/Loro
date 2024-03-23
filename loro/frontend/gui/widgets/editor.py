@@ -166,7 +166,8 @@ class Editor(Gtk.Box):
 
 
     def _on_view_used_add(self, *args):
-        workbook = self.ddWorkbooks.get_selected_item()
+        ddWorkbooks = self.app.get_widget('dd-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
         filepath = self.cvfilesAv.get_item()
         filename = os.path.basename(filepath.id)
         self.app.workbooks.update(workbook.id, filename, True)
@@ -174,7 +175,8 @@ class Editor(Gtk.Box):
         self._update_files_view(workbook.id)
 
     def _on_view_used_remove(self, *args):
-        workbook = self.ddWorkbooks.get_selected_item()
+        ddWorkbooks = self.app.get_widget('dd-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
         filepath = self.cvfilesUsed.get_item()
         filename = os.path.basename(filepath.id)
         self.app.workbooks.update(workbook.id, filename, False)
@@ -360,7 +362,8 @@ class Editor(Gtk.Box):
         def _confirm(_, res, lblFilename, editorview):
             if res == "cancel":
                 return
-            workbook = self.ddWorkbooks.get_selected_item()
+            ddWorkbooks = self.app.get_widget('dd-workbooks')
+            workbook = ddWorkbooks.get_selected_item()
             filename = lblFilename.get_text()
             textbuffer = editorview.get_buffer()
             start = textbuffer.get_start_iter()
@@ -516,20 +519,10 @@ class Editor(Gtk.Box):
         dialog.present()
 
     def _on_document_import(self, *args):
-        def open_files(*args):
-            self.log.debug(args)
-
-        window = self.app.get_widget('window')
-        loro_filter = Gtk.FileFilter.new()
-        loro_filter.set_name('Text files')
-        loro_filter.add_pattern('*.txt')
-        open_file_dialog(
-            _("Import file"),
-            open_files,
-            parent=window,
-            dirname=None,
-            filters=loro_filter,
-        )
+        source, target = ENV['Projects']['Default']['Languages']
+        input_dir = get_project_input_dir(source)
+        os.system("xdg-open '%s'" % input_dir)
+        self.log.debug("Open Input directory")
 
     def _on_document_delete(self, *args):
         # FIXME: Check if it exists in Workbooks, delete it from them

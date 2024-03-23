@@ -21,6 +21,7 @@ from loro.backend.services.nlp.spacy import explain_term
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_project_target_dir
+from loro.backend.core.util import get_project_target_workbook_dir
 from loro.frontend.gui.icons import ICON
 
 class Dashboard(Gtk.Box):
@@ -43,6 +44,7 @@ class Dashboard(Gtk.Box):
         self.selected_workbook = None
         self._build_dashboard()
         GLib.timeout_add(interval=500, function=self.update_dashboard)
+        # ~ self.update_dashboard()
 
     def _build_dashboard(self):
         self.set_margin_top(margin=0)
@@ -77,11 +79,14 @@ class Dashboard(Gtk.Box):
         ## Wdigets distribution
         self.btnSidebarLeft = self.app.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', callback=self.toggle_sidebar_left)
         self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', width=16, callback=self.update_workbook)
+        self.btnReport = self.app.factory.create_button(icon_name='com.github.t00m.Loro-printer-symbolic', tooltip='Workbook report', width=16, callback=self.display_report)
+
         # ~ self.btnRefresh.connect('clicked', self.update_workbook)
         self.toolbar_left = self.factory.create_box_vertical(spacing=6, hexpand=False, vexpand=True)
         self.toolbar_left.set_margin_start(margin=0)
         self.toolbar_left.set_margin_end(margin=0)
         self.toolbar_left.append(self.btnSidebarLeft)
+        self.toolbar_left.append(self.btnReport)
         self.toolbar_left.append(self.btnRefresh)
         self.sidebar_left = self.factory.create_box_horizontal(spacing=6, hexpand=False, vexpand=True)
         self.sidebar_left.append(self.toolbar_left)
@@ -152,6 +157,16 @@ class Dashboard(Gtk.Box):
         # ~ else:
             # ~ self.dashboard.sidebar_left.set_margin_start(0)
             # ~ self.dashboard.sidebar_left.set_margin_end(0)
+
+    def display_report(self, *args):
+        ddWorkbooks = self.app.get_widget('dd-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
+        self.log.debug("Loading report for Workbook '%s'", workbook.id)
+        source, target = ENV['Projects']['Default']['Languages']
+        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
+        report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
+        self.app.report.update_report(None, workbook.id)
+        os.system("xdg-open '%s'" % report_url)
 
     def _update_analysis(self, sid: str):
         workbook = self.window.ddWorkbooks.get_selected_item()
@@ -400,8 +415,10 @@ class Dashboard(Gtk.Box):
         self.window.progressbar.set_show_text(True)
         RunAsync(self.window.pulse)
         RunAsync(self._update_workbook)
+        # ~ self._update_workbook()
 
     def update_dashboard(self, *args):
+        self.log.debug(args)
         self.window = self.app.get_main_window()
         if self.window is None:
             self.log.warning("Window still not ready! Keep waiting...")

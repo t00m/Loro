@@ -1,12 +1,27 @@
+<%! from loro.backend.services.nlp import spacy %>
 <div class="uk-container">
     <div uk-grid>
         <div class="uk-width-2-3@m">
             <div class="uk-padding-large">
                 <article class="uk-article">
-                    <h1 class="uk-article-title">Workbook {workbook}</h1>
-                    <p class="uk-text-lead">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc imperdiet ipsum tortor, ac aliquet dui porta a. Sed vitae mauris convallis, facilisis ex bibendum, ullamcorper ante</p>
+                    <h1 class="uk-article-title">Workbook ${var['workbook']['id']}</h1>
+                    <p class="uk-text-lead">
+                        <ul class="uk-list">
+% for topic in var['workbook']['cache']['topics']['data']:
+<%!
+subtopics = []
+for subtopic in $var['workbook']['cache']['topics']['data'][topic]:
+    subtopics.append(subtopic)
+%>
+    <li>${topic}: ${subtopics}</li>
+% endfor
+                        </ul>
+                    </p>
+% for postag in var['workbook']['stats']['postags']:
+    <h3 class="uk-margin-small-bottom" id="${postag}">${spacy.explain_term(postag).title()}</h3>
+% endfor
                     <h2 class="uk-margin-small-bottom" id="a">Introduction</h2>
-                    <p class="uk-margin-small-top">Mauris id turpis sit amet odio convallis faucibus. Nunc et lorem consectetur, rhoncus arcu at, feugiat mi. Integer dapibus porttitor mi, eget egestas nibh posuere a. Nullam luctus, dolor non molestie eleifend, purus nunc laoreet justo, quis placerat quam est sit amet velit. Aliquam non lorem nisl. Fusce at fringilla nulla, eu consequat tellus. Morbi volutpat accumsan turpis ac malesuada. Integer sed elit non augue interdum porta. Cras egestas gravida pellentesque. Etiam et lacus in ipsum dapibus dapibus ut id est. Integer ut ultricies nunc. In maximus varius augue ultricies fringilla. Phasellus maximus nunc ornare ipsum tincidunt, non dapibus augue facilisis. Maecenas tristique consectetur hendrerit. Aliquam imperdiet neque et dui ultricies, ut vestibulum magna tincidunt.</p>
+                    <p class="uk-margin-small-top"></p>
                     <h3 class="uk-margin-small-bottom" id="a1">Licence</h3>
                     <p class="uk-margin-small-top">Morbi hendrerit in dolor vulputate maximus. Nam mattis orci vel lacinia pulvinar. Aliquam dignissim diam sit amet purus dictum congue. Quisque malesuada, eros eu ornare rutrum, dolor sem molestie diam, id ultrices lectus velit in lorem. In cursus justo sed eleifend vehicula. Sed quis cursus nibh. Suspendisse euismod turpis sit amet ultricies posuere. Proin ac tellus tellus. Cras tincidunt elit nec metus sodales, elementum congue lacus tincidunt. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut rhoncus commodo quam sed posuere.</p>
                     <ol class="uk-margin-medium">
@@ -33,7 +48,13 @@
                 <div>
                     <div uk-scrollspy-nav="closest: a; scroll: true; offset: 40;">
                         <ul class="uk-list">
-                            <li><a href="#a">Introduction</a></li>
+                            <li><a href="#a"><b>Part Of Speech</b></a></li>
+                                <ul class="uk-list">
+                                % for postag in var['workbook']['stats']['postags']:
+                                    <li><a href="#${postag}">${spacy.explain_term(postag).title()}</a></li>
+                                % endfor
+                                </ul>
+                <h3>Others</h3>
                             <li><a href="#a1">Licence</a></li>
                             <li><a href="#b">nstallation</a></li>
                             <li><a href="#b1">System requirements check</a></li>

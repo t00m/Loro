@@ -34,6 +34,10 @@ ICON['DOC_DELETE'] = 'com.github.t00m.Loro-user-trash-symbolic'
 ICON['WB_NEW'] = 'com.github.t00m.Loro-workbook-add-symbolic'
 ICON['WB_EDIT'] = 'com.github.t00m.Loro-document-edit-symbolic'
 ICON['WB_DELETE'] = 'com.github.t00m.Loro-workbook-delete-symbolic'
+ICON["DIALOG-INFO"] = "com.github.t00m.Loro-dialog-information-symbolic"
+ICON["DIALOG-WARNING"] = "com.github.t00m.Loro-dialog-warning-symbolic"
+ICON["DIALOG-ERROR"] = "com.github.t00m.Loro-dialog-error-symbolic"
+ICON["DIALOG-QUESTION"] = "com.github.t00m.Loro-dialog-question-symbolic"
 
 
 class IconManager(GObject.GObject):

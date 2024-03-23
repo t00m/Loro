@@ -36,7 +36,7 @@ class Workflow(GObject.GObject):
         self.log = get_logger('Workflow')
 
         GObject.GObject.__init__(self)
-        GObject.signal_new('workflow-finished', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
+        GObject.signal_new('workflow-finished', Workflow, GObject.SignalFlags.RUN_LAST, GObject.TYPE_PYOBJECT, (GObject.TYPE_PYOBJECT,) )
         GObject.signal_new('model-loaded', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
 
         source, target = ENV['Projects']['Default']['Languages']
@@ -104,7 +104,9 @@ class Workflow(GObject.GObject):
                     self.log.error("Language detected ('%s') differs from source language ('%s')", lang, source)
                 if score < 85:
                     self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
-        # ~ self.emit('workflow-finished')
+        self.log.debug("Workflow finished for Workbook '%s'", workbook)
+        self.emit('workflow-finished', workbook)
+        # ~ RunAsync(self.end(workbook))
 
     def process_input(self, workbook:str, sentences: [], topic, subtopic, task) -> None:
         jobs = []
