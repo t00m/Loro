@@ -29,65 +29,50 @@ class Window(Adw.ApplicationWindow):
         super().__init__(**kwargs)
         GObject.GObject.__init__(self)
         GObject.signal_new('window-presented', Window, GObject.SignalFlags.RUN_LAST, None, () )
-        self.connect('window-presented', self._finish_loading)
+        self.connect('window-presented', self._on_finish_loading)
+        self.connect('close-request', self._on_close_request)
         self.app = kwargs['application']
         self._create_actions()
         self._build_ui()
         self.present()
         self.emit('window-presented')
 
-    def _finish_loading(self, *args):
+    def _on_close_request(self, *args):
+        self.log.debug("Quit application requested by user")
+
+    def _on_finish_loading(self, *args):
         # ViewSwitcher
         # Widgets
-        self.editor = Editor(self.app)
-        self.dashboard = Dashboard(self.app)
-        # ~ self.browser = Browser(self.app)
+        editor = self.app.add_widget('editor', Editor(self.app))
+        dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
         self.status = StatusPageEmpty(self.app, False)
         self.statusnw = StatusPageNoWorkbooks(self.app, True)
-        # ~ spinner = Gtk.Spinner()
-        # ~ spinner.set_spinning(True)
-        # ~ spinner.start()
-        # ~ self.status.set_title('Loading spaCy')
-        # ~ self.status.set_child(spinner)
-        self.viewstack = Adw.ViewStack()
-        self.viewstack.connect("notify::visible-child", self._stack_page_changed)
-        self.viewstack.add_titled_with_icon(self.dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
-        self.stack_page_editor = self.viewstack.add_titled_with_icon(self.editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
-        # ~ self.viewstack.add_titled_with_icon(self.browser, 'browser', 'Reports', 'com.github.t00m.Loro-printer-symbolic')
-
-        self.status_page = self.viewstack.add_titled_with_icon(self.status, 'status', 'Status', 'com.github.t00m.Loro-dialog-question-symbolic')
+        viewstack = self.app.add_widget('viewstack', Adw.ViewStack())
+        viewstack.connect("notify::visible-child", self._on_stack_page_changed)
+        viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
+        self.stack_page_editor = viewstack.add_titled_with_icon(editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
+        self.status_page = viewstack.add_titled_with_icon(self.status, 'status', 'Status', 'com.github.t00m.Loro-dialog-question-symbolic')
         self.status_page.set_visible(False)
-        # ~ self.viewstack.set_visible_child_name('status')
-
-        self.status_page_nw = self.viewstack.add_titled_with_icon(self.statusnw, 'status-nw', 'Status Workbooks', 'com.github.t00m.Loro-dialog-question-symbolic')
+        self.status_page_nw = viewstack.add_titled_with_icon(self.statusnw, 'status-nw', 'Status Workbooks', 'com.github.t00m.Loro-dialog-question-symbolic')
         self.status_page_nw.set_visible(False)
 
         viewswitcher = Adw.ViewSwitcher()
         # ~ viewswitcher.set_valign(Gtk.Align.CENTER)
-        viewswitcher.set_stack(self.viewstack)
+        viewswitcher.set_stack(viewstack)
         self.headerbar.set_title_widget(viewswitcher)
         self.mainbox.append(self.headerbar)
-        self.mainbox.append(self.viewstack)
+        self.mainbox.append(viewstack)
         self.set_content(self.mainbox)
-        self.dashboard.update_dashboard()
-        self.editor.connect('workbooks-updated', self.dashboard.update_dashboard)
-
-
-
-        # Set widgets state
+        dashboard.update_dashboard()
+        editor.connect('workbooks-updated', dashboard.update_dashboard)
 
     def show_stack_page(self, page_name: str):
-        self.viewstack.set_visible_child_name(page_name)
+        viewstack = self.app.get_widget('viewstack')
+        viewstack.set_visible_child_name(page_name)
 
-    def _stack_page_changed(self, viewstack, gparam):
+    def _on_stack_page_changed(self, viewstack, gparam):
         page = viewstack.get_visible_child_name()
         self.log.debug("Switched to page '%s'", page)
-        # ~ if page == 'browser':
-            # ~ self.browser.load_report()
-        # ~ if page == 'workbooks':
-            # ~ self.hboxDashboard.set_visible(False)
-        # ~ else:
-            # ~ self.hboxDashboard.set_visible(True)
 
     def _build_ui(self):
         self.set_title(_("Loro"))
@@ -151,8 +136,10 @@ class Window(Adw.ApplicationWindow):
         return self.ddWorkbooks
 
     def _on_workbook_selected(self, dropdown, gparam):
-        self.dashboard._on_workbook_selected(dropdown)
-        self.editor._on_workbook_selected(dropdown)
+        dashboard = self.app.get_widget('dashboard')
+        dashboard._on_workbook_selected(dropdown)
+        editor = self.app.get_widget('editor')
+        editor._on_workbook_selected(dropdown)
 
     def _create_actions(self) -> None:
         """

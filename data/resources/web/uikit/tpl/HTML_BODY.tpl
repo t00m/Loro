@@ -6,20 +6,11 @@
                 <article class="uk-article">
                     <h1 class="uk-article-title">Workbook ${var['workbook']['id']}</h1>
                     <p class="uk-text-lead">
-                        <ul class="uk-list">
-% for topic in var['workbook']['cache']['topics']['data']:
-<%!
-subtopics = []
-for subtopic in $var['workbook']['cache']['topics']['data'][topic]:
-    subtopics.append(subtopic)
-%>
-    <li>${topic}: ${subtopics}</li>
-% endfor
-                        </ul>
+                    % for postag in var['workbook']['stats']['postags']:
+                        <h3 class="uk-margin-small-bottom" id="${postag}">${spacy.explain_term(postag).title()}</h3>
+                    % endfor
                     </p>
-% for postag in var['workbook']['stats']['postags']:
-    <h3 class="uk-margin-small-bottom" id="${postag}">${spacy.explain_term(postag).title()}</h3>
-% endfor
+
                     <h2 class="uk-margin-small-bottom" id="a">Introduction</h2>
                     <p class="uk-margin-small-top"></p>
                     <h3 class="uk-margin-small-bottom" id="a1">Licence</h3>
@@ -46,7 +37,7 @@ for subtopic in $var['workbook']['cache']['topics']['data'][topic]:
             <div class="uk-visible@m" uk-sticky="offset: 40;">
                 <h2>Table of Contents</h2>
                 <div>
-                    <div uk-scrollspy-nav="closest: a; scroll: true; offset: 40;">
+                    <div uk-scrollspy-nav="closest: a; scroll: true; offset: 40; target: #article">
                         <ul class="uk-list">
                             <li><a href="#a"><b>Part Of Speech</b></a></li>
                                 <ul class="uk-list">
