@@ -139,7 +139,7 @@ class Dashboard(Gtk.Box):
 
     def toggle_sidebar_left(self, toggle_button, data):
         visible = toggle_button.get_active()
-        self.log.debug("Left sidebar visible? %s", visible)
+        # ~ self.log.debug("Left sidebar visible? %s", visible)
         # ~ if visible:
             # ~ self.hpaned.set_position(self.cur_pos)
         # ~ else:
@@ -156,7 +156,7 @@ class Dashboard(Gtk.Box):
     def display_report(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
-        self.log.debug("Loading report for Workbook '%s'", workbook.id)
+        # ~ self.log.debug("Loading report for Workbook '%s'", workbook.id)
         source, target = ENV['Projects']['Default']['Languages']
         DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
@@ -230,17 +230,12 @@ class Dashboard(Gtk.Box):
         if workbook is None:
             return
 
-        self.log.debug("Workbook selected? %s", workbook.id)
         if workbook.id is None:
             window = self.app.get_widget('window')
             window.show_stack_page('workbooks')
             window.editor._on_workbook_add()
             return
 
-        self.log.debug("Workbook? %s", workbook.id)
-        # ~ if workbook.id is None:
-            # ~ self.window.set_status_page('status-nw')
-            # ~ return
         self.app.stats.get(workbook.id)
         tokens = self.app.dictionary.get_tokens(workbook.id)
         workbook_empty = len(tokens) == 0
@@ -258,17 +253,6 @@ class Dashboard(Gtk.Box):
             data.append((postag, explain_term(postag).title()))
         self.app.actions.dropdown_populate(self.ddPos, POSTag, data)
 
-        # ~ self.log.debug("Workbook empty? %s", workbook_empty)
-        # ~ if workbook_empty:
-            # ~ self.window.set_status_page('status-nw')
-
-        # ~ if self.window is not None:
-            # ~ self.window.status_page.set_visible(visible)
-            # ~ if visible:
-                # ~ self.window.viewstack.set_visible_child_name('status')
-            # ~ else:
-                # ~ self.window.viewstack.set_visible_child_name('dashboard')
-
     def clear_dashboard(self):
         self.cvtokens.clear()
         self.cvsentences.clear()
@@ -283,7 +267,7 @@ class Dashboard(Gtk.Box):
         workbook = ddWorkbooks.get_selected_item()
         if workbook is None:
             return
-        self.log.debug("Workbook['%s'] update requested", workbook.id)
+        # ~ self.log.debug("Workbook['%s'] update requested", workbook.id)
 
         #FIXME: somehow, when the workflow emits the signal, it provokes
         # core dumps
@@ -295,7 +279,7 @@ class Dashboard(Gtk.Box):
         self.app.workflow.start(workbook.id, files)
         # ~ event.wait()
         self.set_current_workbook(workbook)
-        self.log.debug("Current workbook: %s", workbook.title)
+        # ~ self.log.debug("Current workbook: %s", workbook.title)
 
     def _on_topic_selected(self, *args):
         current_topic = self.ddTopics.get_selected_item()
@@ -379,13 +363,11 @@ class Dashboard(Gtk.Box):
             # ~ for key in tokens.keys():
 
     def _on_postag_selected(self, dropdown, gparam):
-        self.log.error(__class__.counter)
         if len(dropdown.get_model()) > 0:
             ddWorkbooks = self.app.get_widget('dropdown-workbooks')
             workbook = ddWorkbooks.get_selected_item()
             current_postag = dropdown.get_selected_item()
             postag = current_postag.id
-            self.log.debug("POStag: '%s'", postag)
             stats = self.app.stats.get(workbook.id)
             # ~ self.log.debug("Stats: %s", stats)
             # ~ return
@@ -427,24 +409,21 @@ class Dashboard(Gtk.Box):
         # ~ self._update_workbook()
 
     def update_dashboard(self, *args):
-        self.log.debug('Updating dashboard')
+        # ~ self.log.debug('Updating dashboard')
         window = self.app.get_widget('window')
         if window is None:
-            self.log.warning("Window still not ready! Keep waiting...")
+            # ~ self.log.warning("Window still not ready! Keep waiting...")
             return True
 
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         progressbar = self.app.get_widget('progressbar')
         progressbar.set_visible(False)
         workbook = ddWorkbooks.get_selected_item()
-        self.log.debug(workbook)
         if self.selected_workbook is not None:
-            self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)
+            # ~ self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)
             model = ddWorkbooks.get_model()
             pos = find_item(model, self.selected_workbook)
-            self.log.debug("Found workbook in positon %d", pos)
             item = model[pos]
-            self.log.debug("Workbook: %s", item.title)
             ddWorkbooks.set_selected(pos)
 
         self._on_workbook_selected(ddWorkbooks)
@@ -452,4 +431,3 @@ class Dashboard(Gtk.Box):
 
     def set_current_workbook(self, workbook: Workbook):
         self.selected_workbook = workbook
-        self.log.debug("Current workbook set to: %s", workbook.title)

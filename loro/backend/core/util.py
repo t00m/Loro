@@ -173,15 +173,11 @@ def valid_key(key: str) -> str:
     return re.sub(r'(?u)[^-\w.]', '', key)
 
 def find_item(filter_model, item):
-    log.debug("Looking for item '%s'", item.title)
     sorted_model = filter_model.get_model()
     list_store = sorted_model.get_model()
     pos = 0
     for key in list_store:
-        found = key.id == item.id
-        log.debug("%s == %s? %s (%d)", key.title, item.title, found, pos)
-        if found:
-            log.debug("Item %s found in pos %d", item.title, pos)
+        if key.id == item.id:
             return pos
         pos += 1
     return -1

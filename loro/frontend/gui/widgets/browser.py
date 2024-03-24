@@ -33,7 +33,7 @@ class Browser(WebKit.WebView):
         self.app = app
         self.log = get_logger('Browser')
         self._setup_widget()
-        self.log.debug("Browser initialized")
+        # ~ self.log.debug("Browser initialized")
         self.app.report.connect('report-finished', self.load_report)
         self.load_url('file:///home/t00m/Documentos/Loro/Projects/DE/output/EN/A1/A1.html')
 
@@ -85,17 +85,17 @@ class Browser(WebKit.WebView):
 
 
     def load_url(self, url: str):
-        self.log.debug("Loading url: %s", url)
+        # ~ self.log.debug("Loading url: %s", url)
         self.load_uri(url)
 
     def load_report(self, *args):
         ddWorkbooks = self.app.get_widget('dd-workbooks')
         workbook = ddWorkbooks.get_selected_item()
-        self.log.debug("Loading report for Workbook '%s'", workbook.id)
+        # ~ self.log.debug("Loading report for Workbook '%s'", workbook.id)
         source, target = ENV['Projects']['Default']['Languages']
         DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
-        self.log.debug(report_url)
+        # ~ self.log.debug(report_url)
         self.load_url(report_url)
         # ~ self.load_url('file:///home/t00m/Documentos/Loro/Projects/DE/output/EN/A1/A1.html')
         # ~ GLib.idle_add(self.load_report_url)
@@ -121,7 +121,8 @@ class Browser(WebKit.WebView):
             click = action.get_mouse_button() != 0
             uri = webview.get_uri()
             if click:
-                self.log.debug("User clicked in link: %s", uri)
+                pass
+                # ~ self.log.debug("User clicked in link: %s", uri)
 
     def _on_load_changed(self, webview, event):
         uri = webview.get_uri()

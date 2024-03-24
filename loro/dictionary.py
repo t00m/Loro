@@ -18,7 +18,8 @@ class Dictionary:
         self.cache = {}
 
     def __del__(self):
-        self.log.debug("Read from File[%d] / Read from Memory[%d]", self.stats['rff'], self.stats['rfm'])
+        pass
+        # ~ self.log.debug("Read from File[%d] / Read from Memory[%d]", self.stats['rff'], self.stats['rfm'])
 
     def get_topics(self, workbook: str):
         cache = self.get_cache(workbook)
@@ -28,9 +29,9 @@ class Dictionary:
         subtopics = set()
         cache = self.get_cache(workbook)
         for topic in self.get_topics(workbook):
-            self.log.debug("Topic['%s']", topic)
+            # ~ self.log.debug("Topic['%s']", topic)
             for subtopic in cache['topics']['data'][topic]:
-                self.log.debug("\tSubtopic['%s']", subtopic)
+                # ~ self.log.debug("\tSubtopic['%s']", subtopic)
                 subtopics.add(subtopic)
         return subtopics
 
@@ -62,7 +63,7 @@ class Dictionary:
             self.cache[key]
             return self.cache[key]
         except KeyError:
-            self.log.debug("Creating new cache for workbook '%s'", workbook)
+            # ~ self.log.debug("Creating new cache for workbook '%s'", workbook)
             self.cache[key] = {}
 
             ftokens = os.path.join(WB_CONFIG_DIR, '%s_tokens_%s_%s.json' % (workbook, source, target))
@@ -108,18 +109,18 @@ class Dictionary:
         return files
 
     def initialize(self, workbook):
-        self.log.debug("Initializing workbook '%s'", workbook)
+        # ~ self.log.debug("Initializing workbook '%s'", workbook)
         cache_files = self.get_cache_files(workbook)
         for filepath in cache_files:
             if os.path.exists(filepath):
                 os.unlink(filepath)
-                self.log.debug("\tDeleting file '%s'", os.path.basename(filepath))
+                # ~ self.log.debug("\tDeleting file '%s'", os.path.basename(filepath))
 
         for filepath in cache_files:
             dirpath = os.path.dirname(filepath)
             if not os.path.exists(dirpath):
                 os.makedirs(dirpath, exist_ok=True)
-                self.log.debug("\tCreating directory '%s'", dirpath)
+                # ~ self.log.debug("\tCreating directory '%s'", dirpath)
 
         key = self.get_cache_key(workbook)
         del(self.cache[key])
@@ -132,7 +133,7 @@ class Dictionary:
 
     def save(self, workbook):
         self._save_cache(workbook)
-        self.log.debug("Workbook '%s' dictionary saved", workbook)
+        # ~ self.log.debug("Workbook '%s' dictionary saved", workbook)
 
     def add_sentence(self, workbook:str, sid: str, sentence: str, tokens: []) -> bool:
         source, target = ENV['Projects']['Default']['Languages']

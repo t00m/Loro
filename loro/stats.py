@@ -15,7 +15,7 @@ class Stats(GObject.GObject):
         self.log = get_logger('Stats')
         GObject.GObject.__init__(self)
         GObject.signal_new('stats-finished', Stats, GObject.SignalFlags.RUN_LAST, None, () )
-        self.log.debug("Stats initialized")
+        # ~ self.log.debug("Stats initialized")
 
     def analyze(self, workbook: str) -> {}:
         wbcache = self.app.dictionary.get_cache(workbook)

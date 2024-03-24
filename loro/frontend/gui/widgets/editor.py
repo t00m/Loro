@@ -168,7 +168,7 @@ class Editor(Gtk.Box):
         filepath = self.cvfilesAv.get_item()
         filename = os.path.basename(filepath.id)
         self.app.workbooks.update(workbook.id, filename, True)
-        self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, True)
+        # ~ self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, True)
         self._update_files_view(workbook.id)
 
     def _on_view_used_remove(self, *args):
@@ -177,7 +177,7 @@ class Editor(Gtk.Box):
         filepath = self.cvfilesUsed.get_item()
         filename = os.path.basename(filepath.id)
         self.app.workbooks.update(workbook.id, filename, False)
-        self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, False)
+        # ~ self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, False)
         self._update_files_view(workbook.id)
 
     def _on_workbook_add(self, *args):
@@ -185,7 +185,7 @@ class Editor(Gtk.Box):
             if res == "cancel":
                 return
             name = entry.get_text()
-            self.log.debug("Accepted workbook name: %s", name)
+            # ~ self.log.debug("Accepted workbook name: %s", name)
             self.app.workbooks.add(name)
             self.update_editor()
             self.emit('workbooks-updated')
@@ -223,7 +223,7 @@ class Editor(Gtk.Box):
             if res == "cancel":
                 return
             new_name = entry.get_text()
-            self.log.debug("Accepted workbook name: %s", new_name)
+            # ~ self.log.debug("Accepted workbook name: %s", new_name)
             self.app.workbooks.rename(old_name, new_name)
             self.update_editor()
             self.emit('workbooks-updated')
@@ -276,8 +276,8 @@ class Editor(Gtk.Box):
             pos = bitset.get_nth(index)
             filename = model.get_item(pos)
             self.selected_file = filename.id
-            self.log.debug("Selected available: '%s'", self.selected_file)
-            self.log.debug("File available selected: %s", filename.title)
+            # ~ self.log.debug("Selected available: '%s'", self.selected_file)
+            # ~ self.log.debug("File available selected: %s", filename.title)
             self._on_display_file(filename.id)
             # ~ self._set_enable_renaming(True)
             # ~ self._set_enable_deleting(True)
@@ -290,8 +290,8 @@ class Editor(Gtk.Box):
             pos = bitset.get_nth(index)
             filename = model.get_item(pos)
             self.selected_file = filename.id
-            self.log.debug("Selected used: '%s'", self.selected_file)
-            self.log.debug("File used selected: %s", filename.title)
+            # ~ self.log.debug("Selected used: '%s'", self.selected_file)
+            # ~ self.log.debug("File used selected: %s", filename.title)
             self._on_display_file(filename.id)
             # ~ self._set_enable_renaming(True)
             # ~ self._set_enable_deleting(True)
@@ -339,7 +339,7 @@ class Editor(Gtk.Box):
             selection.select_item(0, True)
             filename = selection.get_selected_item()
             self.selected_file = filename.id
-            self.log.debug("File selected: %s", filename.title)
+            # ~ self.log.debug("File selected: %s", filename.title)
             self._on_display_file(filename.id)
 
     def _on_document_add(self, *args):
@@ -370,7 +370,7 @@ class Editor(Gtk.Box):
             filepath = os.path.join(input_dir, filename)
             with open(filepath, 'w') as fout:
                 fout.write(contents)
-                self.log.debug("Document '%s' created", filename)
+                # ~ self.log.debug("Document '%s' created", filename)
                 self._update_files_view(workbook.id)
             # ~ topic, subtopic, suffix = get_metadata_from_filename(filename)
             return filename
@@ -451,7 +451,7 @@ class Editor(Gtk.Box):
             new_name = lblFilename.get_text()
             target_path = os.path.join(input_dir, new_name)
             shutil.move(source_path, target_path)
-            self.log.debug("Document renamed from '%s' to '%s'", os.path.basename(source_path), os.path.basename(target_path))
+            # ~ self.log.debug("Document renamed from '%s' to '%s'", os.path.basename(source_path), os.path.basename(target_path))
             self._update_files_view(self.current_workbook)
 
             return new_name
@@ -518,12 +518,13 @@ class Editor(Gtk.Box):
         source, target = ENV['Projects']['Default']['Languages']
         input_dir = get_project_input_dir(source)
         os.system("xdg-open '%s'" % input_dir)
-        self.log.debug("Open Input directory")
+        # ~ self.log.debug("Open Input directory")
 
     def _on_document_delete(self, *args):
+        pass
         # FIXME: Check if it exists in Workbooks, delete it from them
         # and then, delete it from disk
-        self.log.debug(args)
+        # ~ self.log.debug(args)
 
     def _on_document_save(self, *args):
         textbuffer = self.editorview.get_buffer()
@@ -541,7 +542,7 @@ class Editor(Gtk.Box):
             return
         self.current_workbook = workbook.id
         if workbook is not None:
-            self.log.debug("Selected workbook: %s", workbook.id)
+            # ~ self.log.debug("Selected workbook: %s", workbook.id)
             if workbook.id != 'None':
                 self._update_files_view(workbook.id)
                 self.cvfilesUsed.set_title("On workbook %s" % workbook.id)

@@ -36,7 +36,8 @@ class Window(Adw.ApplicationWindow):
         self.emit('window-presented')
 
     def _on_close_request(self, *args):
-        self.log.debug("Quit application requested by user")
+        pass
+        # ~ self.log.debug("Quit application requested by user")
 
     def _on_finish_loading(self, *args):
         # ViewSwitcher
@@ -66,7 +67,7 @@ class Window(Adw.ApplicationWindow):
 
     def _on_stack_page_changed(self, viewstack, gparam):
         page = viewstack.get_visible_child_name()
-        self.log.debug("Switched to page '%s'", page)
+        # ~ self.log.debug("Switched to page '%s'", page)
 
     def _build_ui(self):
         self.set_title(_("Loro"))
@@ -113,7 +114,7 @@ class Window(Adw.ApplicationWindow):
         editor = self.app.get_widget('editor')
         editor.emit('workbooks-updated')
         workbook = dropdown.get_selected_item()
-        self.log.debug("Workbook selected: '%s'", workbook.id)
+        # ~ self.log.debug("Workbook selected: '%s'", workbook.id)
         dashboard.set_current_workbook(workbook)
         dashboard.update_dashboard()
         editor.update_editor()

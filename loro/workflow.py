@@ -64,13 +64,13 @@ class Workflow(GObject.GObject):
 
     def start(self, workbook: str, files: []):
         if len(files) == 0:
-            self.log.debug("Workbook '%s' doesn't contain any file", workbook)
+            # ~ self.log.debug("Workbook '%s' doesn't contain any file", workbook)
             return
 
         self.current_filename = ''
         self.fraction = 0.0
         source, target = ENV['Projects']['Default']['Languages']
-        self.log.debug("Processing workbook: '%s'", workbook)
+        # ~ self.log.debug("Processing workbook: '%s'", workbook)
         if not self.model_loaded:
             self.log.warning("Spacy model still loading")
             return
@@ -78,7 +78,7 @@ class Workflow(GObject.GObject):
         self.app.dictionary.initialize(workbook)
 
         for filename in files:
-            self.log.debug("Processing %s[%s]", workbook, os.path.basename(filename))
+            # ~ self.log.debug("Processing %s[%s]", workbook, os.path.basename(filename))
             INPUT_DIR = get_project_input_dir(source)
             filepath = os.path.join(INPUT_DIR, filename)
             self.current_filename = os.path.basename(filepath)
@@ -104,7 +104,7 @@ class Workflow(GObject.GObject):
                     self.log.error("Language detected ('%s') differs from source language ('%s')", lang, source)
                 if score < 85:
                     self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
-        self.log.debug("Workflow finished for Workbook '%s'", workbook)
+        # ~ self.log.debug("Workflow finished for Workbook '%s'", workbook)
         self.emit('workflow-finished', workbook)
         # ~ RunAsync(self.end(workbook))
 

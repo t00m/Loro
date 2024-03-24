@@ -412,7 +412,8 @@ class WidgetFactory:
         return button
 
     def noop(self, *args):
-        self.log.debug(args)
+        pass
+        # ~ self.log.debug(args)
 
     def create_entry_with_completion(self, completion_values):
         def completion_match_func(completion, key, iter):

@@ -187,7 +187,8 @@ class ColumnView(Gtk.Box):
         # In any case, the scrollbar doesn't move
 
     def scroll_begin(self, *args):
-        self.log.debug(args)
+        pass
+        # ~ self.log.debug(args)
 
     def set_filter(self, filter_func):
         self.filter = Gtk.CustomFilter.new(filter_func, self.filter_model)
@@ -268,7 +269,7 @@ class ColumnView(Gtk.Box):
     def _on_selected_item_notify(self, colview, pos):
         model = colview.get_model()
         item = model.get_item(pos)
-        self.log.debug(item.id)
+        # ~ self.log.debug(item.id)
 
     def _on_sort_string_func(self, item1, item2, prop):
         if eval("item1.%s.upper()" % prop) > eval("item2.%s.upper()" % prop):

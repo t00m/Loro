@@ -35,7 +35,7 @@ class Report(GObject.GObject):
         GObject.signal_new('report-finished', Report, GObject.SignalFlags.RUN_LAST, GObject.TYPE_PYOBJECT, (GObject.TYPE_PYOBJECT,) )
         self.templates = {}
         self._add_templates()
-        self.log.debug("Reporting initialized")
+        # ~ self.log.debug("Reporting initialized")
         self.app.workflow.connect('workflow-finished', self.update_report)
 
 
@@ -43,7 +43,7 @@ class Report(GObject.GObject):
         self.templates['HEADER'] = Template(filename=TPL_HEADER)
         self.templates['BODY'] = Template(filename=TPL_BODY)
         self.templates['FOOTER'] = Template(filename=TPL_FOOTER)
-        self.log.debug("Basic templates added")
+        # ~ self.log.debug("Basic templates added")
 
     # ~ def build(self, workbook: str) -> str:
         # ~ header = open(TPL_HEADER).read()
@@ -90,8 +90,8 @@ class Report(GObject.GObject):
         html = header + body + footer
         with open(REPORT, 'w') as fout:
             fout.write(html)
-            self.log.debug("Report saved to: %s", REPORT)
-        self.log.debug("Report['%s'] built" % workbook)
+            # ~ self.log.debug("Report saved to: %s", REPORT)
+        # ~ self.log.debug("Report['%s'] built" % workbook)
         return html
 
     def update_report(self, workflow, workbook):
