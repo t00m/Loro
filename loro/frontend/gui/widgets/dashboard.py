@@ -232,8 +232,9 @@ class Dashboard(Gtk.Box):
 
         if workbook.id is None:
             window = self.app.get_widget('window')
+            editor = self.app.get_widget('editor')
             window.show_stack_page('workbooks')
-            window.editor._on_workbook_add()
+            editor._on_workbook_add()
             return
 
         self.app.stats.get(workbook.id)
