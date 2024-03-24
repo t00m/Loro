@@ -31,7 +31,6 @@ class Dashboard(Gtk.Box):
         __class__.counter += 1
         self.log = get_logger('Dashboard')
         self.app = app
-        # ~ self.window = self.app.get_main_window()
         self.current_topic = 'ALL'
         self.current_subtopic = 'ALL'
         self.current_postag = 'ALL'
@@ -276,7 +275,6 @@ class Dashboard(Gtk.Box):
         self.cvanalysis.clear()
 
     def _update_workbook(self, *args):
-        self.window = self.app.get_main_window()
         window = self.app.get_widget('window')
         if window is None:
             # ~ self.log.warning("Window still not ready! Keep waiting...")
@@ -429,14 +427,27 @@ class Dashboard(Gtk.Box):
         # ~ self._update_workbook()
 
     def update_dashboard(self, *args):
-        self.log.debug(args)
+        self.log.debug('Updating dashboard')
         window = self.app.get_widget('window')
-        progressbar = self.app.get_widget('progressbar')
         if window is None:
             self.log.warning("Window still not ready! Keep waiting...")
             return True
-        progressbar.set_visible(False)
 
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        progressbar = self.app.get_widget('progressbar')
+        progressbar.set_visible(False)
+        workbook = ddWorkbooks.get_selected_item()
+        self.log.debug(workbook)
+        if self.selected_workbook is not None:
+            self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)
+            model = ddWorkbooks.get_model()
+            pos = find_item(model, self.selected_workbook)
+            self.log.debug("Found workbook in positon %d", pos)
+            item = model[pos]
+            self.log.debug("Workbook: %s", item.title)
+            ddWorkbooks.set_selected(pos)
+
+        self._on_workbook_selected(ddWorkbooks)
         return False
 
     def set_current_workbook(self, workbook: Workbook):

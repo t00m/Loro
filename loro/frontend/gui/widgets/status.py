@@ -19,7 +19,6 @@ class StatusPage(Gtk.Box):
     def __init__(self, app, visible):
         super(StatusPage, self).__init__(orientation=Gtk.Orientation.VERTICAL)
         self.app = app
-        self.window = self.app.get_main_window()
         self.log = get_logger(__class__.__name__)
         self.status = Adw.StatusPage()
         self.status.set_title('Status Page')

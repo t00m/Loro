@@ -145,10 +145,10 @@ class Editor(Gtk.Box):
         self._on_toggle_views(self.btnHideAv, None)
         return
 
-    # ~ def _finish_loading(self, *args):
-        # ~ window = self.app.get_main_window()
-        # ~ self.ddWorkbooks = window.ddWorkbooks
-        # ~ self.ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
+    def _finish_loading(self, *args):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        ddWorkbooks = window.ddWorkbooks
+        ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
 
     def _on_toggle_views(self, button, gparam):
         visible = button.get_active()
@@ -195,7 +195,7 @@ class Editor(Gtk.Box):
             exists = self.app.workbooks.exists(name)
             dialog.set_response_enabled("add", not exists)
 
-        window = self.app.get_main_window()
+        window = self.app.get_widget('window')
         vbox = self.app.factory.create_box_vertical(margin=6, spacing=6)
         # ~ vbox.props.width_request = 600
         # ~ vbox.props.height_request = 480
@@ -239,7 +239,6 @@ class Editor(Gtk.Box):
         if workbook.id is None:
             return
 
-        # ~ window = self.app.get_main_window()
         vbox = self.app.factory.create_box_vertical(margin=6, spacing=6)
         etyWBName = Gtk.Entry()
         etyWBName.set_text(workbook.id)
@@ -376,7 +375,7 @@ class Editor(Gtk.Box):
             # ~ topic, subtopic, suffix = get_metadata_from_filename(filename)
             return filename
 
-        window = self.app.get_main_window()
+        window = self.app.get_widget('window')
         vbox = self.app.factory.create_box_vertical(margin=6, spacing=6)
         vbox.props.width_request = 800
         vbox.props.height_request = 600
@@ -460,7 +459,7 @@ class Editor(Gtk.Box):
         if self.selected_file is None:
             return
 
-        window = self.app.get_main_window()
+        window = self.app.get_widget('window')
         basename = os.path.basename(self.selected_file)
         vbox = self.app.factory.create_box_vertical(margin=6, spacing=6)
         vbox.props.width_request = 800

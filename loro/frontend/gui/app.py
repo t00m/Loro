@@ -43,9 +43,6 @@ class Application(Adw.Application):
         self.window = Window(application=self)
         self.add_widget('window', self.window)
 
-    def get_main_window(self):
-        return self.window
-
     def add_widget(self, name: str, widget):
         # Add widget, but do not overwrite
         if name not in self._widgets:

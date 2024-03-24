@@ -57,8 +57,8 @@ class Window(Adw.ApplicationWindow):
         self.set_content(mainbox)
         # ~ dashboard.update_dashboard()
         self.update_dropdown_workbooks()
-        editor.connect('workbooks-updated', dashboard.update_dashboard)
-        editor.connect('workbooks-updated', editor.update_editor)
+        # ~ editor.connect('workbooks-updated', dashboard.update_dashboard)
+        # ~ editor.connect('workbooks-updated', editor.update_editor)
 
     def show_stack_page(self, page_name: str):
         viewstack = self.app.get_widget('viewstack')
@@ -109,12 +109,14 @@ class Window(Adw.ApplicationWindow):
         # ~ self.props.height_request = 768
 
     def _on_workbook_selected(self, dropdown, gparam):
+        dashboard = self.app.get_widget('dashboard')
         editor = self.app.get_widget('editor')
         editor.emit('workbooks-updated')
-        # ~ dashboard = self.app.get_widget('dashboard')
-        # ~ dashboard._on_workbook_selected(dropdown)
-        # ~ editor = self.app.get_widget('editor')
-        # ~ editor._on_workbook_selected(dropdown)
+        workbook = dropdown.get_selected_item()
+        self.log.debug("Workbook selected: '%s'", workbook.id)
+        dashboard.set_current_workbook(workbook)
+        dashboard.update_dashboard()
+        editor.update_editor()
 
     def _create_actions(self) -> None:
         """Create actions for main menu"""
