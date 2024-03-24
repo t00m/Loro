@@ -12,12 +12,17 @@ import os
 import re
 import glob
 import json
+import math
 import hashlib
 import subprocess
+import multiprocessing
 
+from loro.backend.core.log import get_logger
 from loro.backend.core.constants import LORO_USER_DIR
 from loro.backend.core.constants import LORO_USER_PROJECTS_DIR
 from loro.backend.core.constants import LORO_USER_CONFIG_DIR
+
+log = get_logger('Util')
 
 def get_project_dir(source: str) -> str:
     return os.path.join(os.path.join(LORO_USER_PROJECTS_DIR, source))
@@ -166,3 +171,22 @@ def valid_key(key: str) -> str:
     key = str(key).strip().replace('-', '_')
     key = str(key).strip().replace(' ', '_')
     return re.sub(r'(?u)[^-\w.]', '', key)
+
+def find_item(filter_model, item):
+    sorted_model = filter_model.get_model()
+    list_store = sorted_model.get_model()
+    pos = 0
+    for key in list_store:
+        if key.id == item.id:
+            return pos
+        pos += 1
+    return -1
+
+def get_default_workers():
+    """Calculate default number or workers.
+    Workers = Number of CPU / 2
+    Minimum workers = 1
+    """
+    ncpu = multiprocessing.cpu_count()
+    workers = ncpu/2
+    return math.ceil(workers)

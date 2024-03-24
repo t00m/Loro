@@ -5,12 +5,11 @@
 
 import os
 import sys
-import math
 import signal
 import locale
 import gettext
 import argparse
-import multiprocessing
+
 
 from rich.traceback import install
 # ~ install(show_locals=True)
@@ -19,6 +18,7 @@ sys.path.insert(1, '@pkgdatadir@')
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
+from loro.backend.core.util import get_default_workers
 from loro.main import main
 
 log = get_logger('loro')
@@ -35,25 +35,17 @@ gettext.install('loro', ENV['APP']['LOCALEDIR'])
 try:
   locale.bindtextdomain('loro', ENV['APP']['LOCALEDIR'])
   locale.textdomain('loro')
-  log.info("Locales set")
+  # ~ log.debug("Locales set")
 except:
   log.error('Cannot set locale.')
 
 try:
   gettext.bindtextdomain('loro', ENV['APP']['LOCALEDIR'])
   gettext.textdomain('loro')
-  log.info("Gettext set")
+  # ~ log.debug("Gettext set")
 except:
   log.error('Cannot load translations.')
 
-def get_default_workers():
-    """Calculate default number or workers.
-    Workers = Number of CPU / 2
-    Minimum workers = 1
-    """
-    ncpu = multiprocessing.cpu_count()
-    workers = ncpu/2
-    return math.ceil(workers)
 
 if __name__ == "__main__":
     WORKERS = get_default_workers()

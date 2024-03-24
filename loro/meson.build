@@ -11,6 +11,7 @@ configure_file(
 sources = [
   'dictionary.py',
   'main.py',
+  'report.py',
   'stats.py',
   'workbook.py',
   'workflow.py'

@@ -33,6 +33,9 @@ class ColLabel(Gtk.Box):
     def __init__(self):
         super(ColLabel, self).__init__()
         label = Gtk.Label()
+        label.set_single_line_mode(False)
+        label.set_selectable(False)
+        label.set_ellipsize(False)
         self.append(label)
 
 class ColButton(Gtk.Box):
@@ -71,11 +74,11 @@ class ColumnView(Gtk.Box):
     __gtype_name__ = 'ColumnView'
 
     def __init__(self, app, item_type=Item):
-        super(ColumnView, self).__init__(orientation=Gtk.Orientation.VERTICAL, spacing=3, hexpand=True, vexpand=True)
-        self.set_margin_top(margin=3)
-        self.set_margin_end(margin=3)
-        self.set_margin_bottom(margin=3)
-        self.set_margin_start(margin=3)
+        super(ColumnView, self).__init__(orientation=Gtk.Orientation.VERTICAL, spacing=6, hexpand=True, vexpand=True)
+        # ~ self.set_margin_top(margin=3)
+        # ~ self.set_margin_end(margin=3)
+        # ~ self.set_margin_bottom(margin=3)
+        # ~ self.set_margin_start(margin=3)
         self.app = app
         self.item_type = item_type
         self.log = get_logger('ColumnView')
@@ -157,6 +160,9 @@ class ColumnView(Gtk.Box):
         self.selection.unselect_all()
         self.cv.set_model(self.selection)
 
+    def set_title(self, title: str):
+        self.column_title.set_title(title)
+
     def get_item(self):
         selection = self.get_selection()
         selected = selection.get_selection()
@@ -181,12 +187,20 @@ class ColumnView(Gtk.Box):
         # In any case, the scrollbar doesn't move
 
     def scroll_begin(self, *args):
-        self.log.debug(args)
+        pass
+        # ~ self.log.debug(args)
 
     def set_filter(self, filter_func):
         self.filter = Gtk.CustomFilter.new(filter_func, self.filter_model)
         self.filter_model.set_filter(self.filter)
         return self.filter
+
+    def set_has_frame(self, has_frame: bool):
+        self.scrwin.set_has_frame(has_frame)
+
+    # ~ def set_header_visible(self, visible: bool):
+        # ~ header = self.get_first_child()
+        # ~ header.set_visible(visible)
 
     def _do_filter_view(self, item, filter_list_model):
         text = self.search_entry.get_text()
@@ -255,7 +269,7 @@ class ColumnView(Gtk.Box):
     def _on_selected_item_notify(self, colview, pos):
         model = colview.get_model()
         item = model.get_item(pos)
-        self.log.debug(item.id)
+        # ~ self.log.debug(item.id)
 
     def _on_sort_string_func(self, item1, item2, prop):
         if eval("item1.%s.upper()" % prop) > eval("item2.%s.upper()" % prop):

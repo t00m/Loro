@@ -11,17 +11,24 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import json_load, json_save
 from loro.backend.core.util import get_project_config_dir
+from loro.backend.core.util import get_project_input_dir
 
 
 class Workbook:
     def __init__(self, app):
         self.log = get_logger('Workbook')
         self.app = app
+        self._check()
+        # ~ self.log.debug('Workbooks initializated')
+        # ~ self.log.debug('Workbooks found: %d', len(self.get_all()))
 
+    def _check(self, *args):
         for workbook in self.get_all():
             cache_dir = self.app.dictionary.get_cache_dir(workbook)
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
+                self.log.debug("Cache directory created for workbook '%s':", workbook)
+                self.log.debug("%s", cache_dir)
 
     def get_dictionary(self, workbook):
         return self.app.dictionary.get_cache(workbook)
@@ -36,7 +43,17 @@ class Workbook:
         return workbooks
 
     def get_files(self, wbname):
-        return self.get_all()[wbname]
+        valid_files = []
+        source, target = ENV['Projects']['Default']['Languages']
+        INPUT_DIR = get_project_input_dir(source)
+        filenames = self.get_all()[wbname]
+        for filename in filenames:
+            filepath = os.path.join(INPUT_DIR, filename)
+            if os.path.exists(filepath):
+                valid_files.append(filename)
+            else:
+                self.log.warning("File '%s' skipped. It doesn't exist", filename)
+        return valid_files
 
     def exists(self, name: str) -> bool:
         return name.upper() in self.get_all().keys()
@@ -46,6 +63,7 @@ class Workbook:
         workbooks[name.upper()] = []
         self._save(workbooks)
         self.log.debug("Workbook '%s' added", name)
+        self._check()
 
     def rename(self, old_name: str, new_name: str) -> bool:
         workbooks = self.get_all()
@@ -53,6 +71,7 @@ class Workbook:
         del(workbooks[old_name])
         self._save(workbooks)
         self.log.debug("Workbook '%s' renamed to '%s'", old_name, new_name)
+        self._check()
 
     def update(self, wbname:str, fname:str, active:bool):
         workbooks = self.get_all()

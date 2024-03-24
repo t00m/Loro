@@ -145,7 +145,7 @@ class WidgetFactory:
 
         return button
 
-    def create_button_toggle(self, icon_name: str = '', title: str = '', callback=None, css_classes=[], data=None) -> Gtk.ToggleButton:
+    def create_button_toggle(self, icon_name: str = '', title: str = '', tooltip: str = '', callback=None, css_classes=[], data=None) -> Gtk.ToggleButton:
         button = Gtk.ToggleButton(css_classes=css_classes)
         hbox = self.create_box_horizontal()
         if len(icon_name.strip()) == 0:
@@ -156,6 +156,9 @@ class WidgetFactory:
         label = Gtk.Label()
         if len(title) > 0:
             label.set_markup(title)
+
+        if len(tooltip) > 0:
+            button.set_tooltip_markup(tooltip)
 
         hbox.append(icon)
         hbox.append(label)
@@ -351,7 +354,7 @@ class WidgetFactory:
             frame.set_label_align(0.5)
         return frame
 
-    def create_label(self, text: str = None) -> Gtk.Label:
+    def create_label(self, text: str = '') -> Gtk.Label:
         label = Gtk.Label()
         label.set_property('ellipsize', Pango.EllipsizeMode.MIDDLE)
         if text is not None:
@@ -409,7 +412,8 @@ class WidgetFactory:
         return button
 
     def noop(self, *args):
-        self.log.debug(args)
+        pass
+        # ~ self.log.debug(args)
 
     def create_entry_with_completion(self, completion_values):
         def completion_match_func(completion, key, iter):
