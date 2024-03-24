@@ -268,11 +268,11 @@ class Dashboard(Gtk.Box):
         workbook = ddWorkbooks.get_selected_item()
         if workbook is None:
             return
-        # ~ self.log.debug("Workbook['%s'] update requested", workbook.id)
+        self.log.debug("Workbook['%s'] update requested", workbook.id)
 
         #FIXME: somehow, when the workflow emits the signal, it provokes
         # core dumps
-        # ~ self.app.workflow.connect('workflow-finished', self.update_dashboard)
+        self.app.workflow.connect('workflow-finished', self.update_dashboard)
 
         files = self.app.workbooks.get_files(workbook.id)
         # ~ GLib.idle_add(self.app.workflow.start, workbook.id, files)
@@ -410,7 +410,7 @@ class Dashboard(Gtk.Box):
         # ~ self._update_workbook()
 
     def update_dashboard(self, *args):
-        # ~ self.log.debug('Updating dashboard')
+        self.log.debug('Updating dashboard')
         window = self.app.get_widget('window')
         if window is None:
             # ~ self.log.warning("Window still not ready! Keep waiting...")
@@ -420,12 +420,12 @@ class Dashboard(Gtk.Box):
         progressbar = self.app.get_widget('progressbar')
         progressbar.set_visible(False)
         workbook = ddWorkbooks.get_selected_item()
-        if self.selected_workbook is not None:
+        # ~ if self.selected_workbook is not None:
             # ~ self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)
-            model = ddWorkbooks.get_model()
-            pos = find_item(model, self.selected_workbook)
-            item = model[pos]
-            ddWorkbooks.set_selected(pos)
+            # ~ model = ddWorkbooks.get_model()
+            # ~ pos = find_item(model, self.selected_workbook)
+            # ~ item = model[pos]
+            # ~ ddWorkbooks.set_selected(pos)
 
         self._on_workbook_selected(ddWorkbooks)
         return False

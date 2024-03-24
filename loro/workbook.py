@@ -23,6 +23,13 @@ class Workbook:
         # ~ self.log.debug('Workbooks found: %d', len(self.get_all()))
 
     def _check(self, *args):
+        source, target = ENV['Projects']['Default']['Languages']
+        config_dir = get_project_config_dir(source)
+        workbooks_path = os.path.join(config_dir, 'workbooks.json')
+        if not os.path.exists(workbooks_path):
+            self._save({})
+            self.log.debug("Created workbooks configuration (empty)")
+
         for workbook in self.get_all():
             cache_dir = self.app.dictionary.get_cache_dir(workbook)
             if not os.path.exists(cache_dir):
@@ -38,6 +45,7 @@ class Workbook:
         config_dir = get_project_config_dir(source)
         workbooks_path = os.path.join(config_dir, 'workbooks.json')
         if not os.path.exists(workbooks_path):
+            self.log.warning("Workbooks config path['%s'] do not exist", workbooks_path)
             return {}
         workbooks = json_load(workbooks_path)
         return workbooks
@@ -46,13 +54,17 @@ class Workbook:
         valid_files = []
         source, target = ENV['Projects']['Default']['Languages']
         INPUT_DIR = get_project_input_dir(source)
-        filenames = self.get_all()[wbname]
-        for filename in filenames:
-            filepath = os.path.join(INPUT_DIR, filename)
-            if os.path.exists(filepath):
-                valid_files.append(filename)
-            else:
-                self.log.warning("File '%s' skipped. It doesn't exist", filename)
+        try:
+            filenames = self.get_all()[wbname]
+            for filename in filenames:
+                filepath = os.path.join(INPUT_DIR, filename)
+                if os.path.exists(filepath):
+                    valid_files.append(filename)
+                else:
+                    self.log.warning("File '%s' skipped. It doesn't exist", filename)
+        except KeyError:
+            self.log.warning("Workbook['%s'] not found", wbname)
+
         return valid_files
 
     def exists(self, name: str) -> bool:
@@ -96,7 +108,10 @@ class Workbook:
             self._save(workbooks)
 
     def have_file(self, wbname: str, fname: str) -> bool:
-        return fname in self.get_all()[wbname]
+        try:
+            return fname in self.get_all()[wbname]
+        except KeyError:
+            return False
 
     def delete(self, name:str) -> None:
         if self.exists(name):
@@ -110,4 +125,4 @@ class Workbook:
         config_dir = get_project_config_dir(source)
         workbooks_path = os.path.join(config_dir, 'workbooks.json')
         json_save(workbooks_path, workbooks)
-        self.log.debug("%d workbooks saved", len(workbooks))
+        # ~ self.log.debug("%d workbooks saved", len(workbooks))

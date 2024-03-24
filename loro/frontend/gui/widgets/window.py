@@ -58,7 +58,7 @@ class Window(Adw.ApplicationWindow):
         self.set_content(mainbox)
         # ~ dashboard.update_dashboard()
         self.update_dropdown_workbooks()
-        # ~ editor.connect('workbooks-updated', dashboard.update_dashboard)
+        editor.connect('workbooks-updated', self.update_dropdown_workbooks)
         # ~ editor.connect('workbooks-updated', editor.update_editor)
 
     def show_stack_page(self, page_name: str):
@@ -112,9 +112,11 @@ class Window(Adw.ApplicationWindow):
     def _on_workbook_selected(self, dropdown, gparam):
         dashboard = self.app.get_widget('dashboard')
         editor = self.app.get_widget('editor')
-        editor.emit('workbooks-updated')
         workbook = dropdown.get_selected_item()
-        # ~ self.log.debug("Workbook selected: '%s'", workbook.id)
+        if workbook is None:
+            self.log.warning("No workbooks created yet")
+            return
+        self.log.debug("Selected workbook: '%s'", workbook.id)
         dashboard.set_current_workbook(workbook)
         dashboard.update_dashboard()
         editor.update_editor()
@@ -191,12 +193,3 @@ class Window(Adw.ApplicationWindow):
 
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)
-
-        # ~ if self.selected_workbook is not None:
-            # ~ self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)
-            # ~ model = ddWorkbooks.get_model()
-            # ~ pos = find_item(model, self.selected_workbook)
-            # ~ self.log.debug("Found workbook in positon %d", pos)
-            # ~ item = model[pos]
-            # ~ self.log.debug("Workbook: %s", item.title)
-            # ~ ddWorkbooks.set_selected(pos)
