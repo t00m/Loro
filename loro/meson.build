@@ -9,6 +9,7 @@ configure_file(
 
 # Python sources
 sources = [
+  'builder.py',
   'dictionary.py',
   'main.py',
   'report.py',

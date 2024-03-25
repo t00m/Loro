@@ -13,6 +13,7 @@ import re
 import glob
 import json
 import math
+import shutil
 import hashlib
 import subprocess
 import multiprocessing
@@ -42,6 +43,9 @@ def get_project_target_dir(source: str, target: str) -> str:
 def get_project_target_workbook_dir(source: str, target: str, workbook: str):
     return os.path.join(get_project_target_dir(source, target), workbook)
 
+def get_project_target_build_dir(source: str, target: str, workbook: str):
+    return os.path.join(get_project_target_workbook_dir(source, target, workbook), '.build')
+
 def setup_project_dirs(source: str, target: str) -> None:
     dir_project_source = get_project_dir(source)
     dir_project_config = get_project_config_dir(source)
@@ -67,7 +71,6 @@ def get_inputs(source: str) -> []:
     return glob.glob(os.path.join(input_dir, '*.txt'))
 
 def delete_project_target_dirs(source: str, target: str):
-    import shutil
     target_dir = get_project_target_dir(source, target)
     try:
         shutil.rmtree(target_dir)
@@ -78,6 +81,14 @@ def delete_project_target_dirs(source: str, target: str):
     # ~ for config_file in config_files:
     # ~ os.remove(config_file)
     # ~ return config_files
+
+def create_directory(directory: str):
+    os.makedirs(directory, exist_ok=True)
+    log.debug("Directory %s created", directory)
+
+def delete_directory(directory: str):
+    shutil.rmtree(directory)
+    log.debug("Directory %s deleted", directory)
 
 def get_metadata_from_filepath(filepath:str) -> ():
     basename = os.path.basename(filepath)

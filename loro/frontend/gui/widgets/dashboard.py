@@ -161,8 +161,8 @@ class Dashboard(Gtk.Box):
         source, target = ENV['Projects']['Default']['Languages']
         DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
-        self.app.report.update_report(None, workbook.id)
-        os.system("xdg-open '%s'" % report_url)
+        self.app.builder.kb(workbook.id)
+        # ~ os.system("xdg-open '%s'" % report_url)
 
     def _update_analysis(self, sid: str):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
