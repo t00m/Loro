@@ -36,8 +36,7 @@ class Window(Adw.ApplicationWindow):
         self.emit('window-presented')
 
     def _on_close_request(self, *args):
-        pass
-        # ~ self.log.debug("Quit application requested by user")
+        self.log.info("Quit application requested by user")
 
     def _on_finish_loading(self, *args):
         # ViewSwitcher
@@ -60,6 +59,8 @@ class Window(Adw.ApplicationWindow):
         self.update_dropdown_workbooks()
         editor.connect('workbooks-updated', self.update_dropdown_workbooks)
         # ~ editor.connect('workbooks-updated', editor.update_editor)
+        progressbar = self.app.get_widget('progressbar')
+        mainbox.append(progressbar)
 
     def show_stack_page(self, page_name: str):
         viewstack = self.app.get_widget('viewstack')
@@ -71,7 +72,7 @@ class Window(Adw.ApplicationWindow):
 
     def _build_ui(self):
         self.set_title(_("Loro"))
-        self.app.add_widget('window-mainbox', self.app.factory.create_box_vertical(hexpand=True, vexpand=True))
+        self.app.add_widget('window-mainbox', self.app.factory.create_box_vertical(spacing=0, margin=0, hexpand=True, vexpand=True))
         headerbar = self.app.add_widget('headerbar', Adw.HeaderBar())
 
         # Menu
@@ -103,9 +104,8 @@ class Window(Adw.ApplicationWindow):
         progressbar = self.app.add_widget('progressbar', Gtk.ProgressBar())
         progressbar.set_hexpand(True)
         progressbar.set_valign(Gtk.Align.CENTER)
-        progressbar.set_show_text(False)
-        progressbar.set_visible(False)
-        headerbar.pack_end(progressbar)
+        progressbar.set_show_text(True)
+        # ~ headerbar.pack_end(progressbar)
         # ~ self.props.width_request = 1024
         # ~ self.props.height_request = 768
 
@@ -178,7 +178,6 @@ class Window(Adw.ApplicationWindow):
                 progressbar.set_text(filename)
             else:
                 progressbar.set_fraction(0.0)
-            progressbar.set_visible(running)
             # ~ self.log.debug("%s > %f", filename, fraction)
 
     def update_dropdown_workbooks(self, *args):
