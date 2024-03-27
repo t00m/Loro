@@ -41,12 +41,14 @@ class Window(Adw.ApplicationWindow):
     def _on_finish_loading(self, *args):
         # ViewSwitcher
         # Widgets
+        browser = self.app.add_widget('browser', Browser(self.app))
         editor = self.app.add_widget('editor', Editor(self.app))
         dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
         viewstack = self.app.add_widget('viewstack', Adw.ViewStack())
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
         viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
         viewstack.add_titled_with_icon(editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
+        viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-edit-find-symbolic')
         viewswitcher = self.app.add_widget('viewswitcher', Adw.ViewSwitcher())
         viewswitcher.set_stack(viewstack)
         headerbar = self.app.get_widget('headerbar')

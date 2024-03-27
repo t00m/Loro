@@ -12,6 +12,7 @@
 
 import os
 import sys
+import logging
 
 import gi
 gi.require_version('Gtk', '4.0')
@@ -33,10 +34,13 @@ class Browser(WebKit.WebView):
         super().__init__()
         self.app = app
         self.log = get_logger('Browser')
+        # ~ logging.getLogger().setLevel(logging.CRITICAL)
+        logging.getLogger("urllib3").setLevel(logging.CRITICAL)
         self._setup_widget()
-        # ~ self.log.debug("Browser initialized")
+        self.log.debug("Browser initialized")
         self.app.report.connect('report-finished', self.load_report)
-        self.load_url('file:///home/t00m/Documentos/Loro/Projects/DE/output/EN/A1/A1.html')
+        # ~ loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
+        # ~ self.log.debug(loggers)
 
     def _setup_widget(self):
         # Webkit context
@@ -86,7 +90,8 @@ class Browser(WebKit.WebView):
 
 
     def load_url(self, url: str):
-        # ~ self.log.debug("Loading url: %s", url)
+        if not url.startswith('file://'):
+            url = 'file://%s' % url
         self.load_uri(url)
 
     def load_report(self, *args):

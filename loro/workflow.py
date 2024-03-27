@@ -44,10 +44,10 @@ class Workflow(GObject.GObject):
         self.model_name = ENV['Languages'][source]['model'][self.model_type]
         self.log.info("Workflow configured for source '%s' and target '%s' languages", source, target)
         self.model_loaded = False
+        if not self.model_loaded:
+            # ~ self.__load_spacy_model()
+            RunAsync(self.__load_spacy_model)
         self.connect('model-loaded', self.spacy_model_loaded)
-        # ~ GLib.idle_add(self.__load_spacy_model)
-        RunAsync(self.__load_spacy_model)
-        # ~ self.progress = None
         self.current_filename = ''
         self.fraction = 0.0
         self.running = False
@@ -72,6 +72,9 @@ class Workflow(GObject.GObject):
         if len(files) == 0:
             self.log.warning("Workbook '%s' doesn't contain any file", workbook)
             return
+
+        while not self.model_loaded:
+            pass
 
         self.running = True
         self.current_filename = ''

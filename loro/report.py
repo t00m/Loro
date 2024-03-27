@@ -21,9 +21,8 @@ UIKIT_ICON_MIN_JS = os.path.join(DIR_UIKIT_JS, 'uikit-icons.min.js')
 # Loro UIKit based templates
 DIR_TPL = os.path.join(DIR_UIKIT, 'tpl')
 TPL_HEADER = os.path.join(DIR_TPL, 'HTML_HEADER.tpl')
-TPL_BODY = os.path.join(DIR_TPL, 'HTML_BODY.tpl')
+TPL_BODY_INDEX = os.path.join(DIR_TPL, 'HTML_BODY_INDEX.tpl')
 TPL_FOOTER = os.path.join(DIR_TPL, 'HTML_FOOTER.tpl')
-
 
 
 class Report(GObject.GObject):
@@ -35,32 +34,14 @@ class Report(GObject.GObject):
         GObject.signal_new('report-finished', Report, GObject.SignalFlags.RUN_LAST, GObject.TYPE_PYOBJECT, (GObject.TYPE_PYOBJECT,) )
         self.templates = {}
         self._add_templates()
-        # ~ self.log.debug("Reporting initialized")
+        self.log.debug("Reporting initialized")
         self.app.workflow.connect('workflow-finished', self.update_report)
-
 
     def _add_templates(self):
         self.templates['HEADER'] = Template(filename=TPL_HEADER)
-        self.templates['BODY'] = Template(filename=TPL_BODY)
+        self.templates['BODY_INDEX'] = Template(filename=TPL_BODY_INDEX)
         self.templates['FOOTER'] = Template(filename=TPL_FOOTER)
-        # ~ self.log.debug("Basic templates added")
-
-    # ~ def build(self, workbook: str) -> str:
-        # ~ header = open(TPL_HEADER).read()
-        # ~ body = open(TPL_BODY).read()
-        # ~ footer = open(TPL_FOOTER).read()
-        # ~ html = header.format(   workbook=workbook,
-                                # ~ uikit_css=UIKIT_CSS,
-                                # ~ uikit_min_js=UIKIT_MIN_JS,
-                                # ~ uikit_icons_min_js=UIKIT_ICON_MIN_JS
-                            # ~ )
-        # ~ html += body.format(    workbook=workbook
-                            # ~ )
-        # ~ html += footer
-        # ~ with open('/tmp/test.html', 'w') as fhtml:
-            # ~ fhtml.write(html)
-        # ~ self.log.info("Workbook Report['%s'] built successfully", workbook)
-        # ~ return '/tmp/test.html'
+        self.log.debug("Loro templates added")
 
     def template(self, name: str):
         return self.templates[name]
@@ -70,9 +51,6 @@ class Report(GObject.GObject):
         return tpl.render(var=var)
 
     def build(self, workbook: str) -> str:
-        source, target = ENV['Projects']['Default']['Languages']
-        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook)
-        REPORT = os.path.join(DIR_OUTPUT, '%s.html' % workbook)
         var = {}
         var['workbook'] = {}
         var['workbook']['id'] = workbook
@@ -84,15 +62,24 @@ class Report(GObject.GObject):
         var['html']['uikit']['icon'] = UIKIT_ICON_MIN_JS
         var['html']['uikit']['js'] = UIKIT_MIN_JS
 
+        url = self._build_index(var)
+
+        return url
+
+    def _build_index(self, var: dict):
+        source, target = ENV['Projects']['Default']['Languages']
+        workbook = var['workbook']['id']
+        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook)
+        url = os.path.join(DIR_OUTPUT, '%s.html' % workbook)
         header = self.render_template('HEADER', var)
-        body = self.render_template('BODY', var)
+        body = self.render_template('BODY_INDEX', var)
         footer = self.render_template('FOOTER', var)
         html = header + body + footer
-        with open(REPORT, 'w') as fout:
+        with open(url, 'w') as fout:
             fout.write(html)
-            # ~ self.log.debug("Report saved to: %s", REPORT)
-        # ~ self.log.debug("Report['%s'] built" % workbook)
-        return html
+            self.log.debug("Report saved to: %s", url)
+        self.log.debug("Report['%s'] built" % workbook)
+        return url
 
     def update_report(self, workflow, workbook):
         self.build(workbook)
