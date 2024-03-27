@@ -38,6 +38,7 @@ class Dashboard(Gtk.Box):
         self.selected_tokens = []
         self.selected_workbook = None
         self._build_dashboard()
+        # ~ self.app.workflow.connect('workflow-finished', self._on_workbook_selected)
         GLib.timeout_add(interval=500, function=self.update_dashboard)
         # ~ self.update_dashboard()
 
@@ -160,8 +161,11 @@ class Dashboard(Gtk.Box):
         source, target = ENV['Projects']['Default']['Languages']
         DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
-        self.app.report.update_report(None, workbook.id)
-        os.system("xdg-open '%s'" % report_url)
+        # ~ self.app.builder.kb(workbook.id)
+        report = self.app.report.build(workbook.id)
+        browser = self.app.get_widget('browser')
+        browser.load_url(report)
+        # ~ os.system("xdg-open '%s'" % report_url)
 
     def _update_analysis(self, sid: str):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
@@ -222,11 +226,10 @@ class Dashboard(Gtk.Box):
             sentence = model.get_item(pos)
         self._update_analysis(sentence.id)
 
-    def _on_workbook_selected(self, dropdown):
+    def _on_workbook_selected(self, *args):
         self.clear_dashboard()
-
-        # Don't mistake workbook and workbook.id 'is None' comparison
-        workbook = dropdown.get_selected_item()
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
         if workbook is None:
             return
 
@@ -237,7 +240,7 @@ class Dashboard(Gtk.Box):
             editor._on_workbook_add()
             return
 
-        self.app.stats.get(workbook.id)
+        stats = self.app.stats.get(workbook.id)
         tokens = self.app.dictionary.get_tokens(workbook.id)
         workbook_empty = len(tokens) == 0
 
@@ -253,25 +256,35 @@ class Dashboard(Gtk.Box):
             title = explain_term(postag).title()
             data.append((postag, explain_term(postag).title()))
         self.app.actions.dropdown_populate(self.ddPos, POSTag, data)
+        self.log.debug("Workbook['%s'] selected", workbook.id)
 
     def clear_dashboard(self):
         self.cvtokens.clear()
         self.cvsentences.clear()
         self.cvanalysis.clear()
 
+    def update_workbook(self, *args):
+        window = self.app.get_widget('window')
+        progressbar = self.app.get_widget('progressbar')
+
+
+        RunAsync(self._update_workbook)
+        RunAsync(window.pulse)
+        # ~ self._update_workbook()
+
     def _update_workbook(self, *args):
         window = self.app.get_widget('window')
         if window is None:
-            # ~ self.log.warning("Window still not ready! Keep waiting...")
+            self.log.warning("Window still not ready! Keep waiting...")
             return True
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         if workbook is None:
             return
-        # ~ self.log.debug("Workbook['%s'] update requested", workbook.id)
+        self.log.debug("Workbook['%s'] update requested", workbook.id)
 
-        #FIXME: somehow, when the workflow emits the signal, it provokes
-        # core dumps
+        # ~ #FIXME: somehow, when the workflow emits the signal, it provokes
+        # ~ # core dumps
         # ~ self.app.workflow.connect('workflow-finished', self.update_dashboard)
 
         files = self.app.workbooks.get_files(workbook.id)
@@ -400,32 +413,21 @@ class Dashboard(Gtk.Box):
             new_pos = lenmax*10
             self.hpaned.set_position(new_pos)
 
-    def update_workbook(self, *args):
-        window = self.app.get_widget('window')
-        progressbar = self.app.get_widget('progressbar')
-        progressbar.set_visible(True)
-        progressbar.set_show_text(True)
-        RunAsync(window.pulse)
-        RunAsync(self._update_workbook)
-        # ~ self._update_workbook()
-
     def update_dashboard(self, *args):
-        # ~ self.log.debug('Updating dashboard')
+        self.log.debug('Updating dashboard')
         window = self.app.get_widget('window')
         if window is None:
             # ~ self.log.warning("Window still not ready! Keep waiting...")
             return True
 
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        progressbar = self.app.get_widget('progressbar')
-        progressbar.set_visible(False)
         workbook = ddWorkbooks.get_selected_item()
-        if self.selected_workbook is not None:
+        # ~ if self.selected_workbook is not None:
             # ~ self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)
-            model = ddWorkbooks.get_model()
-            pos = find_item(model, self.selected_workbook)
-            item = model[pos]
-            ddWorkbooks.set_selected(pos)
+            # ~ model = ddWorkbooks.get_model()
+            # ~ pos = find_item(model, self.selected_workbook)
+            # ~ item = model[pos]
+            # ~ ddWorkbooks.set_selected(pos)
 
         self._on_workbook_selected(ddWorkbooks)
         return False

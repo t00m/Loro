@@ -36,18 +36,19 @@ class Window(Adw.ApplicationWindow):
         self.emit('window-presented')
 
     def _on_close_request(self, *args):
-        pass
-        # ~ self.log.debug("Quit application requested by user")
+        self.log.info("Quit application requested by user")
 
     def _on_finish_loading(self, *args):
         # ViewSwitcher
         # Widgets
+        browser = self.app.add_widget('browser', Browser(self.app))
         editor = self.app.add_widget('editor', Editor(self.app))
         dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
         viewstack = self.app.add_widget('viewstack', Adw.ViewStack())
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
         viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
         viewstack.add_titled_with_icon(editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
+        viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-edit-find-symbolic')
         viewswitcher = self.app.add_widget('viewswitcher', Adw.ViewSwitcher())
         viewswitcher.set_stack(viewstack)
         headerbar = self.app.get_widget('headerbar')
@@ -58,8 +59,10 @@ class Window(Adw.ApplicationWindow):
         self.set_content(mainbox)
         # ~ dashboard.update_dashboard()
         self.update_dropdown_workbooks()
-        # ~ editor.connect('workbooks-updated', dashboard.update_dashboard)
+        editor.connect('workbooks-updated', self.update_dropdown_workbooks)
         # ~ editor.connect('workbooks-updated', editor.update_editor)
+        progressbar = self.app.get_widget('progressbar')
+        mainbox.append(progressbar)
 
     def show_stack_page(self, page_name: str):
         viewstack = self.app.get_widget('viewstack')
@@ -71,7 +74,7 @@ class Window(Adw.ApplicationWindow):
 
     def _build_ui(self):
         self.set_title(_("Loro"))
-        self.app.add_widget('window-mainbox', self.app.factory.create_box_vertical(hexpand=True, vexpand=True))
+        self.app.add_widget('window-mainbox', self.app.factory.create_box_vertical(spacing=0, margin=0, hexpand=True, vexpand=True))
         headerbar = self.app.add_widget('headerbar', Adw.HeaderBar())
 
         # Menu
@@ -103,18 +106,19 @@ class Window(Adw.ApplicationWindow):
         progressbar = self.app.add_widget('progressbar', Gtk.ProgressBar())
         progressbar.set_hexpand(True)
         progressbar.set_valign(Gtk.Align.CENTER)
-        progressbar.set_show_text(False)
-        progressbar.set_visible(False)
-        headerbar.pack_end(progressbar)
+        progressbar.set_show_text(True)
+        # ~ headerbar.pack_end(progressbar)
         # ~ self.props.width_request = 1024
         # ~ self.props.height_request = 768
 
     def _on_workbook_selected(self, dropdown, gparam):
         dashboard = self.app.get_widget('dashboard')
         editor = self.app.get_widget('editor')
-        editor.emit('workbooks-updated')
         workbook = dropdown.get_selected_item()
-        # ~ self.log.debug("Workbook selected: '%s'", workbook.id)
+        if workbook is None:
+            self.log.warning("No workbooks created yet")
+            return
+        self.log.debug("Selected workbook: '%s'", workbook.id)
         dashboard.set_current_workbook(workbook)
         dashboard.update_dashboard()
         editor.update_editor()
@@ -176,7 +180,6 @@ class Window(Adw.ApplicationWindow):
                 progressbar.set_text(filename)
             else:
                 progressbar.set_fraction(0.0)
-            progressbar.set_visible(running)
             # ~ self.log.debug("%s > %f", filename, fraction)
 
     def update_dropdown_workbooks(self, *args):
@@ -191,12 +194,3 @@ class Window(Adw.ApplicationWindow):
 
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)
-
-        # ~ if self.selected_workbook is not None:
-            # ~ self.log.debug("Trying to display saved workbook '%s'", self.selected_workbook.title)
-            # ~ model = ddWorkbooks.get_model()
-            # ~ pos = find_item(model, self.selected_workbook)
-            # ~ self.log.debug("Found workbook in positon %d", pos)
-            # ~ item = model[pos]
-            # ~ self.log.debug("Workbook: %s", item.title)
-            # ~ ddWorkbooks.set_selected(pos)

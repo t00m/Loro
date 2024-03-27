@@ -370,9 +370,8 @@ class Editor(Gtk.Box):
             filepath = os.path.join(input_dir, filename)
             with open(filepath, 'w') as fout:
                 fout.write(contents)
-                # ~ self.log.debug("Document '%s' created", filename)
-                self._update_files_view(workbook.id)
-            # ~ topic, subtopic, suffix = get_metadata_from_filename(filename)
+                self.log.info("Document '%s' created", filename)
+                self.update_editor()
             return filename
 
         window = self.app.get_widget('window')
