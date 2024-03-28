@@ -1,7 +1,7 @@
 <!DOCTYPE Html>
 <html lang="en">
 <head>
-    <title>Workbook ${var['workbook']['id']}</title>
+    <title>${var['html']['title']}</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="Loro">
@@ -13,3 +13,16 @@
     <script src="${var['html']['uikit']['icon']}"></script>
 </head>
 <body>
+<div class="uk-container">
+    <div uk-grid>
+        <div class="uk-width-2-3@m">
+            <div class="uk-padding-large">
+                <article class="uk-article">
+                    <h1 class="uk-article-title">Workbook ${var['workbook']['id']}</h1>
+% if var['html']['index']:
+                    <p class="uk-article-meta">Workbook description</p>
+                    <p class="uk-article-meta"><span class="uk-text-bolder">Topics: </span>${var['workbook']['topics']}</p>
+                    <p class="uk-article-meta"><span class="uk-text-bolder">Files: </span>${var['workbook']['files']}</p>
+% endif
+
+

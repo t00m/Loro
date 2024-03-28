@@ -58,8 +58,8 @@ class Browser(WebKit.WebView):
                                  # ~ web_context=self.web_context,
                                  # ~ settings=self.web_settings)
         # ~ self.connect('context-menu', self._on_append_items)
-        # ~ self.connect('decide-policy', self._on_decide_policy)
-        # ~ self.connect('load-changed', self._on_load_changed)
+        self.connect('decide-policy', self._on_decide_policy)
+        self.connect('load-changed', self._on_load_changed)
         self.connect('load-failed',self._on_load_failed)
 
     def _get_api(self, uri):
@@ -90,6 +90,7 @@ class Browser(WebKit.WebView):
 
 
     def load_url(self, url: str):
+        self.log.debug("Loading url")
         if not url.startswith('file://'):
             url = 'file://%s' % url
         self.load_uri(url)
@@ -124,11 +125,16 @@ class Browser(WebKit.WebView):
         """
         if decision_type is WebKit.PolicyDecisionType.NAVIGATION_ACTION:
             action = WebKit.NavigationPolicyDecision.get_navigation_action(decision)
-            click = action.get_mouse_button() != 0
             uri = webview.get_uri()
+            filename = uri[7:]
+            self.log.debug("URL intercepted: %s", uri)
+            self.log.debug("Filename: %s", filename)
+            if not os.path.exists(filename):
+                self.log.error("Page %s not found", os.path.basename(filename))
+                return True
+            click = action.get_mouse_button() != 0
             if click:
-                pass
-                # ~ self.log.debug("User clicked in link: %s", uri)
+                self.log.debug("User clicked in link: %s", uri)
 
     def _on_load_changed(self, webview, event):
         uri = webview.get_uri()
@@ -143,3 +149,4 @@ class Browser(WebKit.WebView):
 
     def _on_load_failed(self, webview, load_event, failing_uri, error):
         self.log.error(error)
+        self.load_url('file://error_404.html')

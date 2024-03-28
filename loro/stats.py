@@ -25,6 +25,7 @@ class Stats(GObject.GObject):
         stats['lemmas'] = {}
 
         for token in tokens:
+            lemma = tokens[token]['lemmas'][0]
             # Analyze POS Tags
             try:
                 for postag in tokens[token]['postags']:
@@ -32,10 +33,13 @@ class Stats(GObject.GObject):
                         stats['postags'][postag] = {}
                         stats['postags'][postag]['count'] = 1
                         stats['postags'][postag]['tokens'] = [token]
+                        stats['postags'][postag]['lemmas'] = [lemma]
                     else:
                         stats['postags'][postag]['count'] += 1
                         if token not in stats['postags'][postag]['tokens']:
                             stats['postags'][postag]['tokens'].append(token)
+                        if lemma not in stats['postags'][postag]['lemmas']:
+                            stats['postags'][postag]['lemmas'].append(lemma)
             except Exception as error:
                 self.log.error(error)
                 raise
