@@ -115,7 +115,7 @@ class Report(GObject.GObject):
         workbook = var['workbook']['id']
         var['html']['title'] = "Workbook %s" % workbook
         var['html']['index'] = True
-        url = os.path.join(var['html']['output'], '%s.html' % workbook)
+        url = os.path.join(var['html']['output'], 'index.html')
 
         files = self.app.workbooks.get_files(workbook)
         var['workbook']['files'] = ', '.join(files)

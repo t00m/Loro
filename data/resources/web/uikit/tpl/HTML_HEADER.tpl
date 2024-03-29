@@ -18,7 +18,8 @@
         <div class="uk-width-2-3@m">
             <div class="uk-padding-large">
                 <article class="uk-article">
-                    <h1 class="uk-article-title">Workbook ${var['workbook']['id']}</h1>
+                    <h1 class="uk-article-title">
+                        <a class="uk-link-text" href="index.html">Workbook ${var['workbook']['id']}</h1></a>
 % if var['html']['index']:
                     <p class="uk-article-meta">Workbook description</p>
                     <p class="uk-article-meta"><span class="uk-text-bolder">Topics: </span>${var['workbook']['topics']}</p>

@@ -110,7 +110,7 @@ class Workflow(GObject.GObject):
                 self.fraction = 0.0
                 self.log.info("[%d/%d] %s processed", nf, len(files), filename)
             else:
-                self.log.error("[%d/%d] %s was not processed processed: '%s'", nf, len(files), os.path.basename(filepath))
+                self.log.error("[%d/%d] '%s' was not processed processed", nf, len(files), os.path.basename(filepath))
                 if lang.upper() != source.upper():
                     self.log.error("Language detected ('%s') differs from source language ('%s')", lang, source)
                 if score < 85:
