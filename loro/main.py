@@ -18,13 +18,13 @@ from loro.backend.core.util import get_inputs
 
 def main(params: argparse.Namespace):
     log = get_logger('main')
-    log.info("%s %s", ENV['APP']['ID'], ENV['APP']['VERSION'])
+    log.debug("%s %s", ENV['APP']['ID'], ENV['APP']['VERSION'])
 
     source = params.SOURCE
     target = params.TARGET
     if source is None or target is None:
         source, target = ENV['Projects']['Default']['Languages']
-        log.info("Get source ('%s') and target ('%s') languages from config", source, target)
+        log.debug("Get source ('%s') and target ('%s') languages from config", source, target)
     else:
         ENV['Projects']['Default']['Languages'] = (source, target)
         log.info("Set source ('%s') and target ('%s') languages in runtime", source, target)

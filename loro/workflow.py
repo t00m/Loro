@@ -42,7 +42,7 @@ class Workflow(GObject.GObject):
         source, target = ENV['Projects']['Default']['Languages']
         self.model_type = ENV['Languages'][source]['model']['default']
         self.model_name = ENV['Languages'][source]['model'][self.model_type]
-        self.log.info("Workflow configured for source '%s' and target '%s' languages", source, target)
+        self.log.debug("Workflow configured for source '%s' and target '%s' languages", source, target)
         self.model_loaded = False
         if not self.model_loaded:
             # ~ self.__load_spacy_model()
@@ -58,10 +58,10 @@ class Workflow(GObject.GObject):
     def __load_spacy_model(self):
         """SpaCy model lazy loading"""
         source, target = ENV['Projects']['Default']['Languages']
-        self.log.info("Loading model '%s' for language '%s'", self.model_name, source)
+        self.log.debug("Loading model '%s' for language '%s'", self.model_name, source)
         load_model(self.model_name)
         self.emit('model-loaded')
-        self.log.info("SpaCy model loaded successfully")
+        self.log.debug("SpaCy model loaded successfully")
 
     def start(self, workbook: str, files: []):
         self.log.debug("Processing workbook: '%s'", workbook)
@@ -100,15 +100,12 @@ class Workflow(GObject.GObject):
             valid = lang.upper() == source.upper() and score >= 85
 
             if valid:
-                # ~ with Progress() as self.progress:
                 topic, subtopic, suffix = get_metadata_from_filepath(filepath)
                 sentences = open(filepath, 'r').readlines()
-                # ~ task = self.progress.add_task("[green]%s..." % os.path.basename(filepath), total=len(sentences))
-                # ~ self._set_progress(jid/len(jobs)*1.0)
-                self.process_input(workbook, sentences, topic, subtopic) #, task)
+                self.process_input(workbook, filename, sentences, topic, subtopic) #, task)
                 self.app.dictionary.save(workbook)
                 self.fraction = 0.0
-                self.log.info("[%d/%d] %s processed", nf, len(files), filename)
+                self.log.debug("[%d/%d] %s processed", nf, len(files), filename)
             else:
                 self.log.error("[%d/%d] '%s' was not processed processed", nf, len(files), os.path.basename(filepath))
                 if lang.upper() != source.upper():
@@ -122,13 +119,13 @@ class Workflow(GObject.GObject):
         self.running = False
         # ~ RunAsync(self.end(workbook))
 
-    def process_input(self, workbook:str, sentences: [], topic, subtopic) -> None:
+    def process_input(self, workbook:str, filename: str, sentences: [], topic, subtopic) -> None:
         jobs = []
         jid = 1
         MAX_WORKERS = 10
         with Executor(max_workers=MAX_WORKERS) as exe:
             for sentence in sentences:
-                data = (workbook, sentence, jid, topic, subtopic)
+                data = (workbook, filename, sentence, jid, topic, subtopic)
                 job = exe.submit(self.process_sentence, data)
                 job.add_done_callback(self.__sentence_processed)
                 jobs.append(job)
@@ -159,7 +156,7 @@ class Workflow(GObject.GObject):
             return x
 
     def process_sentence(self, data: tuple) -> tuple:
-        (workbook, sentence, jid, topic, subtopic) = data
+        (workbook, filename, sentence, jid, topic, subtopic) = data
         sid = get_hash(sentence)
         tokens = tokenize_sentence(sentence)
 
@@ -168,6 +165,6 @@ class Workflow(GObject.GObject):
             if is_valid_word(token.text):
                 thistoken = self.app.dictionary.add_token(workbook, token, sid, topic, subtopic)
                 sid_tokens.append(token.text)
-        self.app.dictionary.add_sentence(workbook, sid, sentence.strip(), sid_tokens)
+        self.app.dictionary.add_sentence(workbook, filename, sid, sentence.strip(), sid_tokens)
 
         return jid

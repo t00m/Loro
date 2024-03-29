@@ -29,9 +29,12 @@ from loro.backend.core.log import get_logger
 from loro.backend.core.run_async import RunAsync
 from loro.backend.core.util import get_project_target_workbook_dir
 
-class Browser(WebKit.WebView):
+
+class Browser(Gtk.Box):
+    __gtype_name__ = 'Browser'
+
     def __init__(self, app):
-        super().__init__()
+        super(Browser, self).__init__(orientation=Gtk.Orientation.VERTICAL)
         self.app = app
         self.log = get_logger('Browser')
         # ~ logging.getLogger().setLevel(logging.CRITICAL)
@@ -58,9 +61,25 @@ class Browser(WebKit.WebView):
                                  # ~ web_context=self.web_context,
                                  # ~ settings=self.web_settings)
         # ~ self.connect('context-menu', self._on_append_items)
-        self.connect('decide-policy', self._on_decide_policy)
-        self.connect('load-changed', self._on_load_changed)
-        self.connect('load-failed',self._on_load_failed)
+        toolbar = self.app.factory.create_box_horizontal(hexpand=True, vexpand=False)
+        toolbar.get_style_context().add_class(class_name='toolbar')
+        self.app.add_widget('browser-toolbar', toolbar)
+        btnPrint = self.app.factory.create_button(icon_name='com.github.t00m.Loro-printer-symbolic', callback=self.print_report)
+        toolbar.append(btnPrint)
+        self.wv = self.app.add_widget('browser-webview', WebKit.WebView())
+        self.wv.connect('decide-policy', self._on_decide_policy)
+        self.wv.connect('load-changed', self._on_load_changed)
+        self.wv.connect('load-failed',self._on_load_failed)
+        self.wv.set_hexpand(True)
+        self.wv.set_vexpand(True)
+        self.append(toolbar)
+        self.append(self.wv)
+        self.set_hexpand(True)
+        self.set_vexpand(True)
+
+    def print_report(self, *args):
+        printOperation = WebKit.PrintOperation.new(self.wv)
+        printOperation.run_dialog()
 
     def _get_api(self, uri):
         """Use Soup.URI to split uri
@@ -93,7 +112,7 @@ class Browser(WebKit.WebView):
         self.log.debug("Loading url")
         if not url.startswith('file://'):
             url = 'file://%s' % url
-        self.load_uri(url)
+        self.wv.load_uri(url)
 
     def load_report(self, *args):
         ddWorkbooks = self.app.get_widget('dd-workbooks')

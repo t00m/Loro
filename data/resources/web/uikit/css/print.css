@@ -1,0 +1,37 @@
+/**
+ * Print Stylesheet for Loro
+*/
+
+@media print {
+
+    @page {
+      size: A4 portrait;
+      display: !noimportant;
+    }
+
+    #uk-grid {
+        display: !important;
+    }
+
+    h1, h2, h3, h4, h5 {
+      page-break-after: avoid;
+    }
+
+    /*Reset Style*/
+    body {
+        margin:0;
+        padding:0;
+        line-height: 1.4em;
+        word-spacing:1px;
+        letter-spacing:0.2px;
+        font: 13px Arial, Helvetica,"Lucida Grande", serif;
+        color: #000;
+    }
+
+    .noprint {
+        display: none ;
+        }
+}
+
+#noprint { display: none; }
+#print { display: block; }

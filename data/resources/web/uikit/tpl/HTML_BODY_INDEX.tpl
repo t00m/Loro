@@ -1,8 +1,8 @@
 <%! from loro.backend.services.nlp import spacy %>
 
-<div class="uk-section">
-    <div class="uk-container">
-        <h3>Parts of the speech</h3>
+<div class="uk-section"><!-- UK-SECTION :: START -->
+    <div class="uk-container"> <!-- UK-CONTAINER :: START -->
+        <h3 id="POS">Parts of the speech</h3>
         <!-- WORDCLOUD :: START -->
         <div class="uk-grid-small uk-flex-middle uk-child-width-expand" uk-grid>
             <div class="uk-width-expand">
@@ -36,11 +36,19 @@
 % endfor
                 </div>
             </div>
-        </div>
-        <!-- WORDCLOUD ITEMS :: START -->
-        <div class="uk-flex-center" uk-grid="parallax: 150">
+        </div><!-- WORDCLOUD :: END -->
+    </div><!-- UK-CONTAINER :: END -->
+</div><!-- UK-SECTION :: END -->
 
-        </div>
-        <!-- WORDCLOUD :: END -->
-    </div>
-</div>
+<div class="uk-section"><!-- UK-SECTION :: START -->
+    <div class="uk-container"> <!-- UK-CONTAINER :: START -->
+        <h3 id="FILES">Workbook files</h3>
+        <ul class="uk-list">
+% for filename in var['workbook']['files']:
+            <li>
+                <a class="uk-link-text" href="File_${filename}.html">${filename}</a>
+            </li>
+% endfor
+        </ul>
+    </div><!-- UK-CONTAINER :: END -->
+</div><!-- UK-SECTION :: END -->

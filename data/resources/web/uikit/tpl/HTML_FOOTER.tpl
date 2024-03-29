@@ -1,7 +1,7 @@
                 </article>
             </div>
         </div>
-        <div class="uk-width-1-3@m">
+        <div class="uk-width-1-3@m noprint">
             <div class="uk-visible@m" uk-sticky="offset: 60;">
                 <h2>Table of Contents</h2>
                 <div>

@@ -87,8 +87,11 @@ def create_directory(directory: str):
     log.debug("Directory %s created", directory)
 
 def delete_directory(directory: str):
-    shutil.rmtree(directory)
-    log.debug("Directory %s deleted", directory)
+    try:
+        shutil.rmtree(directory)
+        log.debug("Directory %s deleted", directory)
+    except FileNotFoundError:
+        log.debug("Directory %s doesn't exist. Nothing deleted", directory)
 
 def get_metadata_from_filepath(filepath:str) -> ():
     basename = os.path.basename(filepath)
