@@ -1,6 +1,6 @@
 <h2>${var['html']['title']}</h2>
 <p>
-    <h4>Sentences</h4>
+    <h3 id="SENTENCES">Sentences</h3>
     <ul class="uk-list uk-list-striped uk-list-primary">
 <%  source = var['workbook']['source'] %>
 % for sid in var['filename']['sentences']:

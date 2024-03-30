@@ -75,6 +75,15 @@ class Dictionary:
             else:
                 self.cache[key]['tokens']['data'] = {}
 
+            # Lemmas section
+            flemmas = os.path.join(WB_CONFIG_DIR, '%s_lemmas_%s_%s.json' % (workbook, source, target))
+            self.cache[key]['lemmas'] = {}
+            self.cache[key]['lemmas']['file'] = flemmas
+            if os.path.exists(flemmas):
+                self.cache[key]['lemmas']['data'] = json_load(flemmas)
+            else:
+                self.cache[key]['lemmas']['data'] = {}
+
             # Sentences section
             fsents = os.path.join(WB_CONFIG_DIR, '%s_sentences_%s_%s.json' % (workbook, source, target))
             self.cache[key]['sentences'] = {}
@@ -214,8 +223,19 @@ class Dictionary:
                     if not sid in sids:
                         sids.append(sid)
                         topic_data[topic][subtopic] = sids
+
+            lemma_data = cache['lemmas']['data']
+            try:
+                sentences = lemma_data[token.lemma_]
+                if not sid in sentences:
+                    sentences.append(sid)
+                lemma_data[token.lemma_] = sentences
+            except:
+                lemma_data[token.lemma_] = [sid]
+
             cache['topics']['data'] = topic_data
             cache['tokens']['data'][token.text] = token_data
+            cache['lemmas']['data'] = lemma_data
             self.set_cache(workbook, cache)
 
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')

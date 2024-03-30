@@ -32,6 +32,8 @@ TPL_BODY_SENTENCE = os.path.join(DIR_TPL, 'HTML_BODY_SENTENCE.tpl')
 TPL_BODY_FILE = os.path.join(DIR_TPL, 'HTML_BODY_FILE.tpl')
 TPL_FOOTER = os.path.join(DIR_TPL, 'HTML_FOOTER.tpl')
 TPL_FOOTER_INDEX = os.path.join(DIR_TPL, 'HTML_FOOTER_INDEX.tpl')
+TPL_FOOTER_LEMMA = os.path.join(DIR_TPL, 'HTML_FOOTER_LEMMA.tpl')
+TPL_FOOTER_TOKEN = os.path.join(DIR_TPL, 'HTML_FOOTER_TOKEN.tpl')
 
 
 class Report(GObject.GObject):
@@ -55,6 +57,8 @@ class Report(GObject.GObject):
         self.templates['BODY_FILE'] = Template(filename=TPL_BODY_FILE)
         self.templates['FOOTER'] = Template(filename=TPL_FOOTER)
         self.templates['FOOTER_INDEX'] = Template(filename=TPL_FOOTER_INDEX)
+        self.templates['FOOTER_LEMMA'] = Template(filename=TPL_FOOTER_LEMMA)
+        self.templates['FOOTER_TOKEN'] = Template(filename=TPL_FOOTER_TOKEN)
         self.log.debug("Loro templates added")
 
     def template(self, name: str):
@@ -111,7 +115,7 @@ class Report(GObject.GObject):
             var['token']['properties'] = var['workbook']['cache']['tokens']['data'][token]
             header = self.render_template('HEADER', var)
             body = self.render_template('BODY_TOKEN', var)
-            footer = self.render_template('FOOTER', var)
+            footer = self.render_template('FOOTER_TOKEN', var)
             html = header + body + footer
             url = os.path.join(var['html']['output'], 'Token_%s.html' % token)
             self._write_page(url, html)
@@ -132,7 +136,7 @@ class Report(GObject.GObject):
                 var['lemma']['tokens'] = tokens
                 header = self.render_template('HEADER', var)
                 body = self.render_template('BODY_LEMMA', var)
-                footer = self.render_template('FOOTER', var)
+                footer = self.render_template('FOOTER_LEMMA', var)
                 html = header + body + footer
                 url = os.path.join(var['html']['output'], '%s_%s.html' % (postag, lemma))
                 self._write_page(url, html)
