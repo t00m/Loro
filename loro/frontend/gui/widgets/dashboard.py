@@ -406,7 +406,7 @@ class Dashboard(Gtk.Box):
                 if len(key) > lenmax:
                     lenmax = len(key)
             self.cvtokens.update(items)
-            self.log.info("Workbook['%s'] POStag['%s']: %d tokens", workbook.id, postag, len(selected))
+            self.log.debug("Workbook['%s'] POStag['%s']: %d tokens", workbook.id, postag, len(selected))
             if lenmax < 25:
                 lenmax = 25
             self.cur_pos = self.hpaned.get_position()

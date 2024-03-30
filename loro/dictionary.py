@@ -63,9 +63,10 @@ class Dictionary:
             self.cache[key]
             return self.cache[key]
         except KeyError:
-            # ~ self.log.debug("Creating new cache for workbook '%s'", workbook)
+            self.log.debug("Creating new cache for workbook '%s'", workbook)
             self.cache[key] = {}
 
+            # Tokens section
             ftokens = os.path.join(WB_CONFIG_DIR, '%s_tokens_%s_%s.json' % (workbook, source, target))
             self.cache[key]['tokens'] = {}
             self.cache[key]['tokens']['file'] = ftokens
@@ -73,7 +74,17 @@ class Dictionary:
                 self.cache[key]['tokens']['data'] = json_load(ftokens)
             else:
                 self.cache[key]['tokens']['data'] = {}
-            # ~ source, target = ENV['Projects']['Default']['Languages']
+
+            # Lemmas section
+            flemmas = os.path.join(WB_CONFIG_DIR, '%s_lemmas_%s_%s.json' % (workbook, source, target))
+            self.cache[key]['lemmas'] = {}
+            self.cache[key]['lemmas']['file'] = flemmas
+            if os.path.exists(flemmas):
+                self.cache[key]['lemmas']['data'] = json_load(flemmas)
+            else:
+                self.cache[key]['lemmas']['data'] = {}
+
+            # Sentences section
             fsents = os.path.join(WB_CONFIG_DIR, '%s_sentences_%s_%s.json' % (workbook, source, target))
             self.cache[key]['sentences'] = {}
             self.cache[key]['sentences']['file'] = fsents
@@ -82,6 +93,7 @@ class Dictionary:
             else:
                 self.cache[key]['sentences']['data'] = {}
 
+            # Topics section
             ftopics = os.path.join(WB_CONFIG_DIR, '%s_topics_%s_%s.json' % (workbook, source, target))
             self.cache[key]['topics'] = {}
             self.cache[key]['topics']['file'] = ftopics
@@ -89,6 +101,15 @@ class Dictionary:
                 self.cache[key]['topics']['data'] = json_load(ftopics)
             else:
                 self.cache[key]['topics']['data'] = {}
+
+            # Workbook files section
+            ffnames = os.path.join(WB_CONFIG_DIR, '%s_filenames_%s_%s.json' % (workbook, source, target))
+            self.cache[key]['filenames'] = {}
+            self.cache[key]['filenames']['file'] = ffnames
+            if os.path.exists(ftopics):
+                self.cache[key]['filenames']['data'] = json_load(ffnames)
+            else:
+                self.cache[key]['filenames']['data'] = {}
 
             self.save(workbook)
 
@@ -135,7 +156,7 @@ class Dictionary:
         self._save_cache(workbook)
         # ~ self.log.debug("Workbook '%s' dictionary saved", workbook)
 
-    def add_sentence(self, workbook:str, sid: str, sentence: str, tokens: []) -> bool:
+    def add_sentence(self, workbook:str, filename: str, sid: str, sentence: str, tokens: []) -> bool:
         source, target = ENV['Projects']['Default']['Languages']
         cache = self.get_cache(workbook)
         sentences = cache['sentences']['data']
@@ -143,11 +164,27 @@ class Dictionary:
         if sid not in sentences:
             sentences[sid] = {}
             sentences[sid][source] = sentence
+            try:
+                # ~ filenames = sentences[sid]['filename']
+                filenames.append(filename)
+                sentences[sid]['filename'] = filenames
+            except:
+                sentences[sid]['filename'] = [filename]
             sid_tokens = []
             sentences[sid]['tokens'] = tokens
             added = True
             cache['sentences']['data'] = sentences
-            self.set_cache(workbook, cache)
+
+        # Register filename/sentence
+        try:
+            sents = cache['filenames']['data'][filename]
+            sents.append(sid)
+            cache['filenames']['data'][filename] = sents
+        except:
+            cache['filenames']['data'][filename] = [sid]
+
+        self.set_cache(workbook, cache)
+
         return added
 
     def add_token(self, workbook:str, token: Token, sid: str, topic: str, subtopic: str):
@@ -186,8 +223,19 @@ class Dictionary:
                     if not sid in sids:
                         sids.append(sid)
                         topic_data[topic][subtopic] = sids
+
+            lemma_data = cache['lemmas']['data']
+            try:
+                sentences = lemma_data[token.lemma_]
+                if not sid in sentences:
+                    sentences.append(sid)
+                lemma_data[token.lemma_] = sentences
+            except:
+                lemma_data[token.lemma_] = [sid]
+
             cache['topics']['data'] = topic_data
             cache['tokens']['data'][token.text] = token_data
+            cache['lemmas']['data'] = lemma_data
             self.set_cache(workbook, cache)
 
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
