@@ -121,6 +121,7 @@ class Window(Adw.ApplicationWindow):
         self.log.debug("Selected workbook: '%s'", workbook.id)
         dashboard.set_current_workbook(workbook)
         dashboard.update_dashboard()
+        dashboard.display_report()
         editor.update_editor()
 
     def _create_actions(self) -> None:
