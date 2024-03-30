@@ -34,6 +34,7 @@ TPL_FOOTER = os.path.join(DIR_TPL, 'HTML_FOOTER.tpl')
 TPL_FOOTER_INDEX = os.path.join(DIR_TPL, 'HTML_FOOTER_INDEX.tpl')
 TPL_FOOTER_LEMMA = os.path.join(DIR_TPL, 'HTML_FOOTER_LEMMA.tpl')
 TPL_FOOTER_TOKEN = os.path.join(DIR_TPL, 'HTML_FOOTER_TOKEN.tpl')
+TPL_FOOTER_SENTENCE = os.path.join(DIR_TPL, 'HTML_FOOTER_SENTENCE.tpl')
 
 
 class Report(GObject.GObject):
@@ -59,6 +60,7 @@ class Report(GObject.GObject):
         self.templates['FOOTER_INDEX'] = Template(filename=TPL_FOOTER_INDEX)
         self.templates['FOOTER_LEMMA'] = Template(filename=TPL_FOOTER_LEMMA)
         self.templates['FOOTER_TOKEN'] = Template(filename=TPL_FOOTER_TOKEN)
+        self.templates['FOOTER_SENTENCE'] = Template(filename=TPL_FOOTER_SENTENCE)
         self.log.debug("Loro templates added")
 
     def template(self, name: str):
@@ -157,7 +159,7 @@ class Report(GObject.GObject):
             var['sentence']['properties'] = var['workbook']['cache']['sentences']['data'][sid]
             header = self.render_template('HEADER', var)
             body = self.render_template('BODY_SENTENCE', var)
-            footer = self.render_template('FOOTER', var)
+            footer = self.render_template('FOOTER_SENTENCE', var)
             html = header + body + footer
             url = os.path.join(var['html']['output'], 'Sentence_%s.html' % sid)
             self._write_page(url, html)
