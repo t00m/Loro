@@ -1,5 +1,5 @@
 project('loro',
-          version: '0.0.3',
+          version: '0.0.4',
     meson_version: '>= 0.55.0',
   default_options: [ 'warning_level=2',
                    ],
