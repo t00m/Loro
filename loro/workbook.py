@@ -37,9 +37,6 @@ class Workbook:
                 self.log.debug("Cache directory created for workbook '%s':", workbook)
                 self.log.debug("%s", cache_dir)
 
-    def get_dictionary(self, workbook):
-        return self.app.cache.get_cache(workbook)
-
     def get_all(self):
         source, target = ENV['Projects']['Default']['Languages']
         config_dir = get_project_config_dir(source)
