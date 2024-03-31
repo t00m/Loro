@@ -24,7 +24,6 @@ from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import get_hash
 from loro.backend.core.log import get_logger
-from loro import dictionary
 from loro.workbook import Workbook
 from loro.backend.core.run_async import RunAsync
 
@@ -84,7 +83,7 @@ class Workflow(GObject.GObject):
             self.log.warning("Spacy model still loading")
             return
 
-        self.app.dictionary.initialize(workbook)
+        self.app.cache.initialize(workbook)
 
         nf = 0
         for filename in files:
@@ -103,7 +102,7 @@ class Workflow(GObject.GObject):
                 topic, subtopic, suffix = get_metadata_from_filepath(filepath)
                 sentences = open(filepath, 'r').readlines()
                 self.process_input(workbook, filename, sentences, topic, subtopic) #, task)
-                self.app.dictionary.save(workbook)
+                self.app.cache.save(workbook)
                 self.fraction = 0.0
                 self.log.debug("[%d/%d] %s processed", nf, len(files), filename)
             else:
@@ -163,8 +162,8 @@ class Workflow(GObject.GObject):
         sid_tokens = []
         for token in tokens:
             if is_valid_word(token.text):
-                thistoken = self.app.dictionary.add_token(workbook, token, sid, topic, subtopic)
+                thistoken = self.app.cache.add_token(workbook, token, sid, topic, subtopic)
                 sid_tokens.append(token.text)
-        self.app.dictionary.add_sentence(workbook, filename, sid, sentence.strip(), sid_tokens)
+        self.app.cache.add_sentence(workbook, filename, sid, sentence.strip(), sid_tokens)
 
         return jid

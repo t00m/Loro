@@ -11,9 +11,9 @@ from loro.backend.core.log import get_logger
 from loro.backend.core.util import json_load, json_save
 from loro.backend.core.util import get_project_target_dir
 
-class Dictionary:
+class Cache:
     def __init__(self, app):
-        self.log = get_logger('Dictionary')
+        self.log = get_logger('Cache')
         self.app = app
         self.cache = {}
 
@@ -154,7 +154,7 @@ class Dictionary:
 
     def save(self, workbook):
         self._save_cache(workbook)
-        # ~ self.log.debug("Workbook '%s' dictionary saved", workbook)
+        # ~ self.log.debug("Workbook '%s' cache saved", workbook)
 
     def add_sentence(self, workbook:str, filename: str, sid: str, sentence: str, tokens: []) -> bool:
         source, target = ENV['Projects']['Default']['Languages']

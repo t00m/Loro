@@ -38,6 +38,15 @@ class ColLabel(Gtk.Box):
         label.set_ellipsize(False)
         self.append(label)
 
+class ColEntry(Gtk.Box):
+    """Row Id Widget"""
+    __gtype_name__ = 'ColEntry'
+
+    def __init__(self):
+        super(ColEntry, self).__init__()
+        entry = Gtk.Entry()
+        self.append(entry)
+
 class ColButton(Gtk.Box):
     """Row Icon Widget"""
     __gtype_name__ = 'ColButton'

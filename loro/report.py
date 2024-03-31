@@ -89,7 +89,7 @@ class Report(GObject.GObject):
         var['workbook']['id'] = workbook
         var['workbook']['source'] = source
         var['workbook']['target'] = target
-        var['workbook']['cache'] = self.app.workbooks.get_dictionary(workbook)
+        var['workbook']['cache'] = self.app.cache.get_cache(workbook)
         # ~ json_save('/tmp/loro.cache.json', var['workbook']['cache'])
 
         var['workbook']['stats'] = self.app.stats.get(workbook)
@@ -203,7 +203,7 @@ class Report(GObject.GObject):
 
         files = self.app.workbooks.get_files(workbook)
         var['workbook']['files'] = files
-        topics = self.app.dictionary.get_topics(workbook)
+        topics = self.app.cache.get_topics(workbook)
         var['workbook']['topics'] = ', '.join(topics)
         header = self.render_template('HEADER', var)
         body = self.render_template('BODY_INDEX', var)

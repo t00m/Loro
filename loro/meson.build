@@ -10,7 +10,7 @@ configure_file(
 # Python sources
 sources = [
   'builder.py',
-  'dictionary.py',
+  'cache.py',
   'main.py',
   'report.py',
   'stats.py',

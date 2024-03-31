@@ -31,14 +31,14 @@ class Workbook:
             self.log.debug("Created workbooks configuration (empty)")
 
         for workbook in self.get_all():
-            cache_dir = self.app.dictionary.get_cache_dir(workbook)
+            cache_dir = self.app.cache.get_cache_dir(workbook)
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
                 self.log.debug("Cache directory created for workbook '%s':", workbook)
                 self.log.debug("%s", cache_dir)
 
     def get_dictionary(self, workbook):
-        return self.app.dictionary.get_cache(workbook)
+        return self.app.cache.get_cache(workbook)
 
     def get_all(self):
         source, target = ENV['Projects']['Default']['Languages']

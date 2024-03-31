@@ -14,7 +14,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.workbook import Workbook
 from loro.workflow import Workflow
-from loro.dictionary import Dictionary
+from loro.cache import Cache
 # ~ from loro.builder import Builder
 from loro.stats import Stats
 from loro.report import Report
@@ -31,7 +31,7 @@ class Application(Adw.Application):
         self.set_resource_base_path("/com/github/t00m/Loro/")
         self._widgets = {}
         self.window = None
-        self.dictionary = Dictionary(self)
+        self.cache = Cache(self)
         self.workflow = Workflow(self)
         self.workbooks = Workbook(self)
         self.stats = Stats(self)

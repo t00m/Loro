@@ -72,7 +72,7 @@ class Builder(GObject.GObject):
             fkb.write(contents)
         self.log.debug("KB %s written to %s", kbname, kbtarget)
 
-        cache = self.app.dictionary.get_cache(workbook)
+        cache = self.app.cache.get_cache(workbook)
         # ~ self.log.debug(cache)
 
 

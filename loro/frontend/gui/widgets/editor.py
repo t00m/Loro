@@ -382,10 +382,9 @@ class Editor(Gtk.Box):
         topics = set()
         subtopics = set()
         for wbname in workbooks:
-            dictionary = self.app.workbooks.get_dictionary(wbname)
-            for topic in self.app.dictionary.get_topics(wbname):
+            for topic in self.app.cache.get_topics(wbname):
                 topics.add(topic)
-            for subtopic in self.app.dictionary.get_subtopics(wbname):
+            for subtopic in self.app.cache.get_subtopics(wbname):
                 subtopics.add(subtopic)
         suffixes = []
 
@@ -467,10 +466,9 @@ class Editor(Gtk.Box):
         topics = set()
         subtopics = set()
         for wbname in workbooks:
-            dictionary = self.app.workbooks.get_dictionary(wbname)
-            for topic in self.app.dictionary.get_topics(wbname):
+            for topic in self.app.cache.get_topics(wbname):
                 topics.add(topic)
-            for subtopic in self.app.dictionary.get_subtopics(wbname):
+            for subtopic in self.app.cache.get_subtopics(wbname):
                 subtopics.add(subtopic)
         suffixes = []
 

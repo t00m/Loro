@@ -175,8 +175,8 @@ class Dashboard(Gtk.Box):
     def _update_analysis(self, sid: str):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
-        tokens = self.app.dictionary.get_tokens(workbook.id)
-        sentences = self.app.dictionary.get_sentences(workbook.id)
+        tokens = self.app.cache.get_tokens(workbook.id)
+        sentences = self.app.cache.get_sentences(workbook.id)
         items = []
         for token in sentences[sid]['tokens']:
             items.append(Analysis(
@@ -193,13 +193,13 @@ class Dashboard(Gtk.Box):
     def _update_sentences(self, token: Token):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
-        tokens = self.app.dictionary.get_tokens(workbook.id)
+        tokens = self.app.cache.get_tokens(workbook.id)
         matches = []
         try:
             token_sids = tokens[token.id]['sentences']
             for token_sid in token_sids:
                 matches.append(token_sid)
-            sentences = self.app.dictionary.get_sentences(workbook.id)
+            sentences = self.app.cache.get_sentences(workbook.id)
             items = []
             for sid in matches:
                 sentence = sentences[sid]['DE']
@@ -246,7 +246,7 @@ class Dashboard(Gtk.Box):
             return
 
         stats = self.app.stats.get(workbook.id)
-        tokens = self.app.dictionary.get_tokens(workbook.id)
+        tokens = self.app.cache.get_tokens(workbook.id)
         workbook_empty = len(tokens) == 0
 
         # Update POS Dropbox
@@ -307,7 +307,7 @@ class Dashboard(Gtk.Box):
         # ~ self.log.debug("Topic selected: '%s'", current_topic.id)
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
-        topics = self.app.dictionary.get_topics(workbook.id)
+        topics = self.app.cache.get_topics(workbook.id)
         # ~ self.log.debug("Displaying subtopics for topic '%s'", current_topic.id)
         data = []
         data.append(("ALL", "All subtopics"))
@@ -338,7 +338,7 @@ class Dashboard(Gtk.Box):
         selected = []
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
-        tokens = self.app.dictionary.get_tokens(workbook.id)
+        tokens = self.app.cache.get_tokens(workbook.id)
         for key in tokens.keys():
             if current_topic.id == 'ALL':
                 if current_subtopic.id == 'ALL':
@@ -397,7 +397,7 @@ class Dashboard(Gtk.Box):
             # ~ self.log.debug(stats['postags'])
 
             if postag =='ALL':
-                tokens = self.app.dictionary.get_tokens(workbook.id)
+                tokens = self.app.cache.get_tokens(workbook.id)
                 selected = list(tokens.keys())
             else:
                 selected = []
@@ -418,6 +418,9 @@ class Dashboard(Gtk.Box):
             new_pos = lenmax*10
             self.hpaned.set_position(new_pos)
 
+    def set_translation(self, *args):
+        self.log.debug(args)
+
     def update_dashboard(self, *args):
         self.log.debug('Updating dashboard')
         window = self.app.get_widget('window')
@@ -434,7 +437,7 @@ class Dashboard(Gtk.Box):
             # ~ item = model[pos]
             # ~ ddWorkbooks.set_selected(pos)
 
-        # ~ self._on_workbook_selected(ddWorkbooks)
+        self._on_workbook_selected(ddWorkbooks)
         return False
 
     def set_current_workbook(self, workbook: Workbook):
