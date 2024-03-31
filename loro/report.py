@@ -72,6 +72,13 @@ class Report(GObject.GObject):
         tpl = self.template(name)
         return tpl.render(var=var)
 
+    def get_url(self, workbook: str) -> str:
+        source, target = ENV['Projects']['Default']['Languages']
+        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook)
+        DIR_HTML = os.path.join(DIR_OUTPUT, 'html')
+        url = os.path.join(DIR_HTML, 'index.html')
+        return url
+
     def build(self, workbook: str) -> str:
         self.log.debug("Building report for workbook '%s'", workbook)
         source, target = ENV['Projects']['Default']['Languages']
@@ -83,7 +90,7 @@ class Report(GObject.GObject):
         var['workbook']['source'] = source
         var['workbook']['target'] = target
         var['workbook']['cache'] = self.app.workbooks.get_dictionary(workbook)
-        json_save('/tmp/loro.cache.json', var['workbook']['cache'])
+        # ~ json_save('/tmp/loro.cache.json', var['workbook']['cache'])
 
         var['workbook']['stats'] = self.app.stats.get(workbook)
         var['html'] = {}
@@ -100,9 +107,9 @@ class Report(GObject.GObject):
         self._build_lemma_pages(var)
         self._build_sentence_pages(var)
         self._build_file_pages(var)
-        url = self._build_index(var)
+        self._build_index(var)
         self.log.debug("Report for workbook '%s' built", workbook)
-        return url
+        # ~ return url
 
     def _prepare(self, var: dict) -> bool:
         delete_directory(var['html']['output'])
@@ -204,7 +211,6 @@ class Report(GObject.GObject):
         html = header + body + footer
         self._write_page(url, html)
         self.log.debug("Index page created")
-        return url
 
     def _write_page(self, url: str, html: str):
         basename = os.path.basename(url)

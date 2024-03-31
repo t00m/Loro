@@ -64,7 +64,7 @@ class Browser(Gtk.Box):
         toolbar = self.app.factory.create_box_horizontal(hexpand=True, vexpand=False)
         toolbar.get_style_context().add_class(class_name='toolbar')
         self.app.add_widget('browser-toolbar', toolbar)
-        btnPrint = self.app.factory.create_button(icon_name='com.github.t00m.Loro-printer-symbolic', callback=self.print_report)
+        btnPrint = self.app.factory.create_button(icon_name='com.github.t00m.Loro-printer-symbolic', width=16, callback=self.print_report)
         toolbar.append(btnPrint)
         self.wv = self.app.add_widget('browser-webview', WebKit.WebView())
         self.wv.connect('decide-policy', self._on_decide_policy)
@@ -109,10 +109,10 @@ class Browser(Gtk.Box):
 
 
     def load_url(self, url: str):
-        self.log.debug("Loading url")
         if not url.startswith('file://'):
             url = 'file://%s' % url
         self.wv.load_uri(url)
+        self.log.debug("URL %s loaded", url)
 
     def load_report(self, *args):
         ddWorkbooks = self.app.get_widget('dd-workbooks')
@@ -146,25 +146,25 @@ class Browser(Gtk.Box):
             action = WebKit.NavigationPolicyDecision.get_navigation_action(decision)
             uri = webview.get_uri()
             filename = uri[7:]
-            self.log.debug("URL intercepted: %s", uri)
-            self.log.debug("Filename: %s", filename)
+            # ~ self.log.debug("URL intercepted: %s", uri)
+            # ~ self.log.debug("Filename: %s", filename)
             if not os.path.exists(filename):
                 self.log.error("Page %s not found", os.path.basename(filename))
                 return True
-            click = action.get_mouse_button() != 0
-            if click:
-                self.log.debug("User clicked in link: %s", uri)
+            # ~ click = action.get_mouse_button() != 0
+            # ~ if click:
+                # ~ self.log.debug("User clicked in link: %s", uri)
 
     def _on_load_changed(self, webview, event):
         uri = webview.get_uri()
-        if event == WebKit.LoadEvent.STARTED:
-            self.log.debug("Load started for url: %s", uri)
-        elif event == WebKit.LoadEvent.COMMITTED:
-            self.log.debug("Load committed for url: %s", uri)
-        elif event == WebKit.LoadEvent.FINISHED:
-            self.log.debug("Load finished for url: %s", uri)
-            if len(uri) == 0:
-                self.log.debug("Url not loaded")
+        # ~ if event == WebKit.LoadEvent.STARTED:
+            # ~ self.log.debug("Load started for url: %s", uri)
+        # ~ elif event == WebKit.LoadEvent.COMMITTED:
+            # ~ self.log.debug("Load committed for url: %s", uri)
+        # ~ elif event == WebKit.LoadEvent.FINISHED:
+            # ~ self.log.debug("Load finished for url: %s", uri)
+            # ~ if len(uri) == 0:
+                # ~ self.log.debug("Url not loaded")
 
     def _on_load_failed(self, webview, load_event, failing_uri, error):
         self.log.error(error)

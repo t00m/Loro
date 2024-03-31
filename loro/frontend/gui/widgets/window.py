@@ -46,9 +46,9 @@ class Window(Adw.ApplicationWindow):
         dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
         viewstack = self.app.add_widget('viewstack', Adw.ViewStack())
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
-        viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-dashboard-symbolic')
+        viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-go-home-symbolic')
         viewstack.add_titled_with_icon(editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
-        viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-edit-find-symbolic')
+        viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-study-symbolic')
         viewswitcher = self.app.add_widget('viewswitcher', Adw.ViewSwitcher())
         viewswitcher.set_stack(viewstack)
         headerbar = self.app.get_widget('headerbar')
@@ -120,7 +120,7 @@ class Window(Adw.ApplicationWindow):
             return
         self.log.debug("Selected workbook: '%s'", workbook.id)
         dashboard.set_current_workbook(workbook)
-        dashboard.update_dashboard()
+        # ~ dashboard.update_dashboard()
         dashboard.display_report()
         editor.update_editor()
 

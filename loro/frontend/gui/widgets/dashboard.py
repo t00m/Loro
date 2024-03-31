@@ -157,14 +157,19 @@ class Dashboard(Gtk.Box):
     def display_report(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
+        if workbook.id is None:
+            self.log.warning("No workbooks available")
+            return
         # ~ self.log.debug("Loading report for Workbook '%s'", workbook.id)
         source, target = ENV['Projects']['Default']['Languages']
         DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
         # ~ self.app.builder.kb(workbook.id)
-        report = self.app.report.build(workbook.id)
+        report_url = self.app.report.get_url(workbook.id)
+        if not os.path.exists(report_url):
+            self.app.report.build(workbook.id)
         browser = self.app.get_widget('browser')
-        browser.load_url(report)
+        browser.load_url(report_url)
         # ~ os.system("xdg-open '%s'" % report_url)
 
     def _update_analysis(self, sid: str):
@@ -429,7 +434,7 @@ class Dashboard(Gtk.Box):
             # ~ item = model[pos]
             # ~ ddWorkbooks.set_selected(pos)
 
-        self._on_workbook_selected(ddWorkbooks)
+        # ~ self._on_workbook_selected(ddWorkbooks)
         return False
 
     def set_current_workbook(self, workbook: Workbook):
