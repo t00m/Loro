@@ -45,6 +45,7 @@ class ColEntry(Gtk.Box):
     def __init__(self):
         super(ColEntry, self).__init__()
         entry = Gtk.Entry()
+        entry.set_hexpand(True)
         self.append(entry)
 
 class ColButton(Gtk.Box):

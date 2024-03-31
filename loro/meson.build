@@ -14,6 +14,7 @@ sources = [
   'main.py',
   'report.py',
   'stats.py',
+  'translate.py',
   'workbook.py',
   'workflow.py'
 ]

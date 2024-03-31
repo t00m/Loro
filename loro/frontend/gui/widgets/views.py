@@ -65,17 +65,19 @@ class ColumnViewToken(ColumnView):
         self.column_title.set_title(_('Token'))
         self.column_title.set_expand(True)
 
-class ColumnViewTokenTranslation(ColumnViewToken):
+class ColumnViewTranslation(ColumnViewToken):
     """ Custom ColumnView widget for tokens translation """
-    __gtype_name__ = 'ColumnViewTokenTranslation'
+    __gtype_name__ = 'ColumnViewTranslation'
 
     def __init__(self, app):
-        super().__init__(app, item_type=Item)
+        super().__init__(app)
 
         self.factory_translation = Gtk.SignalListItemFactory()
         self.factory_translation.connect("setup", self._on_factory_setup_translation)
         self.factory_translation.connect("bind", self._on_factory_bind_translation)
         self.column_translation = Gtk.ColumnViewColumn.new(_('Translation'), self.factory_translation)
+        self.column_title.set_expand(False)
+        self.column_translation.set_expand(True)
         self.cv.append_column(self.column_translation)
 
     def _on_factory_setup_translation(self, factory, list_item):

@@ -15,6 +15,7 @@ from loro.backend.core.log import get_logger
 from loro.workbook import Workbook
 from loro.workflow import Workflow
 from loro.cache import Cache
+from loro.translate import Translate
 # ~ from loro.builder import Builder
 from loro.stats import Stats
 from loro.report import Report
@@ -35,7 +36,7 @@ class Application(Adw.Application):
         self.workflow = Workflow(self)
         self.workbooks = Workbook(self)
         self.stats = Stats(self)
-        # ~ self.builder = Builder(self)
+        self.translate = Translate(self)
         self.factory = WidgetFactory(self)
         self.actions = WidgetActions(self)
         self.report = Report(self)

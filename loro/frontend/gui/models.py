@@ -58,6 +58,11 @@ class TokenTranslation(Item):
                         translation: str = ''   # Translation
                 ):
         super().__init__(id, title)
+        self._translation = translation
+
+    @GObject.Property
+    def translation(self):
+        return self._translation
 
 class Sentence(Item):
     """Custom data model"""

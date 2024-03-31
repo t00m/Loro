@@ -14,6 +14,7 @@ from loro.frontend.gui.widgets.check import CheckWindow
 from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.dashboard import Dashboard
 from loro.frontend.gui.widgets.browser import Browser
+from loro.frontend.gui.widgets.translator import Translator
 from loro.frontend.gui.widgets.status import StatusPageEmpty
 from loro.frontend.gui.widgets.status import StatusPageNoWorkbooks
 from loro.frontend.gui.icons import ICON
@@ -44,11 +45,13 @@ class Window(Adw.ApplicationWindow):
         browser = self.app.add_widget('browser', Browser(self.app))
         editor = self.app.add_widget('editor', Editor(self.app))
         dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
+        translator = self.app.add_widget('translator', Translator(self.app))
         viewstack = self.app.add_widget('viewstack', Adw.ViewStack())
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
         viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-go-home-symbolic')
         viewstack.add_titled_with_icon(editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
         viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-study-symbolic')
+        viewstack.add_titled_with_icon(translator, 'translator', 'Translations', 'com.github.t00m.Loro-translate-symbolic')
         viewswitcher = self.app.add_widget('viewswitcher', Adw.ViewSwitcher())
         viewswitcher.set_stack(viewstack)
         headerbar = self.app.get_widget('headerbar')
