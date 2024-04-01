@@ -19,7 +19,7 @@ from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import GObject
 
-from MiAZ.backend.log import get_logger
+from loro.backend.core.log import get_logger
 from loro.frontend.gui.models import Filepath, Workbook
 from loro.frontend.gui.widgets.views import ColumnViewFiles
 
