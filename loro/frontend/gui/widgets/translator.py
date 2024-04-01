@@ -28,12 +28,26 @@ class Translator(Gtk.Box):
         self.log = get_logger('Translator')
         self._setup_widget()
         self._check()
-        self._update()
+        # ~ self.update()
         self.log.debug("Translator initialized")
 
     def _setup_widget(self):
         cvtl = self.app.add_widget('translator-view-tokens', ColumnViewTranslation(self.app))
+        cvtl.set_filter(self._do_filter_view_tokens)
         self.append(cvtl)
+
+    def _do_filter_view_tokens(self, item, filter_list_model):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
+        if workbook is None:
+            return True
+
+        if workbook.id is None:
+            return True
+        workbook_tokens = self.app.cache.get_tokens(workbook.id)
+        if item.id in workbook_tokens:
+            return True
+        return False
 
     def _check(self):
         """
@@ -51,7 +65,7 @@ class Translator(Gtk.Box):
                 if not self.app.translate.exists_sentence(sid):
                     self.app.translate.set_sentence(sid, target, '')
 
-    def _update(self):
+    def update(self):
         source, target = ENV['Projects']['Default']['Languages']
         cvtl = self.app.get_widget('translator-view-tokens')
         items = []
@@ -64,3 +78,10 @@ class Translator(Gtk.Box):
                             )
                         )
         cvtl.update(items)
+
+    def set_translation(self, entry, item):
+        source, target = ENV['Projects']['Default']['Languages']
+        cache = self.app.translate.get_cache_tokens()
+        translation = entry.get_text()
+        self.app.translate.set_token(item.id, target, translation)
+        self.log.debug("Token '%s' translated to '%s'", item.id, entry.get_text())

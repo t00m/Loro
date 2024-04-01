@@ -88,6 +88,8 @@ class ColumnViewTranslation(ColumnViewToken):
         box = list_item.get_child()
         item = list_item.get_item()
         entry = box.get_first_child()
+        translator = self.app.get_widget('translator')
+        entry.connect('activate', translator.set_translation, item)
         entry.set_text(item.translation)
 
 class ColumnViewSentences(ColumnView):

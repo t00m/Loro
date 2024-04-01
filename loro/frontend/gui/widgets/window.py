@@ -117,6 +117,7 @@ class Window(Adw.ApplicationWindow):
     def _on_workbook_selected(self, dropdown, gparam):
         dashboard = self.app.get_widget('dashboard')
         editor = self.app.get_widget('editor')
+        translator = self.app.get_widget('translator')
         workbook = dropdown.get_selected_item()
         if workbook is None:
             self.log.warning("No workbooks created yet")
@@ -126,6 +127,7 @@ class Window(Adw.ApplicationWindow):
         # ~ dashboard.update_dashboard()
         dashboard.display_report()
         editor.update_editor()
+        translator.update()
 
     def _create_actions(self) -> None:
         """Create actions for main menu"""
