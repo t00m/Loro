@@ -23,7 +23,7 @@ from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_metadata_from_filename
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.log import get_logger
-from loro.backend.services.nlp.spacy import explain_term
+# ~ from loro.backend.services.nlp.spacy import explain_term
 from loro.frontend.gui.widgets.selector import Selector
 from loro.frontend.gui.widgets.filedialog import open_file_dialog
 

@@ -6,6 +6,7 @@ import sys
 import time
 import random
 import threading
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor as Executor
 
 from gi.repository import GObject, GLib
@@ -15,10 +16,10 @@ from rich.progress import track
 
 from loro.backend.core.env import ENV
 from loro.backend.extractors import whatsapp
-from loro.backend.services.nlp.spacy import tokenize_sentence
-from loro.backend.services.nlp.spacy import get_glossary_term_explained
-from loro.backend.services.nlp.spacy import load_model
-from loro.backend.services.nlp.spacy import detect_language
+# ~ from loro.backend.services.nlp.spacy import tokenize_sentence
+# ~ from loro.backend.services.nlp.spacy import render_sentence
+# ~ from loro.backend.services.nlp.spacy import load_model
+# ~ from loro.backend.services.nlp.spacy import detect_language
 from loro.backend.core.util import is_valid_word
 from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_project_input_dir
@@ -58,7 +59,7 @@ class Workflow(GObject.GObject):
         """SpaCy model lazy loading"""
         source, target = ENV['Projects']['Default']['Languages']
         self.log.debug("Loading model '%s' for language '%s'", self.model_name, source)
-        load_model(self.model_name)
+        self.app.nlp.load_model(self.model_name)
         self.emit('model-loaded')
         self.log.debug("SpaCy model loaded successfully")
 
@@ -93,7 +94,7 @@ class Workflow(GObject.GObject):
             self.current_filename = os.path.basename(filepath)
 
             # Detect language of file and validate
-            result = detect_language(open(filepath).read())
+            result = self.app.nlp.detect_language(open(filepath).read())
             lang = result['language']
             score = int((result['score']*100))
             valid = lang.upper() == source.upper() and score >= 85
@@ -157,8 +158,12 @@ class Workflow(GObject.GObject):
     def process_sentence(self, data: tuple) -> tuple:
         (workbook, filename, sentence, jid, topic, subtopic) = data
         sid = get_hash(sentence)
-        tokens = tokenize_sentence(sentence)
-
+        tokens = self.app.nlp.tokenize_sentence(sentence)
+        # ~ svg = self.app.nlp.render_sentence(tokens)
+        # ~ with open('/tmp/%s' % sid, 'w') as fimg:
+            # ~ fimg.write(svg)
+        # ~ output_path = Path("/tmp/%s.svg" % sid) # you can keep there only "dependency_plot.svg" if you want to save it in the same folder where you run the script
+        # ~ output_path.open("w", encoding="utf-8").write(svg)
         sid_tokens = []
         for token in tokens:
             if is_valid_word(token.text):

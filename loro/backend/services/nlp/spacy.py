@@ -13,59 +13,61 @@
 import spacy
 from spacy.lang.de.examples import sentences
 from spacy import Language
+from spacy import displacy
 from spacy.cli import download
 from spacy_langdetect import LanguageDetector
 
-nlp = None
+from loro.backend.core.log import get_logger
 
-def load_spacy(model_name: str, **kwargs) -> Language:
-    """Load a spaCy model, download it if it has not been installed yet.
-    :param model_name: the model name, e.g., en_core_web_sm
-    :param kwargs: options passed to the spaCy loader, such as component exclusion, as you
-    would with spacy.load()
-    :return: an initialized spaCy Language
-    :raises: SystemExit: if the model_name cannot be downloaded
 
-    https://github.com/BramVanroy/spacy_download
-    """
-    from importlib import import_module
-    try:
-        model_module = import_module(model_name)
-    except ModuleNotFoundError:
-        download(model_name)
-        model_module = import_module(model_name)
+class NLP:
+    def __init__(self, app):
+        self.log = get_logger("SpaCy")
+        self.nlp = None
+        self.log.debug("SpaCy initialited")
 
-    return model_module.load(**kwargs)
+    def load_spacy(self, model_name: str, **kwargs) -> Language:
+        """Load a spaCy model, download it if it has not been installed yet.
+        :param model_name: the model name, e.g., en_core_web_sm
+        :param kwargs: options passed to the spaCy loader, such as component exclusion, as you
+        would with spacy.load()
+        :return: an initialized spaCy Language
+        :raises: SystemExit: if the model_name cannot be downloaded
 
-@Language.factory("language_detector")
-def get_lang_detector(nlp, name):
-   return LanguageDetector()
+        https://github.com/BramVanroy/spacy_download
+        """
+        from importlib import import_module
+        try:
+            model_module = import_module(model_name)
+        except ModuleNotFoundError:
+            download(model_name)
+            model_module = import_module(model_name)
 
-def get_glossary_keys() -> {}.keys():
-    # Universal POS tags (https://universaldependencies.org/u/pos/)
-    return spacy.glossary.GLOSSARY.keys()
+        return model_module.load(**kwargs)
 
-def get_glossary_term_explained(term: str) -> str:
-    try:
-        return spacy.glossary.GLOSSARY[term]
-    except KeyError:
-        return ''
+    @Language.factory("language_detector")
+    def get_lang_detector(self, nlp, name):
+       return LanguageDetector()
 
-def explain_term(term: str) -> str:
-    try:
-        return spacy.glossary.GLOSSARY[term]
-    except KeyError:
-        return ''
+    def load_model(self, model: str) -> None:
+        self.nlp = self.load_spacy(model)
+        self.nlp.add_pipe(name='language_detector', last=True)
 
-def tokenize_sentence(sentence: str) -> []:
-    global nlp
-    return nlp(sentence)
+    def explain_term(self, term: str) -> str:
+        try:
+            return spacy.glossary.GLOSSARY[term]
+        except KeyError:
+            return ''
 
-def load_model(model: str) -> None:
-    global nlp
-    nlp = load_spacy(model)
-    nlp.add_pipe('language_detector', last=True)
+    def get_glossary_keys(self) -> {}.keys():
+        # Universal POS tags (https://universaldependencies.org/u/pos/)
+        return spacy.glossary.GLOSSARY.keys()
 
-def detect_language(text):
-    global nlp
-    return nlp(text)._.language
+    def tokenize_sentence(self, sentence: str) -> []:
+        return self.nlp(sentence)
+
+    def render_sentence(self, sentence):
+        return displacy.render(sentence, style="dep", jupyter=False)
+
+    def detect_language(self, text):
+        return self.nlp(text)._.language
