@@ -15,7 +15,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.util import find_item
 from loro.backend.core.log import get_logger
-from loro.backend.services.nlp.spacy import explain_term
+# ~ from loro.backend.services.nlp.spacy import explain_term
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_project_target_dir
@@ -183,7 +183,7 @@ class Dashboard(Gtk.Box):
                                 id = token,
                                 title = token,
                                 lemma = tokens[token]['lemmas'][0],
-                                postag = explain_term(tokens[token]['postags'][0]),
+                                postag = self.app.nlp.explain_term(tokens[token]['postags'][0]),
                                 count = tokens[token]['count'],
                                 translation = ''
                             )
@@ -258,8 +258,8 @@ class Dashboard(Gtk.Box):
         data = []
         data.append(("ALL", "All Parts Of Speech"))
         for postag in postags:
-            title = explain_term(postag).title()
-            data.append((postag, explain_term(postag).title()))
+            title = self.app.nlp.explain_term(postag).title()
+            data.append((postag, self.app.nlp.explain_term(postag).title()))
         self.app.actions.dropdown_populate(self.ddPos, POSTag, data)
         self.log.debug("Workbook['%s'] selected", workbook.id)
 
@@ -366,8 +366,8 @@ class Dashboard(Gtk.Box):
         data = []
         data.append(("ALL", "All Part-Of-Speech tags"))
         for postag in postags:
-            title = explain_term(postag).title()
-            data.append((postag, explain_term(postag).title()))
+            title = self.app.nlp.explain_term(postag).title()
+            data.append((postag, self.app.nlp.explain_term(postag).title()))
         self.app.actions.dropdown_populate(self.ddPos, POSTag, data)
 
         # ~ self.app.actions.dropdown_populate(self.ddPos, Item, data)
