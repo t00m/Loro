@@ -85,6 +85,7 @@ class Report(GObject.GObject):
         DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook)
         DIR_HTML = os.path.join(DIR_OUTPUT, 'html')
         var = {}
+        var['app'] = self.app
         var['workbook'] = {}
         var['workbook']['id'] = workbook
         var['workbook']['source'] = source
@@ -139,10 +140,10 @@ class Report(GObject.GObject):
         for postag in var['workbook']['stats']['postags']:
             for lemma in var['workbook']['stats']['postags'][postag]['lemmas']:
                 var['html']['index'] = False
-                var['html']['title'] = "%s: %s" % (spacy.explain_term(postag), lemma)
+                var['html']['title'] = "%s: %s" % (self.app.nlp.explain_term(postag), lemma)
                 var['lemma'] = {}
                 var['lemma']['name'] = lemma
-                var['lemma']['postag'] = spacy.explain_term(postag).title()
+                var['lemma']['postag'] = self.app.nlp.explain_term(postag).title()
                 tokens = var['workbook']['stats']['lemmas'][lemma]['tokens']
                 var['lemma']['tokens'] = tokens
                 header = self.render_template('HEADER', var)

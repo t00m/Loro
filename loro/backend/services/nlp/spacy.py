@@ -51,7 +51,7 @@ class NLP:
 
     def load_model(self, model: str) -> None:
         self.nlp = self.load_spacy(model)
-        self.nlp.add_pipe(name='language_detector', last=True)
+        # ~ self.nlp.add_pipe(name='language_detector', last=True)
 
     def explain_term(self, term: str) -> str:
         try:

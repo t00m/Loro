@@ -94,10 +94,11 @@ class Workflow(GObject.GObject):
             self.current_filename = os.path.basename(filepath)
 
             # Detect language of file and validate
-            result = self.app.nlp.detect_language(open(filepath).read())
-            lang = result['language']
-            score = int((result['score']*100))
-            valid = lang.upper() == source.upper() and score >= 85
+            # ~ result = self.app.nlp.detect_language(open(filepath).read())
+            # ~ lang = result['language']
+            # ~ score = int((result['score']*100))
+            # ~ valid = lang.upper() == source.upper() and score >= 85
+            valid = True # Ain't your mama
 
             if valid:
                 topic, subtopic, suffix = get_metadata_from_filepath(filepath)

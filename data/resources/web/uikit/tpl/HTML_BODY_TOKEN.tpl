@@ -1,7 +1,8 @@
 <%! from loro.backend.services.nlp import spacy %>
 <%
+    app = var['app']
     token = var['token']['name']
-    postag = spacy.explain_term(var['token']['properties']['postags'][0]).title()
+    postag = app.nlp.explain_term(var['token']['properties']['postags'][0]).title()
     lemma = var['token']['properties']['lemmas'][0]
     source = var['workbook']['source']
 %>

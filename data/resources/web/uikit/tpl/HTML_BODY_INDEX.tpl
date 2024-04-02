@@ -8,13 +8,13 @@
             <div class="uk-width-expand">
                 <div class="uk-flex uk-flex-center uk-flex-wrap">
 % for postag in var['workbook']['stats']['postags']:
-                    <a class="uk-card uk-card-small uk-border-rounded uk-card-hover uk-card-body" href="#${postag}" uk-toggle>${spacy.explain_term(postag).title()}</a>
+                    <a class="uk-card uk-card-small uk-border-rounded uk-card-hover uk-card-body" href="#${postag}" uk-toggle>${var['app'].nlp.explain_term(postag).title()}</a>
 
                     <div id="${postag}" uk-modal>
                         <div class="uk-modal-dialog">
                             <button class="uk-modal-close-default" type="button" uk-close></button>
                             <div class="uk-modal-header">
-                                <h2 class="uk-modal-title">${spacy.explain_term(postag).title()}</h2>
+                                <h2 class="uk-modal-title">${var['app'].nlp.explain_term(postag).title()}</h2>
                             </div>
                             <div class="uk-modal-body">
                                 <div class="uk-grid-small uk-flex-middle uk-child-width-expand" uk-grid>
