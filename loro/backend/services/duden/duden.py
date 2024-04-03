@@ -8,7 +8,7 @@
 # Description: Duden module service for Loro
 """
 
-# ~ from loro.backend.core.log import get_logger
+import os
 
 try:
     import duden
@@ -16,31 +16,76 @@ try:
 except ModuleNotFoundError:
     DUDEN_SERVICE = False
 
+from loro.backend.core.env import ENV
+from loro.backend.core.log import get_logger
+from loro.backend.core.util import json_load, json_save
+from loro.backend.core.util import get_project_config_dir
+
 RECHTSCHREIBUNG = {
-    'ä': 'ae',
-    'ö': 'oe',
-    'ü': 'ue',
-    'ß': 'sz'
+    'Ä' : 'Ae',
+    'Ö' : 'Oe',
+    'Ü' : 'Ue',
+    'ä' : 'ae',
+    'ö' : 'oe',
+    'ü' : 'ue',
+    'ß' : 'sz'
 }
 
-class DudenService:
-    def __init__(self):
-        # ~ self.log = get_logger('Duden')
-        pass
 
-    def rechtschreibung(self, word: str) -> str:
-        duden_word = ''
+class Duden:
+    def __init__(self, app):
+        self.app = app
+        self.log = get_logger('Duden')
+        self.log.debug("Duden enabled? %s", DUDEN_SERVICE)
+        self.duden = {}
+        self._check()
+
+    def _get_duden_cache(self):
+        source, target = ENV['Projects']['Default']['Languages']
+        config_dir = get_project_config_dir(source)
+        duden_cache = os.path.join(config_dir, 'duden.json')
+        return duden_cache
+
+    def _check(self, *args):
+        if DUDEN_SERVICE:
+            duden_cache = self._get_duden_cache()
+            if not os.path.exists(duden_cache):
+                json_save(duden_cache, {})
+                self.log.debug("Duden cache created")
+            else:
+                self.duden = json_load(duden_cache)
+                self.log.debug("Duden cache loaded (%d entries)", len(self.duden))
+
+    def get_rechtschreibung(self, word: str) -> str:
+        recht_word = ''
         for letter in word:
             if letter in RECHTSCHREIBUNG:
-                duden_word += RECHTSCHREIBUNG[letter]
+                recht_word += RECHTSCHREIBUNG[letter]
             else:
-                duden_word += letter
-        return duden_word
+                recht_word += letter
+        return recht_word
 
-ds = DudenService()
-# ~ self.log.debug(ds.rechtschreibung('Große'))
-print(ds.rechtschreibung('Große'))
-
-
-DS = DudenService()
-# ~ print("Enabled? %s" % DS.enabled)
+    def get_metadata(self, token) -> []:
+        metadata = []
+        if DUDEN_SERVICE:
+            if token.text in self.duden:
+                metadata = self.duden[token.text]
+                # ~ self.log.debug("Word '%s' retrieved from Duden cache", token.text)
+            else:
+                duden_cache = self._get_duden_cache()
+                if token.pos_ not in ['NOUN', 'NN', 'NR', 'NNP', 'NNS', 'NT']:
+                    word = token.text.lower()
+                else:
+                    word = token.text
+                recht_word = self.get_rechtschreibung(word)
+                w = duden.get(recht_word)
+                if w is not None:
+                    metadata = w.export()
+                    self.duden[token.text] = metadata
+                    json_save(duden_cache, self.duden)
+                    self.log.debug("Duden cache updated for word '%s' ('%s')", token.text, word)
+                else:
+                    self.duden[token.text] = {}
+                    json_save(duden_cache, self.duden)
+                    self.log.debug("Word '%s' ('%s') not found in Duden. Updating cache anyway", token.text, word)
+        return metadata

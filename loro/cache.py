@@ -238,6 +238,8 @@ class Cache:
             cache['lemmas']['data'] = lemma_data
             self.set_cache(workbook, cache)
 
+            self.app.duden.get_metadata(token)
+
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
         # ~ self.log.debug("Added token '%s'", token.text)
 

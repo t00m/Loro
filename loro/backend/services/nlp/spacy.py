@@ -66,8 +66,14 @@ class NLP:
     def tokenize_sentence(self, sentence: str) -> []:
         return self.nlp(sentence)
 
-    def render_sentence(self, sentence):
-        return displacy.render(sentence, style="dep", jupyter=False)
+    def render_sentence(self, doc):
+        options = {
+            "compact": False,
+            "fine_grained": False,
+            "add_lemma": True,
+            "color": "blue"
+        }
+        return displacy.render(doc, style="dep", page=False, jupyter=False, options=options)
 
     def detect_language(self, text):
         return self.nlp(text)._.language

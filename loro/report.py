@@ -113,7 +113,7 @@ class Report(GObject.GObject):
         # ~ return url
 
     def _prepare(self, var: dict) -> bool:
-        delete_directory(var['html']['output'])
+        # ~ delete_directory(var['html']['output'])
         create_directory(var['html']['output'])
 
     def _build_token_pages(self, var: dict):
@@ -164,6 +164,7 @@ class Report(GObject.GObject):
             var['html']['title'] = "Sentence: %s" % sid
             var['sentence'] = {}
             var['sentence']['sid'] = sid
+            var['sentence']['svg'] = open(os.path.join(var['html']['output'], '%s.svg' % sid)).read()
             var['sentence']['text'] = var['workbook']['cache']['sentences']['data'][sid]['DE']
             # ~ self.log.debug(var['sentence']['properties'])
             var['sentence']['properties'] = var['workbook']['cache']['sentences']['data'][sid]

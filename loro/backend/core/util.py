@@ -43,6 +43,9 @@ def get_project_target_dir(source: str, target: str) -> str:
 def get_project_target_workbook_dir(source: str, target: str, workbook: str):
     return os.path.join(get_project_target_dir(source, target), workbook)
 
+def get_project_target_workbook_html_dir(source: str, target: str, workbook: str) -> str:
+    return os.path.join(get_project_target_workbook_dir(source, target, workbook), 'html')
+
 def get_project_target_build_dir(source: str, target: str, workbook: str):
     return os.path.join(get_project_target_workbook_dir(source, target, workbook), '.build')
 

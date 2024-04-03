@@ -2,6 +2,9 @@
     <div class="uk-container"> <!-- UK-CONTAINER :: START -->
     <h3 id="SENTENCE">Sentence</h3>
     <p class="uk-text-lead">${var['sentence']['text']}</p>
+    <p>
+        ${var['sentence']['svg']}
+    </p>
     </div><!-- UK-CONTAINER :: END -->
 </div><!-- UK-SECTION :: END -->
 
@@ -20,4 +23,5 @@
 
 <% filenames = ', '.join(var['sentence']['properties']['filename']) %>
 <p class="uk-text-meta">Seen in: ${filenames}</p>
+
 

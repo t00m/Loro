@@ -13,6 +13,7 @@ from gi.repository import Adw, Gio, Gtk  # type:ignore
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.services.nlp.spacy import NLP
+from loro.backend.services.duden.duden import Duden
 from loro.workbook import Workbook
 from loro.workflow import Workflow
 from loro.cache import Cache
@@ -41,6 +42,7 @@ class Application(Adw.Application):
         self.factory = WidgetFactory(self)
         self.actions = WidgetActions(self)
         self.report = Report(self)
+        self.duden = Duden(self)
 
     def do_activate(self) -> None:
         from loro.frontend.gui.widgets.window import Window
