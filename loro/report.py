@@ -125,6 +125,7 @@ class Report(GObject.GObject):
             var['token'] = {}
             var['token']['name'] = token
             var['token']['properties'] = var['workbook']['cache']['tokens']['data'][token]
+            var['token']['duden'] = self.app.duden.get_word(token)
             header = self.render_template('HEADER', var)
             body = self.render_template('BODY_TOKEN', var)
             footer = self.render_template('FOOTER_TOKEN', var)

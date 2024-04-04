@@ -155,7 +155,7 @@ class Editor(Gtk.Box):
         self.selector.boxLeft.set_visible(visible)
         self.selector.set_hexpand(True)
         self.selector.boxControls.set_visible(visible)
-        self.visor.set_visible(not visible)
+        # ~ self.visor.set_visible(not visible)
         if not visible:
             self.selector.set_hexpand(False)
         else:

@@ -40,7 +40,7 @@ class Duden:
         self.duden = {}
         self._check()
 
-    def _get_duden_cache(self):
+    def _get_duden_cache_path(self):
         source, target = ENV['Projects']['Default']['Languages']
         config_dir = get_project_config_dir(source)
         duden_cache = os.path.join(config_dir, 'duden.json')
@@ -48,7 +48,7 @@ class Duden:
 
     def _check(self, *args):
         if DUDEN_SERVICE:
-            duden_cache = self._get_duden_cache()
+            duden_cache = self._get_duden_cache_path()
             if not os.path.exists(duden_cache):
                 json_save(duden_cache, {})
                 self.log.debug("Duden cache created")
@@ -72,7 +72,7 @@ class Duden:
                 metadata = self.duden[token.text]
                 # ~ self.log.debug("Word '%s' retrieved from Duden cache", token.text)
             else:
-                duden_cache = self._get_duden_cache()
+                duden_cache = self._get_duden_cache_path()
                 if token.pos_ not in ['NOUN', 'NN', 'NR', 'NNP', 'NNS', 'NT']:
                     word = token.text.lower()
                 else:
@@ -89,3 +89,9 @@ class Duden:
                     json_save(duden_cache, self.duden)
                     self.log.debug("Word '%s' ('%s') not found in Duden. Updating cache anyway", token.text, word)
         return metadata
+
+    def get_word(self, word: str):
+        try:
+            return self.duden[word]
+        except:
+            return {}
