@@ -48,6 +48,7 @@ class Application(Adw.Application):
     def do_activate(self) -> None:
         from loro.frontend.gui.widgets.window import Window
         self.window = Window(application=self)
+        self.window.set_default_size(1024, 728)
         self.add_widget('window', self.window)
 
     def add_widget(self, name: str, widget):

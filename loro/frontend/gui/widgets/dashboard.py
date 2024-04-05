@@ -6,11 +6,11 @@ import threading
 from gi.repository import Gio, Adw, GLib, Gtk  # type:ignore
 
 from loro.backend.core.run_async import RunAsync
-from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence, Analysis, Workbook
-from loro.frontend.gui.widgets.columnview import ColumnView
-from loro.frontend.gui.widgets.views import ColumnViewToken
-from loro.frontend.gui.widgets.views import ColumnViewSentences
-from loro.frontend.gui.widgets.views import ColumnViewAnalysis
+# ~ from loro.frontend.gui.models import Item, Topic, Subtopic, POSTag, Token, Sentence, Analysis, Workbook
+# ~ from loro.frontend.gui.widgets.columnview import ColumnView
+# ~ from loro.frontend.gui.widgets.views import ColumnViewToken
+# ~ from loro.frontend.gui.widgets.views import ColumnViewSentences
+# ~ from loro.frontend.gui.widgets.views import ColumnViewAnalysis
 from loro.backend.core.env import ENV
 from loro.backend.core.util import json_load
 from loro.backend.core.util import find_item
@@ -21,6 +21,9 @@ from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_project_target_dir
 from loro.backend.core.util import get_project_target_workbook_dir
 from loro.frontend.gui.icons import ICON
+from loro.frontend.gui.widgets.status import StatusPageNoWorkbooks
+from loro.frontend.gui.widgets.status import StatusPageEmpty
+from loro.frontend.gui.widgets.status import StatusPageCurrentWorkbook
 
 class Dashboard(Gtk.Box):
     __gtype_name__ = 'Dashboard'
@@ -38,46 +41,33 @@ class Dashboard(Gtk.Box):
         self.selected_tokens = []
         self.selected_workbook = None
         self._build_dashboard()
-        # ~ self.app.workflow.connect('workflow-finished', self._on_workbook_selected)
         GLib.timeout_add(interval=500, function=self.update_dashboard)
-        # ~ self.update_dashboard()
 
     def _build_dashboard(self):
+        viewstack = self.app.add_widget('dashboard-viewstack', Adw.ViewStack())
+        sttWBEmpty = StatusPageEmpty(self.app, True)
+        sttWBNone = StatusPageNoWorkbooks(self.app, True)
+        sttWBCurrent = StatusPageCurrentWorkbook(self.app, True)
+        viewstack.add_titled(sttWBEmpty, 'wb-empty', 'Empty')
+        viewstack.add_titled(sttWBNone, 'wb-none', 'No workbooks')
+        viewstack.add_titled(sttWBCurrent, 'wb-current', 'Current workbook')
+        viewstack.set_visible_child_name('wb-current')
+        self.append(viewstack)
+
+    def _build_dashboard_orig(self):
         self.set_margin_top(margin=0)
-        self.set_margin_end(margin=6)
-        self.set_margin_bottom(margin=6)
+        self.set_margin_end(margin=0)
+        self.set_margin_bottom(margin=0)
         self.set_margin_start(margin=0)
-
-        # Toolbox
-        # ~ toolbox = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
-
-        # ~ self.ddTopics = self.app.factory.create_dropdown_generic(Item, enable_search=True)
-        # ~ self.ddTopics.connect("notify::selected-item", self._on_topic_selected)
-        # ~ self.ddTopics.set_hexpand(False)
-        # ~ toolbox.append(self.ddTopics)
-
-        # ~ self.ddSubtopics = self.app.factory.create_dropdown_generic(Item, enable_search=True)
-        # ~ self.ddSubtopics.connect("notify::selected-item", self._on_subtopic_selected)
-        # ~ self.ddSubtopics.set_hexpand(False)
-        # ~ toolbox.append(self.ddSubtopics)
-
-        # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
-        # ~ self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', callback=self._update_workbook)
-        # ~ toolbox.append(expander)
-        # ~ toolbox.append(self.btnRefresh)
-
-        # ~ self.append(toolbox)
 
         # Content View
         dashboard = self.app.factory.create_box_horizontal(hexpand=True, vexpand=True)
         dashboard.set_margin_top(margin=6)
 
-        ## Wdigets distribution
+        ## Left Sidebar/Toolbar
         self.btnSidebarLeft = self.app.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-left-symbolic', callback=self.toggle_sidebar_left)
         self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], tooltip='Refresh', width=16, callback=self.update_workbook)
         self.btnReport = self.app.factory.create_button(icon_name='com.github.t00m.Loro-printer-symbolic', tooltip='Workbook report', width=16, callback=self.display_report)
-
-        # ~ self.btnRefresh.connect('clicked', self.update_workbook)
         self.toolbar_left = self.app.factory.create_box_vertical(spacing=6, hexpand=False, vexpand=True)
         self.toolbar_left.set_margin_start(margin=0)
         self.toolbar_left.set_margin_end(margin=0)
@@ -88,12 +78,17 @@ class Dashboard(Gtk.Box):
         self.sidebar_left.append(self.toolbar_left)
         self.sidebar_left.set_margin_start(margin=0)
         self.sidebar_left.set_margin_end(margin=6)
+
+        ## Right-Up Container
         self.sidebar_right_up = self.app.factory.create_box_vertical(spacing=6, hexpand=True, vexpand=True)
         self.sidebar_right_up.set_margin_bottom(margin=6)
         self.sidebar_right_up.set_margin_start(margin=6)
+
+        # Right-Down Container
         self.sidebar_right_down = self.app.factory.create_box_vertical(spacing=6, hexpand=True, vexpand=True)
         self.sidebar_right_down.set_margin_top(margin=6)
         self.sidebar_right_down.set_margin_start(margin=6)
+
         self.vpaned = Gtk.Paned(orientation=Gtk.Orientation.VERTICAL)
         self.hpaned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
         self.hpaned.set_start_child(self.sidebar_left)
@@ -231,7 +226,7 @@ class Dashboard(Gtk.Box):
         self._update_analysis(sentence.id)
 
     def _on_workbook_selected(self, *args):
-        self.clear_dashboard()
+        # ~ self.clear_dashboard()
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         if workbook is None:
@@ -247,6 +242,8 @@ class Dashboard(Gtk.Box):
         stats = self.app.stats.get(workbook.id)
         tokens = self.app.cache.get_tokens(workbook.id)
         workbook_empty = len(tokens) == 0
+        self.log.debug("Workbook['%s'] selected", workbook.id)
+        return
 
         # Update POS Dropbox
         postags = set()
@@ -260,7 +257,7 @@ class Dashboard(Gtk.Box):
             title = self.app.nlp.explain_term(postag).title()
             data.append((postag, self.app.nlp.explain_term(postag).title()))
         self.app.actions.dropdown_populate(self.ddPos, POSTag, data)
-        self.log.debug("Workbook['%s'] selected", workbook.id)
+
 
     def clear_dashboard(self):
         self.cvtokens.clear()
@@ -441,3 +438,20 @@ class Dashboard(Gtk.Box):
 
     def set_current_workbook(self, workbook: Workbook):
         self.selected_workbook = workbook
+        viewstack = self.app.get_widget('dashboard-viewstack')
+        page = viewstack.get_child_by_name('wb-current')
+        page.set_title("Workbook %s" % workbook.id)
+        vbox = self.app.factory.create_box_vertical()
+        label1 = Gtk.Label.new(workbook.id)
+        label1.get_style_context().add_class(class_name='title-1')
+        label2 = Gtk.Label.new(workbook.id)
+        label2.get_style_context().add_class(class_name='title-2')
+        label3 = Gtk.Label.new(workbook.id)
+        label3.get_style_context().add_class(class_name='title-3')
+        label4 = Gtk.Label.new(workbook.id)
+        label4.get_style_context().add_class(class_name='title-4')
+        vbox.append(label1)
+        vbox.append(label2)
+        vbox.append(label3)
+        vbox.append(label4)
+        page.set_child(vbox)

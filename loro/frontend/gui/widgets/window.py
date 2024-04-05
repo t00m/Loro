@@ -46,12 +46,12 @@ class Window(Adw.ApplicationWindow):
         editor = self.app.add_widget('editor', Editor(self.app))
         dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
         translator = self.app.add_widget('translator', Translator(self.app))
-        viewstack = self.app.add_widget('viewstack', Adw.ViewStack())
+        viewstack = self.app.add_widget('window-viewstack', Adw.ViewStack())
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
         viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-go-home-symbolic')
-        viewstack.add_titled_with_icon(editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
+        # ~ viewstack.add_titled_with_icon(editor, 'workbooks', 'Workbooks', 'com.github.t00m.Loro-workbooks')
         viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-study-symbolic')
-        viewstack.add_titled_with_icon(translator, 'translator', 'Translations', 'com.github.t00m.Loro-translate-symbolic')
+        # ~ viewstack.add_titled_with_icon(translator, 'translator', 'Translations', 'com.github.t00m.Loro-translate-symbolic')
         viewswitcher = self.app.add_widget('viewswitcher', Adw.ViewSwitcher())
         viewswitcher.set_stack(viewstack)
         headerbar = self.app.get_widget('headerbar')
@@ -68,7 +68,7 @@ class Window(Adw.ApplicationWindow):
         mainbox.append(progressbar)
 
     def show_stack_page(self, page_name: str):
-        viewstack = self.app.get_widget('viewstack')
+        viewstack = self.app.get_widget('window-viewstack')
         viewstack.set_visible_child_name(page_name)
 
     def _on_stack_page_changed(self, viewstack, gparam):

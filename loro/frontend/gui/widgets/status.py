@@ -51,11 +51,23 @@ class StatusPageNoWorkbooks(StatusPage):
         self.set_title('No workbooks available')
         vbox = self.app.factory.create_box_vertical(hexpand=False, vexpand=False)
         button = self.app.factory.create_button(icon_name=ICON['WB_NEW'], title='Add a new workbook', width=16, tooltip='At least one workbook must be active in the application', callback=self.add_workbook)
-        button.set_valign(Gtk.Align.CENTER)
         button.set_hexpand(False)
         vbox.append(button)
+        vbox.set_valign(Gtk.Align.CENTER)
         self.set_child(vbox)
 
     def add_workbook(self, *args):
-        window = self.app.get_widget('window')
-        window.editor._on_workbook_add()
+        editor = self.app.get_widget('editor')
+        editor._on_workbook_add()
+
+class StatusPageCurrentWorkbook(StatusPage):
+    __gtype_name__ = 'StatusPageCurrentWorkbook'
+
+    def __init__(self, app, visible):
+        super().__init__(app, visible)
+        vbox = self.app.factory.create_box_vertical(hexpand=False, vexpand=False)
+        vbox.set_valign(Gtk.Align.CENTER)
+        self.set_child(vbox)
+
+    # ~ def set_title(self, workbook: str):
+        # ~ self.set_title("Workbook %s" % workbook)
