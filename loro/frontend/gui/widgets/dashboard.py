@@ -161,8 +161,7 @@ class Dashboard(Gtk.Box):
             self.log.warning("No workbooks available")
             return
         # ~ self.log.debug("Loading report for Workbook '%s'", workbook.id)
-        source, target = ENV['Projects']['Default']['Languages']
-        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
+        DIR_OUTPUT = get_project_target_workbook_dir(workbook.id)
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
         # ~ self.app.builder.kb(workbook.id)
         report_url = self.app.report.get_url(workbook.id)

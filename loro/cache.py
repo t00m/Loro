@@ -116,10 +116,7 @@ class Cache:
             return self.cache[key]
 
     def get_cache_dir(self, workbook: str) -> str:
-        source, target = ENV['Projects']['Default']['Languages']
-        TARGET_DIR = get_project_target_dir(source, target)
-        WB_CONFIG_DIR = os.path.join(TARGET_DIR, workbook, '.config')
-        return WB_CONFIG_DIR
+        return os.path.join(get_project_target_dir(), workbook, '.config')
 
     def get_cache_files(self, workbook:str) -> []:
         key = self.get_cache_key(workbook)

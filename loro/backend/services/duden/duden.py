@@ -41,10 +41,7 @@ class Duden:
         self._check()
 
     def _get_duden_cache_path(self):
-        source, target = ENV['Projects']['Default']['Languages']
-        config_dir = get_project_config_dir(source)
-        duden_cache = os.path.join(config_dir, 'duden.json')
-        return duden_cache
+        return os.path.join(get_project_config_dir(), 'duden.json')
 
     def _check(self, *args):
         if DUDEN_SERVICE:

@@ -57,5 +57,5 @@ def main(params: argparse.Namespace):
     else:
         log.warning("No input files found for source language '%s' and target language '%s'", source, target)
         log.info("Based on the current configuration, you should place some text files in the following directory:")
-        directory = get_project_input_dir(source, target)
+        directory = get_project_input_dir()
         log.info("file://%s", directory)

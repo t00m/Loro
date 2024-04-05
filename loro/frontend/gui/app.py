@@ -30,6 +30,7 @@ class Application(Adw.Application):
             application_id=ENV['APP']['ID'],
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
         )
+        self.log = get_logger('Application')
         self.set_resource_base_path("/com/github/t00m/Loro/")
         self._widgets = {}
         self.window = None

@@ -73,17 +73,12 @@ class Report(GObject.GObject):
         return tpl.render(var=var)
 
     def get_url(self, workbook: str) -> str:
-        source, target = ENV['Projects']['Default']['Languages']
-        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook)
-        DIR_HTML = os.path.join(DIR_OUTPUT, 'html')
-        url = os.path.join(DIR_HTML, 'index.html')
-        return url
+        return os.path.join(get_project_target_workbook_dir(workbook), 'html', 'index.html')
 
     def build(self, workbook: str) -> str:
         self.log.debug("Building report for workbook '%s'", workbook)
         source, target = ENV['Projects']['Default']['Languages']
-        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook)
-        DIR_HTML = os.path.join(DIR_OUTPUT, 'html')
+        DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = {}
         var['app'] = self.app
         var['workbook'] = {}

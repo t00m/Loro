@@ -84,7 +84,7 @@ class Workflow(GObject.GObject):
         nf = 0
         for filename in files:
             nf += 1
-            INPUT_DIR = get_project_input_dir(source)
+            INPUT_DIR = get_project_input_dir()
             filepath = os.path.join(INPUT_DIR, filename)
             self.current_filename = os.path.basename(filepath)
 
@@ -96,7 +96,7 @@ class Workflow(GObject.GObject):
             self.log.debug("[%d/%d] %s processed", nf, len(files), filename)
 
         self.log.debug("Rendering sentences")
-        html_dir = get_project_target_workbook_html_dir(source, target, workbook)
+        html_dir = get_project_target_workbook_html_dir(workbook)
         if not os.path.exists(html_dir):
             os.makedirs(html_dir)
         self.log.debug("Saving SVG files to '%s'", html_dir)

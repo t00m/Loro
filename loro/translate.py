@@ -32,14 +32,10 @@ class Translate:
         json_save(cache_path, cache)
 
     def get_cache_path_tokens(self) -> str:
-        source, target = ENV['Projects']['Default']['Languages']
-        config_dir = get_project_config_dir(source)
-        return os.path.join(config_dir, 'translations_tokens.json')
+        return os.path.join(get_project_config_dir(), 'translations_tokens.json')
 
     def get_cache_path_sentences(self) -> str:
-        source, target = ENV['Projects']['Default']['Languages']
-        config_dir = get_project_config_dir(source)
-        return os.path.join(config_dir, 'translations_sentences.json')
+        return os.path.join(get_project_config_dir(), 'translations_sentences.json')
 
     def get_cache_tokens(self):
         fcache = self.get_cache_path_tokens()

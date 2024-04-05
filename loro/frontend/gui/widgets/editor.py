@@ -318,7 +318,7 @@ class Editor(Gtk.Box):
     def _update_files_view(self, wbname: str):
         # Update files
         source, target = ENV['Projects']['Default']['Languages']
-        files = get_inputs(source)
+        files = get_inputs()
         itemsAv = []
         itemsUsed = []
         for filepath in files:
@@ -366,8 +366,7 @@ class Editor(Gtk.Box):
             end = textbuffer.get_end_iter()
             contents = textbuffer.get_text(start, end, False)
             source, target = ENV['Projects']['Default']['Languages']
-            input_dir = get_project_input_dir(source)
-            filepath = os.path.join(input_dir, filename)
+            filepath = os.path.join(get_project_input_dir(), filename)
             with open(filepath, 'w') as fout:
                 fout.write(contents)
                 self.log.info("Document '%s' created", filename)
@@ -443,11 +442,9 @@ class Editor(Gtk.Box):
             if res == "cancel":
                 return
 
-            source, target = ENV['Projects']['Default']['Languages']
-            input_dir = get_project_input_dir(source)
-            source_path = os.path.join(input_dir, old_name)
+            source_path = os.path.join(get_project_input_dir(), old_name)
             new_name = lblFilename.get_text()
-            target_path = os.path.join(input_dir, new_name)
+            target_path = os.path.join(get_project_input_dir(), new_name)
             shutil.move(source_path, target_path)
             # ~ self.log.debug("Document renamed from '%s' to '%s'", os.path.basename(source_path), os.path.basename(target_path))
             self._update_files_view(self.current_workbook)
@@ -512,9 +509,7 @@ class Editor(Gtk.Box):
         dialog.present()
 
     def _on_document_import(self, *args):
-        source, target = ENV['Projects']['Default']['Languages']
-        input_dir = get_project_input_dir(source)
-        os.system("xdg-open '%s'" % input_dir)
+        os.system("xdg-open '%s'" % get_project_input_dir())
         # ~ self.log.debug("Open Input directory")
 
     def _on_document_delete(self, *args):
