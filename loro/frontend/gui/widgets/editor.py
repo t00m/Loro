@@ -35,8 +35,8 @@ class Editor(Gtk.Box):
         self.log = get_logger('Editor')
         self.app = app
         self.selected_file = None
-        GObject.signal_new('workbooks-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
-        GObject.signal_new('filenames-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
+        # ~ GObject.signal_new('workbooks-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
+        # ~ GObject.signal_new('filenames-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
         self._build_editor()
         # ~ self.update_editor()
         # ~ self._set_enable_renaming(False)

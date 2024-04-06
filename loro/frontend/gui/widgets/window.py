@@ -43,9 +43,9 @@ class Window(Adw.ApplicationWindow):
         # ViewSwitcher
         # Widgets
         browser = self.app.add_widget('browser', Browser(self.app))
-        editor = self.app.add_widget('editor', Editor(self.app))
+        # ~ editor = self.app.add_widget('editor', Editor(self.app))
         dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
-        translator = self.app.add_widget('translator', Translator(self.app))
+        # ~ translator = self.app.add_widget('translator', Translator(self.app))
         viewstack = self.app.add_widget('window-viewstack', Adw.ViewStack())
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
         viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-go-home-symbolic')
@@ -62,7 +62,7 @@ class Window(Adw.ApplicationWindow):
         self.set_content(mainbox)
         # ~ dashboard.update_dashboard()
         self.update_dropdown_workbooks()
-        editor.connect('workbooks-updated', self.update_dropdown_workbooks)
+        # ~ editor.connect('workbooks-updated', self.update_dropdown_workbooks)
         # ~ editor.connect('workbooks-updated', editor.update_editor)
         progressbar = self.app.get_widget('progressbar')
         mainbox.append(progressbar)
@@ -126,8 +126,8 @@ class Window(Adw.ApplicationWindow):
         dashboard.set_current_workbook(workbook)
         # ~ dashboard.update_dashboard()
         dashboard.display_report()
-        editor.update_editor()
-        translator.update()
+        # ~ editor.update_editor()
+        # ~ translator.update()
 
     def _create_actions(self) -> None:
         """Create actions for main menu"""
