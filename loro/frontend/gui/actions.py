@@ -10,6 +10,7 @@
 
 from gettext import gettext as _
 
+from gi.repository import Adw
 from gi.repository import GLib
 from gi.repository import GObject
 from gi.repository import Gtk
@@ -38,3 +39,48 @@ class WidgetActions(GObject.GObject):
 
         for key, value in data:
             model.append(item(id=key, title=value))
+
+    def workbook_create(self, *args):
+        def _confirm(_, res, entry):
+            if res == "cancel":
+                return
+            name = entry.get_text()
+            # ~ self.log.debug("Accepted workbook name: %s", name)
+            self.app.workbooks.add(name)
+            window = self.app.get_widget('window')
+            window.emit('workbooks-updated')
+
+        def _allow(entry, gparam, dialog):
+            name = entry.get_text()
+            exists = self.app.workbooks.exists(name)
+            dialog.set_response_enabled("add", not exists)
+
+        window = self.app.get_widget('window')
+        vbox = self.app.factory.create_box_vertical(margin=6, spacing=6)
+        etyWBName = Gtk.Entry()
+        etyWBName.set_placeholder_text('Type the workbook name...')
+        vbox.append(etyWBName)
+        dialog = Adw.MessageDialog(
+            transient_for=window,
+            hide_on_close=True,
+            heading=_("Add new workbook"),
+            default_response="add",
+            close_response="cancel",
+            extra_child=vbox,
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("add", _("Add"))
+        dialog.set_response_enabled("add", False)
+        dialog.set_response_appearance("add", Adw.ResponseAppearance.SUGGESTED)
+        dialog.connect("response", _confirm, etyWBName)
+        etyWBName.connect("notify::text", _allow, dialog)
+        dialog.present()
+
+    def workbook_delete(self, *args):
+        #FIXME: Require confirmation
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
+        if workbook.id is not None:
+            self.app.workbooks.delete(workbook.id)
+            window = self.app.get_widget('window')
+            window.emit('workbooks-updated')

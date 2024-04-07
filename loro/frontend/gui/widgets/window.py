@@ -28,6 +28,7 @@ class Window(Adw.ApplicationWindow):
         super().__init__(**kwargs)
         GObject.GObject.__init__(self)
         GObject.signal_new('window-presented', Window, GObject.SignalFlags.RUN_LAST, None, () )
+        GObject.signal_new('workbooks-updated', Window, GObject.SignalFlags.RUN_LAST, None, () )
         self.connect('window-presented', self._on_finish_loading)
         self.connect('close-request', self._on_close_request)
         self.app = kwargs['application']
@@ -62,7 +63,7 @@ class Window(Adw.ApplicationWindow):
         self.set_content(mainbox)
         # ~ dashboard.update_dashboard()
         self.update_dropdown_workbooks()
-        # ~ editor.connect('workbooks-updated', self.update_dropdown_workbooks)
+        self.connect('workbooks-updated', self.update_dropdown_workbooks)
         # ~ editor.connect('workbooks-updated', editor.update_editor)
         progressbar = self.app.get_widget('progressbar')
         mainbox.append(progressbar)
@@ -82,12 +83,16 @@ class Window(Adw.ApplicationWindow):
 
         # Menu
         menu: Gio.Menu = Gio.Menu.new()
+
+        upper_section: Gio.Menu = Gio.Menu.new()
+        upper_section.append(_("Create workbook"), "app.workbook_new")
         bottom_section: Gio.Menu = Gio.Menu.new()
         bottom_section.append(_("Preferences"), "app.preferences")
         # ~ bottom_section.append(_("Keyboard Shortcuts"), "win.show-help-overlay")
         bottom_section.append(_("Status"), "app.status")
         bottom_section.append(_("About Loro"), "app.about")
         bottom_section.append(_("Quit"), "app.quit")
+        menu.append_section(None, upper_section)
         menu.append_section(None, bottom_section)
         menu_btn: Gtk.MenuButton = Gtk.MenuButton(
             menu_model=menu,
@@ -120,7 +125,7 @@ class Window(Adw.ApplicationWindow):
         translator = self.app.get_widget('translator')
         workbook = dropdown.get_selected_item()
         if workbook is None:
-            self.log.warning("No workbooks created yet")
+            # ~ self.log.warning("No workbooks created yet")
             return
         self.log.debug("Selected workbook: '%s'", workbook.id)
         dashboard.set_current_workbook(workbook)
@@ -157,14 +162,20 @@ class Window(Adw.ApplicationWindow):
             self.about_window.present()
 
         _create_action(
+            "workbook_new",
+            lambda *_: self.app.actions.workbook_create(),
+            # ~ ["<primary>comma"],
+        )
+
+        _create_action(
             "preferences",
             lambda *_: PreferencesWindow(self).show(),
-            ["<primary>comma"],
+            # ~ ["<primary>comma"],
         )
         _create_action(
             "status",
             lambda *_: CheckWindow(self).show(),
-            ["<primary>comma"],
+            # ~ ["<primary>comma"],
         )
         _create_action("about", _about)
         _create_action(
