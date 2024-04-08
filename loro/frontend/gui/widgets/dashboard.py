@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 import os
+import time
 import threading
 from gi.repository import Gio, Adw, GLib, Gtk  # type:ignore
 
@@ -24,7 +25,8 @@ from loro.frontend.gui.icons import ICON
 from loro.frontend.gui.widgets.status import StatusPageNoWorkbooks
 from loro.frontend.gui.widgets.status import StatusPageEmpty
 from loro.frontend.gui.widgets.status import StatusPageCurrentWorkbook
-from loro.frontend.gui.widgets.editor import Editor
+
+from loro.frontend.gui.icons import ICON
 
 class Dashboard(Gtk.Box):
     __gtype_name__ = 'Dashboard'
@@ -62,10 +64,25 @@ class Dashboard(Gtk.Box):
         browser.load_url(report_url)
 
     def compile_workbook(self, *args):
-        window = self.app.get_widget('window')
+        # ~ window = self.app.get_widget('window')
         progressbar = self.app.get_widget('progressbar')
         RunAsync(self._start_workflow)
-        RunAsync(window.pulse)
+        RunAsync(self.pulse)
+
+    def pulse(self):
+        # This function updates the progress
+        progressbar = self.app.get_widget('progressbar')
+        while True:
+            time.sleep(0.5)
+            filename, fraction = self.app.workflow.get_progress()
+            running = fraction > 0.0
+            # ~ self.log.debug("progressbar visible? %s", running)
+            if running:
+                progressbar.set_fraction(fraction)
+                progressbar.set_text(filename)
+            else:
+                progressbar.set_fraction(0.0)
+            # ~ self.log.debug("%s > %f", filename, fraction)
 
     def _start_workflow(self, *args):
         window = self.app.get_widget('window')
@@ -84,7 +101,7 @@ class Dashboard(Gtk.Box):
 
         files = self.app.workbooks.get_files(workbook.id)
         self.app.workflow.start(workbook.id, files)
-        self.set_current_workbook(workbook)
+        # ~ self.set_current_workbook(workbook)
 
     def set_translation(self, *args):
         self.log.debug(args)
@@ -98,6 +115,7 @@ class Dashboard(Gtk.Box):
 
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
+        self.log.debug("Workbook.Id: %s", workbook.id)
         return False
 
     def set_current_workbook(self, workbook: Workbook):
@@ -105,9 +123,24 @@ class Dashboard(Gtk.Box):
         page = viewstack.get_child_by_name('wb-current')
         page.set_title("Workbook %s" % workbook.id)
         vbox = self.app.factory.create_box_vertical()
-        label1 = Gtk.Label.new(workbook.id)
-        label1.get_style_context().add_class(class_name='title-1')
-        editor = Editor(self.app)
-        vbox.append(label1)
-        vbox.append(editor)
+        cbox = Gtk.CenterBox()
+        hbox = self.app.factory.create_box_horizontal()
+        button_r = self.app.factory.create_button(icon_name=ICON['WB_REFRESH'], tooltip='Delete this workbook', callback=self.compile_workbook)
+        button_e = self.app.factory.create_button(icon_name=ICON['WB_EDIT'], tooltip='Edit workbook name', callback=self.app.actions.workbook_edit)
+        button_d = self.app.factory.create_button(icon_name=ICON['WB_DELETE'], tooltip='Delete this workbook', callback=self.app.actions.workbook_delete)
+        hbox.append(button_r)
+        hbox.append(button_e)
+        hbox.append(button_d)
+        cbox.set_center_widget(hbox)
+        vbox.append(cbox)
+        vbox_empty = self.app.factory.create_box_vertical(hexpand=True, vexpand=True)
+        vbox.append(Gtk.Label())
+        vbox.append(vbox_empty)
+        progressbar = self.app.add_widget('progressbar', Gtk.ProgressBar())
+        progressbar.set_hexpand(True)
+        progressbar.set_valign(Gtk.Align.CENTER)
+        progressbar.set_show_text(True)
+        vbox.append(progressbar)
         page.set_child(vbox)
+        viewstack.set_visible_child_name('wb-current')
+        self.log.debug("Displaying workbook: '%s'", workbook.id)

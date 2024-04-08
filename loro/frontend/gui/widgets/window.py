@@ -65,8 +65,8 @@ class Window(Adw.ApplicationWindow):
         self.update_dropdown_workbooks()
         self.connect('workbooks-updated', self.update_dropdown_workbooks)
         # ~ editor.connect('workbooks-updated', editor.update_editor)
-        progressbar = self.app.get_widget('progressbar')
-        mainbox.append(progressbar)
+        # ~ progressbar = self.app.get_widget('progressbar')
+        # ~ mainbox.append(progressbar)
 
     def show_stack_page(self, page_name: str):
         viewstack = self.app.get_widget('window-viewstack')
@@ -111,10 +111,11 @@ class Window(Adw.ApplicationWindow):
         ddWorkbooks.set_hexpand(False)
         boxDpdWorkbooks.append(ddWorkbooks)
         headerbar.pack_start(boxDpdWorkbooks)
-        progressbar = self.app.add_widget('progressbar', Gtk.ProgressBar())
-        progressbar.set_hexpand(True)
-        progressbar.set_valign(Gtk.Align.CENTER)
-        progressbar.set_show_text(True)
+        # ~ progressbar = self.app.add_widget('progressbar', Gtk.ProgressBar())
+        # ~ progressbar.set_hexpand(True)
+        # ~ progressbar.set_valign(Gtk.Align.CENTER)
+        # ~ progressbar.set_show_text(True)
+
         # ~ headerbar.pack_end(progressbar)
         # ~ self.props.width_request = 1024
         # ~ self.props.height_request = 768
@@ -125,14 +126,14 @@ class Window(Adw.ApplicationWindow):
         translator = self.app.get_widget('translator')
         workbook = dropdown.get_selected_item()
         if workbook is None:
-            # ~ self.log.warning("No workbooks created yet")
             return
-        self.log.debug("Selected workbook: '%s'", workbook.id)
-        dashboard.set_current_workbook(workbook)
-        # ~ dashboard.update_dashboard()
-        dashboard.display_report()
-        # ~ editor.update_editor()
-        # ~ translator.update()
+
+        if workbook.id is None:
+            viewstack = self.app.get_widget('dashboard-viewstack')
+            viewstack.set_visible_child_name('wb-none')
+        else:
+            dashboard.set_current_workbook(workbook)
+            dashboard.display_report()
 
     def _create_actions(self) -> None:
         """Create actions for main menu"""
@@ -184,30 +185,17 @@ class Window(Adw.ApplicationWindow):
             ["<primary>q", "<primary>w"],
         )
 
-    def pulse(self):
-        # This function updates the progress
-        progressbar = self.app.get_widget('progressbar')
-        while True:
-            time.sleep(0.5)
-            filename, fraction = self.app.workflow.get_progress()
-            running = fraction > 0.0
-            # ~ self.log.debug("progressbar visible? %s", running)
-            if running:
-                progressbar.set_fraction(fraction)
-                progressbar.set_text(filename)
-            else:
-                progressbar.set_fraction(0.0)
-            # ~ self.log.debug("%s > %f", filename, fraction)
-
     def update_dropdown_workbooks(self, *args):
         workbooks = self.app.workbooks.get_all()
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         data = []
         wbnames = workbooks.keys()
         if len(wbnames) == 0:
+            ddWorkbooks.set_visible(False)
             data.append((None, 'No workbooks available'))
         else:
+            ddWorkbooks.set_visible(True)
             for workbook in wbnames:
                 data.append((workbook, "Workbook %s" % workbook))
-
-        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)
+

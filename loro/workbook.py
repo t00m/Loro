@@ -69,12 +69,17 @@ class Workbook:
         self._check()
 
     def rename(self, old_name: str, new_name: str) -> bool:
-        workbooks = self.get_all()
-        workbooks[new_name.upper()] = workbooks[old_name]
-        del(workbooks[old_name])
-        self._save(workbooks)
-        self.log.debug("Workbook '%s' renamed to '%s'", old_name, new_name)
-        self._check()
+        if old_name == new_name:
+            self.log.debug("Workbook not renamed: identical names")
+            return False
+        else:
+            workbooks = self.get_all()
+            workbooks[new_name.upper()] = workbooks[old_name]
+            del(workbooks[old_name])
+            self._save(workbooks)
+            self.log.debug("Workbook '%s' renamed to '%s'", old_name, new_name)
+            self._check()
+            return True
 
     def update(self, wbname:str, fname:str, active:bool):
         workbooks = self.get_all()

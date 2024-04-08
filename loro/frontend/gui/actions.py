@@ -17,6 +17,7 @@ from gi.repository import Gtk
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
+from loro.frontend.gui.widgets.editor import Editor
 
 class WidgetActions(GObject.GObject):
     def __init__(self, app):
@@ -84,3 +85,58 @@ class WidgetActions(GObject.GObject):
             self.app.workbooks.delete(workbook.id)
             window = self.app.get_widget('window')
             window.emit('workbooks-updated')
+
+    def workbook_edit(self, *args):
+        def _confirm(_, res, entry, old_name):
+            if res == "cancel":
+                return
+            window = self.app.get_widget('window')
+            new_name = entry.get_text()
+            # ~ self.log.debug("Accepted workbook name: %s", new_name)
+            self.app.workbooks.rename(old_name, new_name)
+            window.emit('workbooks-updated')
+
+        def _allow(entry, gparam, dialog):
+            name = entry.get_text()
+            exists = self.app.workbooks.exists(name)
+            # ~ dialog.set_response_enabled("rename", not exists)
+            dialog.set_response_enabled("save", True)
+
+        window = self.app.get_widget('window')
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
+        if workbook.id is None:
+            return
+
+        vbox = self.app.factory.create_box_vertical(margin=3, spacing=3, hexpand=True, vexpand=True)
+        cbox = Gtk.CenterBox()
+        cbox.set_hexpand(True)
+        hbox_name = self.app.factory.create_box_horizontal(margin=3, spacing=3, hexpand=True, vexpand=False)
+        lblWBName = Gtk.Label()
+        lblWBName.set_markup('<b>Name </b>')
+        etyWBName = Gtk.Entry()
+        etyWBName.set_text(workbook.id)
+        old_name = workbook.id
+        hbox_name.append(lblWBName)
+        hbox_name.append(etyWBName)
+        cbox.set_center_widget(hbox_name)
+        vbox.append(cbox)
+        editor = Editor(self.app)
+        editor.update()
+        vbox.append(editor)
+        dialog = Adw.MessageDialog(
+            transient_for=window,
+            hide_on_close=True,
+            heading=_("Edit workbook"),
+            default_response="save",
+            close_response="cancel",
+            extra_child=vbox,
+        )
+        dialog.add_response("cancel", _("Cancel"))
+        dialog.add_response("save", _("Save changes"))
+        dialog.set_response_enabled("save", True)
+        dialog.set_response_appearance("save", Adw.ResponseAppearance.SUGGESTED)
+        dialog.connect("response", _confirm, etyWBName, old_name)
+        etyWBName.connect("notify::text", _allow, dialog)
+        dialog.set_default_size(1024, 728)
+        dialog.present()
