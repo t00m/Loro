@@ -8,7 +8,7 @@ from gi.repository import GObject
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import create_directory, delete_directory
-from loro.backend.core.util import get_project_target_build_dir
+from loro.backend.core.util import get_project_target_workbook_build_dir
 from loro.backend.core.util import get_metadata_from_filename
 from kb4it.core.env import ENV as KB4ITENV
 
@@ -26,7 +26,7 @@ class Builder(GObject.GObject):
 
         # Initialize build directory
         source, target = ENV['Projects']['Default']['Languages']
-        DIR_BUILD = get_project_target_build_dir(source, target, workbook)
+        DIR_BUILD = get_project_target_workbook_build_dir(workbook)
         if os.path.exists(DIR_BUILD):
             delete_directory(DIR_BUILD)
         create_directory(DIR_BUILD)
@@ -72,7 +72,7 @@ class Builder(GObject.GObject):
             fkb.write(contents)
         self.log.debug("KB %s written to %s", kbname, kbtarget)
 
-        cache = self.app.dictionary.get_cache(workbook)
+        cache = self.app.cache.get_cache(workbook)
         # ~ self.log.debug(cache)
 
 

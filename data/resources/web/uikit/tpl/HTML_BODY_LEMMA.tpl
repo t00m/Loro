@@ -1,5 +1,3 @@
-<%! from loro.backend.services.nlp import spacy %>
-
 <div class="uk-section"><!-- UK-SECTION :: START -->
     <div class="uk-container"> <!-- UK-CONTAINER :: START -->
     <h3 id="LEMMA">Lemma: ${var['lemma']['name']}</h3>
@@ -7,7 +5,8 @@
     <ul class="uk-list uk-list-striped uk-list-primary">
 % for token in var['lemma']['tokens']:
 <%
-postag = spacy.explain_term(var['workbook']['cache']['tokens']['data'][token]['postags'][0]).title()
+app = var['app']
+postag = app.nlp.explain_term(var['workbook']['cache']['tokens']['data'][token]['postags'][0]).title()
 %>
         <li>
             <a class="uk-link-text" href="Token_${token}.html">${token}</a> (${postag})

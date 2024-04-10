@@ -47,6 +47,23 @@ class Token(Item):
     def __init__(self,  id: str, title: str = ''):
         super().__init__(id, title)
 
+class TokenTranslation(Item):
+    """Custom data model"""
+    __gtype_name__ = 'TokenTranslation'
+    __title__ = 'TokenTranslation'
+
+
+    def __init__(self,  id: str,                # Token
+                        title: str = '',        # Token
+                        translation: str = ''   # Translation
+                ):
+        super().__init__(id, title)
+        self._translation = translation
+
+    @GObject.Property
+    def translation(self):
+        return self._translation
+
 class Sentence(Item):
     """Custom data model"""
     __gtype_name__ = 'Sentence'

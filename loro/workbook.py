@@ -23,27 +23,20 @@ class Workbook:
         # ~ self.log.debug('Workbooks found: %d', len(self.get_all()))
 
     def _check(self, *args):
-        source, target = ENV['Projects']['Default']['Languages']
-        config_dir = get_project_config_dir(source)
-        workbooks_path = os.path.join(config_dir, 'workbooks.json')
+        workbooks_path = os.path.join(get_project_config_dir(), 'workbooks.json')
         if not os.path.exists(workbooks_path):
             self._save({})
             self.log.debug("Created workbooks configuration (empty)")
 
         for workbook in self.get_all():
-            cache_dir = self.app.dictionary.get_cache_dir(workbook)
+            cache_dir = self.app.cache.get_cache_dir(workbook)
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
                 self.log.debug("Cache directory created for workbook '%s':", workbook)
                 self.log.debug("%s", cache_dir)
 
-    def get_dictionary(self, workbook):
-        return self.app.dictionary.get_cache(workbook)
-
     def get_all(self):
-        source, target = ENV['Projects']['Default']['Languages']
-        config_dir = get_project_config_dir(source)
-        workbooks_path = os.path.join(config_dir, 'workbooks.json')
+        workbooks_path = os.path.join(get_project_config_dir(), 'workbooks.json')
         if not os.path.exists(workbooks_path):
             self.log.warning("Workbooks config path['%s'] do not exist", workbooks_path)
             return {}
@@ -52,12 +45,10 @@ class Workbook:
 
     def get_files(self, wbname):
         valid_files = []
-        source, target = ENV['Projects']['Default']['Languages']
-        INPUT_DIR = get_project_input_dir(source)
         try:
             filenames = self.get_all()[wbname]
             for filename in filenames:
-                filepath = os.path.join(INPUT_DIR, filename)
+                filepath = os.path.join(get_project_input_dir(), filename)
                 if os.path.exists(filepath):
                     valid_files.append(filename)
                 else:
@@ -78,12 +69,17 @@ class Workbook:
         self._check()
 
     def rename(self, old_name: str, new_name: str) -> bool:
-        workbooks = self.get_all()
-        workbooks[new_name.upper()] = workbooks[old_name]
-        del(workbooks[old_name])
-        self._save(workbooks)
-        self.log.debug("Workbook '%s' renamed to '%s'", old_name, new_name)
-        self._check()
+        if old_name == new_name:
+            self.log.debug("Workbook not renamed: identical names")
+            return False
+        else:
+            workbooks = self.get_all()
+            workbooks[new_name.upper()] = workbooks[old_name]
+            del(workbooks[old_name])
+            self._save(workbooks)
+            self.log.debug("Workbook '%s' renamed to '%s'", old_name, new_name)
+            self._check()
+            return True
 
     def update(self, wbname:str, fname:str, active:bool):
         workbooks = self.get_all()
@@ -121,8 +117,6 @@ class Workbook:
             self.log.debug("Workbook '%s' deleted", name)
 
     def _save(self, workbooks):
-        source, target = ENV['Projects']['Default']['Languages']
-        config_dir = get_project_config_dir(source)
-        workbooks_path = os.path.join(config_dir, 'workbooks.json')
+        workbooks_path = os.path.join(get_project_config_dir(), 'workbooks.json')
         json_save(workbooks_path, workbooks)
         # ~ self.log.debug("%d workbooks saved", len(workbooks))

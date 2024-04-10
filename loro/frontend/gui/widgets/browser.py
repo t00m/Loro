@@ -112,14 +112,14 @@ class Browser(Gtk.Box):
         if not url.startswith('file://'):
             url = 'file://%s' % url
         self.wv.load_uri(url)
-        self.log.debug("URL %s loaded", url)
+        # ~ self.log.debug("URL %s loaded", url)
 
     def load_report(self, *args):
         ddWorkbooks = self.app.get_widget('dd-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         # ~ self.log.debug("Loading report for Workbook '%s'", workbook.id)
         source, target = ENV['Projects']['Default']['Languages']
-        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook.id)
+        DIR_OUTPUT = get_project_target_workbook_dir(workbook.id)
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
         # ~ self.log.debug(report_url)
         self.load_url(report_url)

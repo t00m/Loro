@@ -18,6 +18,7 @@ import hashlib
 import subprocess
 import multiprocessing
 
+from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.constants import LORO_USER_DIR
 from loro.backend.core.constants import LORO_USER_PROJECTS_DIR
@@ -25,33 +26,38 @@ from loro.backend.core.constants import LORO_USER_CONFIG_DIR
 
 log = get_logger('Util')
 
-def get_project_dir(source: str) -> str:
+def get_project_dir() -> str:
+    source, target = ENV['Projects']['Default']['Languages']
     return os.path.join(os.path.join(LORO_USER_PROJECTS_DIR, source))
 
-def get_project_config_dir(source: str) -> str:
-    return os.path.join(get_project_dir(source), '.config')
+def get_project_config_dir() -> str:
+    return os.path.join(get_project_dir(), '.config')
 
-def get_project_input_dir(source: str) -> str:
-    return os.path.join(get_project_dir(source), 'input')
+def get_project_input_dir() -> str:
+    return os.path.join(get_project_dir(), 'input')
 
-def get_project_output_dir(source: str) -> str:
-    return os.path.join(get_project_dir(source), 'output')
+def get_project_output_dir() -> str:
+    return os.path.join(get_project_dir(), 'output')
 
-def get_project_target_dir(source: str, target: str) -> str:
-    return os.path.join(get_project_output_dir(source), target)
+def get_project_target_dir() -> str:
+    source, target = ENV['Projects']['Default']['Languages']
+    return os.path.join(get_project_output_dir(), target)
 
-def get_project_target_workbook_dir(source: str, target: str, workbook: str):
-    return os.path.join(get_project_target_dir(source, target), workbook)
+def get_project_target_workbook_dir(workbook: str):
+    return os.path.join(get_project_target_dir(), workbook)
 
-def get_project_target_build_dir(source: str, target: str, workbook: str):
-    return os.path.join(get_project_target_workbook_dir(source, target, workbook), '.build')
+def get_project_target_workbook_html_dir(workbook: str) -> str:
+    return os.path.join(get_project_target_workbook_dir(workbook), 'html')
+
+def get_project_target_workbook_build_dir(workbook: str):
+    return os.path.join(get_project_target_workbook_dir(workbook), '.build')
 
 def setup_project_dirs(source: str, target: str) -> None:
-    dir_project_source = get_project_dir(source)
-    dir_project_config = get_project_config_dir(source)
-    dir_project_source_input = get_project_input_dir(source)
-    dir_project_source_output = get_project_output_dir(source)
-    dir_project_target = get_project_target_dir(source, target)
+    dir_project_source = get_project_dir()
+    dir_project_config = get_project_config_dir()
+    dir_project_source_input = get_project_input_dir()
+    dir_project_source_output = get_project_output_dir()
+    dir_project_target = get_project_target_dir()
 
     for directory in [
                         LORO_USER_DIR,
@@ -66,12 +72,11 @@ def setup_project_dirs(source: str, target: str) -> None:
         if not os.path.exists(directory):
             os.makedirs(directory)
 
-def get_inputs(source: str) -> []:
-    input_dir = get_project_input_dir(source)
-    return glob.glob(os.path.join(input_dir, '*.txt'))
+def get_inputs() -> []:
+    return glob.glob(os.path.join(get_project_input_dir(), '*.txt'))
 
 def delete_project_target_dirs(source: str, target: str):
-    target_dir = get_project_target_dir(source, target)
+    target_dir = get_project_target_dir()
     try:
         shutil.rmtree(target_dir)
     except FileNotFoundError:

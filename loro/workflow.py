@@ -6,27 +6,20 @@ import sys
 import time
 import random
 import threading
+from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor as Executor
 
-from gi.repository import GObject, GLib
-
-from rich.progress import Progress
-from rich.progress import track
+from gi.repository import GObject
 
 from loro.backend.core.env import ENV
-from loro.backend.extractors import whatsapp
-from loro.backend.services.nlp.spacy import tokenize_sentence
-from loro.backend.services.nlp.spacy import get_glossary_term_explained
-from loro.backend.services.nlp.spacy import load_model
-from loro.backend.services.nlp.spacy import detect_language
 from loro.backend.core.util import is_valid_word
 from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.util import get_hash
 from loro.backend.core.log import get_logger
-from loro import dictionary
 from loro.workbook import Workbook
 from loro.backend.core.run_async import RunAsync
+from loro.backend.core.util import get_project_target_workbook_html_dir
 
 
 class Workflow(GObject.GObject):
@@ -44,6 +37,7 @@ class Workflow(GObject.GObject):
         self.model_name = ENV['Languages'][source]['model'][self.model_type]
         self.log.debug("Workflow configured for source '%s' and target '%s' languages", source, target)
         self.model_loaded = False
+        self.docbin = {}
         if not self.model_loaded:
             # ~ self.__load_spacy_model()
             RunAsync(self.__load_spacy_model)
@@ -59,9 +53,9 @@ class Workflow(GObject.GObject):
         """SpaCy model lazy loading"""
         source, target = ENV['Projects']['Default']['Languages']
         self.log.debug("Loading model '%s' for language '%s'", self.model_name, source)
-        load_model(self.model_name)
-        self.emit('model-loaded')
+        self.app.nlp.load_model(self.model_name)
         self.log.debug("SpaCy model loaded successfully")
+        self.emit('model-loaded')
 
     def start(self, workbook: str, files: []):
         self.log.debug("Processing workbook: '%s'", workbook)
@@ -71,12 +65,14 @@ class Workflow(GObject.GObject):
 
         if len(files) == 0:
             self.log.warning("Workbook '%s' doesn't contain any file", workbook)
+            self.emit('workflow-finished', workbook)
             return
 
         while not self.model_loaded:
             pass
 
         self.running = True
+        self.docbin = {}
         self.current_filename = ''
         self.fraction = 0.0
         source, target = ENV['Projects']['Default']['Languages']
@@ -84,40 +80,38 @@ class Workflow(GObject.GObject):
             self.log.warning("Spacy model still loading")
             return
 
-        self.app.dictionary.initialize(workbook)
+        self.app.cache.initialize(workbook)
 
         nf = 0
         for filename in files:
             nf += 1
-            INPUT_DIR = get_project_input_dir(source)
+            INPUT_DIR = get_project_input_dir()
             filepath = os.path.join(INPUT_DIR, filename)
             self.current_filename = os.path.basename(filepath)
 
-            # Detect language of file and validate
-            result = detect_language(open(filepath).read())
-            lang = result['language']
-            score = int((result['score']*100))
-            valid = lang.upper() == source.upper() and score >= 85
+            topic, subtopic, suffix = get_metadata_from_filepath(filepath)
+            sentences = open(filepath, 'r').readlines()
+            self.process_input(workbook, filename, sentences, topic, subtopic) #, task)
+            self.app.cache.save(workbook)
+            self.fraction = 0.0
+            self.log.debug("[%d/%d] %s processed", nf, len(files), filename)
 
-            if valid:
-                topic, subtopic, suffix = get_metadata_from_filepath(filepath)
-                sentences = open(filepath, 'r').readlines()
-                self.process_input(workbook, filename, sentences, topic, subtopic) #, task)
-                self.app.dictionary.save(workbook)
-                self.fraction = 0.0
-                self.log.debug("[%d/%d] %s processed", nf, len(files), filename)
-            else:
-                self.log.error("[%d/%d] '%s' was not processed processed", nf, len(files), os.path.basename(filepath))
-                if lang.upper() != source.upper():
-                    self.log.error("Language detected ('%s') differs from source language ('%s')", lang, source)
-                if score < 85:
-                    self.log.error("Language '%s' detected with %d%% of confidenciality (< 85%%)", lang, score)
-
-
-        # ~ self.log.debug("Workflow finished for Workbook '%s'", workbook)
-        self.emit('workflow-finished', workbook)
+        self.log.debug("Rendering sentences")
+        html_dir = get_project_target_workbook_html_dir(workbook)
+        if not os.path.exists(html_dir):
+            os.makedirs(html_dir)
+        self.log.debug("Saving SVG files to '%s'", html_dir)
+        for sid in self.docbin:
+            doc = self.docbin[sid]
+            svg = self.app.nlp.render_sentence(doc)
+            # ~ self.log.debug(svg)
+            output_path = os.path.join(html_dir, '%s.svg' % sid)
+            with open(output_path, 'w') as fsvg:
+                fsvg.write(svg)
+                self.log.debug(output_path)
+        self.log.debug("Workflow finished for Workbook '%s'", workbook)
         self.running = False
-        # ~ RunAsync(self.end(workbook))
+        self.emit('workflow-finished', workbook)
 
     def process_input(self, workbook:str, filename: str, sentences: [], topic, subtopic) -> None:
         jobs = []
@@ -137,7 +131,8 @@ class Workflow(GObject.GObject):
                     self.set_progress(jid/len(jobs)*1.0)
 
             if jid == 0:
-                self.emit('workflow-finished')
+                self.set_progress(1.0)
+                # ~ self.emit('workflow-finished')
 
     def set_progress(self, fraction):
         self.fraction = fraction
@@ -151,20 +146,20 @@ class Workflow(GObject.GObject):
         cur_thread = threading.current_thread().name
         x = future.result()
         jid = x
-        # ~ self.progress.advance(task)
         if cur_thread != x:
             return x
 
     def process_sentence(self, data: tuple) -> tuple:
         (workbook, filename, sentence, jid, topic, subtopic) = data
+        sentence = sentence.strip()
         sid = get_hash(sentence)
-        tokens = tokenize_sentence(sentence)
-
+        doc = self.app.nlp.tokenize_sentence(sentence)
+        doc.user_data["title"] = sentence
         sid_tokens = []
-        for token in tokens:
+        for token in doc:
             if is_valid_word(token.text):
-                thistoken = self.app.dictionary.add_token(workbook, token, sid, topic, subtopic)
+                thistoken = self.app.cache.add_token(workbook, token, sid, topic, subtopic)
                 sid_tokens.append(token.text)
-        self.app.dictionary.add_sentence(workbook, filename, sid, sentence.strip(), sid_tokens)
-
+        self.app.cache.add_sentence(workbook, filename, sid, sentence.strip(), sid_tokens)
+        self.docbin[sid] = doc
         return jid

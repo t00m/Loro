@@ -9,8 +9,8 @@ import gi
 
 from gi.repository import Gio, GObject, Adw, Gtk  # type:ignore
 
-from loro.frontend.gui.factory import WidgetFactory
-from loro.frontend.gui.actions import WidgetActions
+# ~ from loro.frontend.gui.factory import WidgetFactory
+# ~ from loro.frontend.gui.actions import WidgetActions
 from loro.frontend.gui.models import Filepath, Workbook
 from loro.frontend.gui.widgets.columnview import ColumnView
 from loro.frontend.gui.widgets.views import ColumnViewFilesAvailable
@@ -23,7 +23,7 @@ from loro.backend.core.util import get_metadata_from_filepath
 from loro.backend.core.util import get_metadata_from_filename
 from loro.backend.core.util import get_project_input_dir
 from loro.backend.core.log import get_logger
-from loro.backend.services.nlp.spacy import explain_term
+# ~ from loro.backend.services.nlp.spacy import explain_term
 from loro.frontend.gui.widgets.selector import Selector
 from loro.frontend.gui.widgets.filedialog import open_file_dialog
 
@@ -35,10 +35,10 @@ class Editor(Gtk.Box):
         self.log = get_logger('Editor')
         self.app = app
         self.selected_file = None
-        GObject.signal_new('workbooks-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
-        GObject.signal_new('filenames-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
+        # ~ GObject.signal_new('workbooks-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
+        # ~ GObject.signal_new('filenames-updated', Editor, GObject.SignalFlags.RUN_LAST, None, () )
         self._build_editor()
-        # ~ self.update_editor()
+        # ~ self.update()
         # ~ self._set_enable_renaming(False)
         # ~ self._set_enable_deleting(False)
 
@@ -52,22 +52,22 @@ class Editor(Gtk.Box):
         # Content View
 
         ## Workbooks
-        hbox = self.app.factory.create_box_horizontal(spacing=6, margin=6, vexpand=False, hexpand=True)
+        # ~ hbox = self.app.factory.create_box_horizontal(spacing=6, margin=6, vexpand=False, hexpand=True)
         # ~ self.ddWorkbooks = self.app.factory.create_dropdown_generic(Workbook, enable_search=True)
         # ~ self.ddWorkbooks.set_hexpand(False)
         # ~ hbox.append(self.ddWorkbooks)
-        expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
-        self.btnWBAdd = self.app.factory.create_button(icon_name=ICON['WB_NEW'], width=16, tooltip='Add a new workbook', callback=self._on_workbook_add)
-        self.btnWBEdit = self.app.factory.create_button(icon_name=ICON['WB_EDIT'], width=16, tooltip='Edit workbook name', callback=self._on_workbook_edit)
-        self.btnWBDel = self.app.factory.create_button(icon_name=ICON['WB_DELETE'], width=16, tooltip='Delete selected workbook', callback=self._on_workbook_delete)
-        hbox.append(expander)
-        hbox.append(self.btnWBAdd)
-        hbox.append(self.btnWBEdit)
-        hbox.append(self.btnWBDel)
-        self.append(hbox)
+        # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
+        # ~ self.btnWBAdd = self.app.factory.create_button(icon_name=ICON['WB_NEW'], width=16, tooltip='Add a new workbook', callback=self._on_workbook_add)
+        # ~ self.btnWBEdit = self.app.factory.create_button(icon_name=ICON['WB_EDIT'], width=16, tooltip='Edit workbook name', callback=self._on_workbook_edit)
+        # ~ self.btnWBDel = self.app.factory.create_button(icon_name=ICON['WB_DELETE'], width=16, tooltip='Delete selected workbook', callback=self.app.actions.workbook_delete)
+        # ~ hbox.append(expander)
+        # ~ hbox.append(self.btnWBAdd)
+        # ~ hbox.append(self.btnWBEdit)
+        # ~ hbox.append(self.btnWBDel)
+        # ~ self.append(hbox)
 
-        line = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        self.append(line)
+        # ~ line = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        # ~ self.append(line)
 
         ## Editor
         editor = self.app.factory.create_box_horizontal(hexpand=True, vexpand=True)
@@ -155,7 +155,7 @@ class Editor(Gtk.Box):
         self.selector.boxLeft.set_visible(visible)
         self.selector.set_hexpand(True)
         self.selector.boxControls.set_visible(visible)
-        self.visor.set_visible(not visible)
+        # ~ self.visor.set_visible(not visible)
         if not visible:
             self.selector.set_hexpand(False)
         else:
@@ -179,94 +179,6 @@ class Editor(Gtk.Box):
         self.app.workbooks.update(workbook.id, filename, False)
         # ~ self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, False)
         self._update_files_view(workbook.id)
-
-    def _on_workbook_add(self, *args):
-        def _confirm(_, res, entry):
-            if res == "cancel":
-                return
-            name = entry.get_text()
-            # ~ self.log.debug("Accepted workbook name: %s", name)
-            self.app.workbooks.add(name)
-            self.update_editor()
-            self.emit('workbooks-updated')
-
-        def _allow(entry, gparam, dialog):
-            name = entry.get_text()
-            exists = self.app.workbooks.exists(name)
-            dialog.set_response_enabled("add", not exists)
-
-        window = self.app.get_widget('window')
-        vbox = self.app.factory.create_box_vertical(margin=6, spacing=6)
-        # ~ vbox.props.width_request = 600
-        # ~ vbox.props.height_request = 480
-        etyWBName = Gtk.Entry()
-        etyWBName.set_placeholder_text('Type the workbook name...')
-        vbox.append(etyWBName)
-        dialog = Adw.MessageDialog(
-            transient_for=window,
-            hide_on_close=True,
-            heading=_("Add new workbook"),
-            default_response="add",
-            close_response="cancel",
-            extra_child=vbox,
-        )
-        dialog.add_response("cancel", _("Cancel"))
-        dialog.add_response("add", _("Add"))
-        dialog.set_response_enabled("add", False)
-        dialog.set_response_appearance("add", Adw.ResponseAppearance.SUGGESTED)
-        dialog.connect("response", _confirm, etyWBName)
-        etyWBName.connect("notify::text", _allow, dialog)
-        dialog.present()
-
-    def _on_workbook_edit(self, *args):
-        def _confirm(_, res, entry, old_name):
-            if res == "cancel":
-                return
-            new_name = entry.get_text()
-            # ~ self.log.debug("Accepted workbook name: %s", new_name)
-            self.app.workbooks.rename(old_name, new_name)
-            self.update_editor()
-            self.emit('workbooks-updated')
-
-        def _allow(entry, gparam, dialog):
-            name = entry.get_text()
-            exists = self.app.workbooks.exists(name)
-            dialog.set_response_enabled("rename", not exists)
-
-        window = self.app.get_widget('window')
-        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        workbook = ddWorkbooks.get_selected_item()
-        if workbook.id is None:
-            return
-
-        vbox = self.app.factory.create_box_vertical(margin=6, spacing=6)
-        etyWBName = Gtk.Entry()
-        etyWBName.set_text(workbook.id)
-        old_name = workbook.id
-        vbox.append(etyWBName)
-        dialog = Adw.MessageDialog(
-            transient_for=window,
-            hide_on_close=True,
-            heading=_("Rename workbook"),
-            default_response="rename",
-            close_response="cancel",
-            extra_child=vbox,
-        )
-        dialog.add_response("cancel", _("Cancel"))
-        dialog.add_response("rename", _("Rename"))
-        dialog.set_response_enabled("rename", False)
-        dialog.set_response_appearance("rename", Adw.ResponseAppearance.SUGGESTED)
-        dialog.connect("response", _confirm, etyWBName, old_name)
-        etyWBName.connect("notify::text", _allow, dialog)
-        dialog.present()
-
-    def _on_workbook_delete(self, *args):
-        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        workbook = ddWorkbooks.get_selected_item()
-        if workbook.id is not None:
-            self.app.workbooks.delete(workbook.id)
-            self.update_editor()
-            self.emit('workbooks-updated')
 
     def _on_view_available_select_filename(self, selection, position, n_items):
         model = self.cvfilesAv.get_model_filter()
@@ -318,7 +230,7 @@ class Editor(Gtk.Box):
     def _update_files_view(self, wbname: str):
         # Update files
         source, target = ENV['Projects']['Default']['Languages']
-        files = get_inputs(source)
+        files = get_inputs()
         itemsAv = []
         itemsUsed = []
         for filepath in files:
@@ -366,12 +278,11 @@ class Editor(Gtk.Box):
             end = textbuffer.get_end_iter()
             contents = textbuffer.get_text(start, end, False)
             source, target = ENV['Projects']['Default']['Languages']
-            input_dir = get_project_input_dir(source)
-            filepath = os.path.join(input_dir, filename)
+            filepath = os.path.join(get_project_input_dir(), filename)
             with open(filepath, 'w') as fout:
                 fout.write(contents)
                 self.log.info("Document '%s' created", filename)
-                self.update_editor()
+                self.update()
             return filename
 
         window = self.app.get_widget('window')
@@ -382,10 +293,9 @@ class Editor(Gtk.Box):
         topics = set()
         subtopics = set()
         for wbname in workbooks:
-            dictionary = self.app.workbooks.get_dictionary(wbname)
-            for topic in self.app.dictionary.get_topics(wbname):
+            for topic in self.app.cache.get_topics(wbname):
                 topics.add(topic)
-            for subtopic in self.app.dictionary.get_subtopics(wbname):
+            for subtopic in self.app.cache.get_subtopics(wbname):
                 subtopics.add(subtopic)
         suffixes = []
 
@@ -444,11 +354,9 @@ class Editor(Gtk.Box):
             if res == "cancel":
                 return
 
-            source, target = ENV['Projects']['Default']['Languages']
-            input_dir = get_project_input_dir(source)
-            source_path = os.path.join(input_dir, old_name)
+            source_path = os.path.join(get_project_input_dir(), old_name)
             new_name = lblFilename.get_text()
-            target_path = os.path.join(input_dir, new_name)
+            target_path = os.path.join(get_project_input_dir(), new_name)
             shutil.move(source_path, target_path)
             # ~ self.log.debug("Document renamed from '%s' to '%s'", os.path.basename(source_path), os.path.basename(target_path))
             self._update_files_view(self.current_workbook)
@@ -467,10 +375,9 @@ class Editor(Gtk.Box):
         topics = set()
         subtopics = set()
         for wbname in workbooks:
-            dictionary = self.app.workbooks.get_dictionary(wbname)
-            for topic in self.app.dictionary.get_topics(wbname):
+            for topic in self.app.cache.get_topics(wbname):
                 topics.add(topic)
-            for subtopic in self.app.dictionary.get_subtopics(wbname):
+            for subtopic in self.app.cache.get_subtopics(wbname):
                 subtopics.add(subtopic)
         suffixes = []
 
@@ -514,9 +421,7 @@ class Editor(Gtk.Box):
         dialog.present()
 
     def _on_document_import(self, *args):
-        source, target = ENV['Projects']['Default']['Languages']
-        input_dir = get_project_input_dir(source)
-        os.system("xdg-open '%s'" % input_dir)
+        os.system("xdg-open '%s'" % get_project_input_dir())
         # ~ self.log.debug("Open Input directory")
 
     def _on_document_delete(self, *args):
@@ -534,7 +439,7 @@ class Editor(Gtk.Box):
             fsel.write(text)
             self.log.info("File '%s' saved", os.path.basename(self.selected_file))
 
-    def update_editor(self, *args):
+    def update(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         if workbook is None:

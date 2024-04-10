@@ -73,23 +73,19 @@ class Report(GObject.GObject):
         return tpl.render(var=var)
 
     def get_url(self, workbook: str) -> str:
-        source, target = ENV['Projects']['Default']['Languages']
-        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook)
-        DIR_HTML = os.path.join(DIR_OUTPUT, 'html')
-        url = os.path.join(DIR_HTML, 'index.html')
-        return url
+        return os.path.join(get_project_target_workbook_dir(workbook), 'html', 'index.html')
 
     def build(self, workbook: str) -> str:
         self.log.debug("Building report for workbook '%s'", workbook)
         source, target = ENV['Projects']['Default']['Languages']
-        DIR_OUTPUT = get_project_target_workbook_dir(source, target, workbook)
-        DIR_HTML = os.path.join(DIR_OUTPUT, 'html')
+        DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = {}
+        var['app'] = self.app
         var['workbook'] = {}
         var['workbook']['id'] = workbook
         var['workbook']['source'] = source
         var['workbook']['target'] = target
-        var['workbook']['cache'] = self.app.workbooks.get_dictionary(workbook)
+        var['workbook']['cache'] = self.app.cache.get_cache(workbook)
         # ~ json_save('/tmp/loro.cache.json', var['workbook']['cache'])
 
         var['workbook']['stats'] = self.app.stats.get(workbook)
@@ -112,7 +108,7 @@ class Report(GObject.GObject):
         # ~ return url
 
     def _prepare(self, var: dict) -> bool:
-        delete_directory(var['html']['output'])
+        # ~ delete_directory(var['html']['output'])
         create_directory(var['html']['output'])
 
     def _build_token_pages(self, var: dict):
@@ -124,6 +120,7 @@ class Report(GObject.GObject):
             var['token'] = {}
             var['token']['name'] = token
             var['token']['properties'] = var['workbook']['cache']['tokens']['data'][token]
+            var['token']['duden'] = self.app.duden.get_word(token)
             header = self.render_template('HEADER', var)
             body = self.render_template('BODY_TOKEN', var)
             footer = self.render_template('FOOTER_TOKEN', var)
@@ -139,10 +136,10 @@ class Report(GObject.GObject):
         for postag in var['workbook']['stats']['postags']:
             for lemma in var['workbook']['stats']['postags'][postag]['lemmas']:
                 var['html']['index'] = False
-                var['html']['title'] = "%s: %s" % (spacy.explain_term(postag), lemma)
+                var['html']['title'] = "%s: %s" % (self.app.nlp.explain_term(postag), lemma)
                 var['lemma'] = {}
                 var['lemma']['name'] = lemma
-                var['lemma']['postag'] = spacy.explain_term(postag).title()
+                var['lemma']['postag'] = self.app.nlp.explain_term(postag).title()
                 tokens = var['workbook']['stats']['lemmas'][lemma]['tokens']
                 var['lemma']['tokens'] = tokens
                 header = self.render_template('HEADER', var)
@@ -163,6 +160,7 @@ class Report(GObject.GObject):
             var['html']['title'] = "Sentence: %s" % sid
             var['sentence'] = {}
             var['sentence']['sid'] = sid
+            var['sentence']['svg'] = open(os.path.join(var['html']['output'], '%s.svg' % sid)).read()
             var['sentence']['text'] = var['workbook']['cache']['sentences']['data'][sid]['DE']
             # ~ self.log.debug(var['sentence']['properties'])
             var['sentence']['properties'] = var['workbook']['cache']['sentences']['data'][sid]
@@ -203,7 +201,7 @@ class Report(GObject.GObject):
 
         files = self.app.workbooks.get_files(workbook)
         var['workbook']['files'] = files
-        topics = self.app.dictionary.get_topics(workbook)
+        topics = self.app.cache.get_topics(workbook)
         var['workbook']['topics'] = ', '.join(topics)
         header = self.render_template('HEADER', var)
         body = self.render_template('BODY_INDEX', var)

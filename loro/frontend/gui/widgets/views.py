@@ -17,7 +17,7 @@ from gi.repository import Pango
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.frontend.gui.widgets.columnview import ColumnView
-from loro.frontend.gui.widgets.columnview import ColLabel, ColCheck
+from loro.frontend.gui.widgets.columnview import ColLabel, ColCheck, ColEntry
 from loro.frontend.gui.models import Item, Filepath
 
 
@@ -64,6 +64,33 @@ class ColumnViewToken(ColumnView):
         self.cv.append_column(self.column_title)
         self.column_title.set_title(_('Token'))
         self.column_title.set_expand(True)
+
+class ColumnViewTranslation(ColumnViewToken):
+    """ Custom ColumnView widget for tokens translation """
+    __gtype_name__ = 'ColumnViewTranslation'
+
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.factory_translation = Gtk.SignalListItemFactory()
+        self.factory_translation.connect("setup", self._on_factory_setup_translation)
+        self.factory_translation.connect("bind", self._on_factory_bind_translation)
+        self.column_translation = Gtk.ColumnViewColumn.new(_('Translation'), self.factory_translation)
+        self.column_title.set_expand(False)
+        self.column_translation.set_expand(True)
+        self.cv.append_column(self.column_translation)
+
+    def _on_factory_setup_translation(self, factory, list_item):
+        box = ColEntry()
+        list_item.set_child(box)
+
+    def _on_factory_bind_translation(self, factory, list_item):
+        box = list_item.get_child()
+        item = list_item.get_item()
+        entry = box.get_first_child()
+        translator = self.app.get_widget('translator')
+        entry.connect('activate', translator.set_translation, item)
+        entry.set_text(item.translation)
 
 class ColumnViewSentences(ColumnView):
     """ Custom ColumnView widget for tokens """
@@ -160,11 +187,13 @@ class ColumnViewAnalysis(ColumnView):
         label.set_markup("%d" % item.count)
 
     def _on_factory_setup_translation(self, factory, list_item):
-        box = ColLabel()
+        box = ColEntry()
         list_item.set_child(box)
 
     def _on_factory_bind_translation(self, factory, list_item):
         box = list_item.get_child()
         item = list_item.get_item()
-        label = box.get_first_child()
-        label.set_markup(item.translation)
+        entry = box.get_first_child()
+        dashboard = self.app.get_widget('dashboard')
+        entry.connect('activate', dashboard.set_translation)
+        entry.set_text(item.translation)

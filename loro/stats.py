@@ -18,7 +18,7 @@ class Stats(GObject.GObject):
         # ~ self.log.debug("Stats initialized")
 
     def analyze(self, workbook: str) -> {}:
-        wbcache = self.app.dictionary.get_cache(workbook)
+        wbcache = self.app.cache.get_cache(workbook)
         tokens = wbcache['tokens']['data']
         stats = {}
         stats['postags'] = {}
@@ -63,7 +63,7 @@ class Stats(GObject.GObject):
 
     def get(self, workbook: str) -> {}:
         stats = self.analyze(workbook)
-        DIR_WB_CONFIG = self.app.dictionary.get_cache_dir(workbook)
+        DIR_WB_CONFIG = self.app.cache.get_cache_dir(workbook)
         FILE_WB_STATS = os.path.join(DIR_WB_CONFIG, '%s_stats.json' % workbook)
         json_save(FILE_WB_STATS, stats)
         return stats
