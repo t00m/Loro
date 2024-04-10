@@ -22,6 +22,7 @@ from loro.backend.core.log import get_logger
 from loro.backend.core.util import get_project_target_workbook_dir
 from loro.backend.core.run_async import RunAsync
 from loro.frontend.gui.widgets.editor import Editor
+from loro.frontend.gui.models import Workbook
 
 class WidgetActions(GObject.GObject):
     def __init__(self, app):
@@ -52,8 +53,9 @@ class WidgetActions(GObject.GObject):
             name = entry.get_text()
             # ~ self.log.debug("Accepted workbook name: %s", name)
             self.app.workbooks.add(name)
-            window = self.app.get_widget('window')
-            window.emit('workbooks-updated')
+            # ~ window = self.app.get_widget('window')
+            # ~ window.emit('workbooks-updated')
+            self.update_dropdown_workbooks()
 
         def _allow(entry, gparam, dialog):
             name = entry.get_text()
@@ -88,18 +90,20 @@ class WidgetActions(GObject.GObject):
         workbook = ddWorkbooks.get_selected_item()
         if workbook.id is not None:
             self.app.workbooks.delete(workbook.id)
-            window = self.app.get_widget('window')
-            window.emit('workbooks-updated')
+            # ~ window = self.app.get_widget('window')
+            # ~ window.emit('workbooks-updated')
+            self.update_dropdown_workbooks()
 
     def workbook_edit(self, *args):
         def _confirm(_, res, entry, old_name):
             if res == "cancel":
                 return
-            window = self.app.get_widget('window')
+            # ~ window = self.app.get_widget('window')
             new_name = entry.get_text()
             # ~ self.log.debug("Accepted workbook name: %s", new_name)
             self.app.workbooks.rename(old_name, new_name)
-            window.emit('workbooks-updated')
+            self.update_dropdown_workbooks()
+            # ~ window.emit('workbooks-updated')
 
         def _allow(entry, gparam, dialog):
             name = entry.get_text()
@@ -163,6 +167,7 @@ class WidgetActions(GObject.GObject):
 
         def pulse():
             progressbar = self.app.get_widget('progressbar')
+
             while True:
                 time.sleep(0.5)
                 filename, fraction = self.app.workflow.get_progress()
@@ -172,6 +177,10 @@ class WidgetActions(GObject.GObject):
                     progressbar.set_text(filename)
                 else:
                     progressbar.set_fraction(0.0)
+
+                if not self.app.workflow.running:
+                    break;
+            return False
 
         RunAsync(start_workflow)
         RunAsync(pulse)
@@ -189,3 +198,17 @@ class WidgetActions(GObject.GObject):
             self.app.report.build(workbook.id)
         browser = self.app.get_widget('browser')
         browser.load_url(report_url)
+
+    def update_dropdown_workbooks(self, *args):
+        workbooks = self.app.workbooks.get_all()
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        data = []
+        wbnames = workbooks.keys()
+        if len(wbnames) == 0:
+            ddWorkbooks.set_visible(False)
+            data.append((None, 'No workbooks available'))
+        else:
+            ddWorkbooks.set_visible(True)
+            for workbook in wbnames:
+                data.append((workbook, "Workbook %s" % workbook))
+        self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)
