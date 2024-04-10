@@ -23,7 +23,7 @@ class Cache:
 
     def get_topics(self, workbook: str):
         cache = self.get_cache(workbook)
-        return cache['topics']['data']
+        return cache['topics']['data'].keys()
 
     def get_subtopics(self, workbook: str):
         subtopics = set()
@@ -195,17 +195,18 @@ class Cache:
             if not token.pos_ in token_data['postags']:
                 token_data['postags'].extend([token.pos_])
             if not topic in token_data['topics']:
-                token_data['topics'].extend([topic.upper()])
-            if not subtopic in token_data['subtopics']:
-                token_data['subtopics'].extend([subtopic.upper()])
+                token_data['topics'][topic.upper()] = {}
+            if not subtopic in token_data[topic]:
+                token_data['topics'][topic.upper()][subtopic] = [sid]
             token_data['count'] += 1
         except KeyError:
             token_data = {}
             token_data['sentences']= [sid]
             token_data['lemmas'] = [token.lemma_]
             token_data['postags'] = [token.pos_]
-            token_data['topics'] = [topic]
-            token_data['subtopics'] = [subtopic]
+            token_data['topics'] = {} #[topic]
+            token_data['topics'][topic] = {}
+            token_data['topics'][topic][subtopic] = {}
             token_data['count'] = 1
         finally:
             topic_data = cache['topics']['data']
@@ -214,7 +215,7 @@ class Cache:
                 topic_data[topic][subtopic] = [sid]
             else:
                 if not subtopic in topic_data[topic]:
-                    topic_data[subtopic] = [sid]
+                    topic_data[topic][subtopic] = [sid]
                 else:
                     sids = topic_data[topic][subtopic]
                     if not sid in sids:
