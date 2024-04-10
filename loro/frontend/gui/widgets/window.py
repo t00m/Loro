@@ -15,8 +15,8 @@ from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.dashboard import Dashboard
 from loro.frontend.gui.widgets.browser import Browser
 from loro.frontend.gui.widgets.translator import Translator
-from loro.frontend.gui.widgets.status import StatusPageEmpty
-from loro.frontend.gui.widgets.status import StatusPageNoWorkbooks
+# ~ from loro.frontend.gui.widgets.status import StatusPageEmpty
+# ~ from loro.frontend.gui.widgets.status import StatusPageNoWorkbooks
 from loro.frontend.gui.icons import ICON
 
 
@@ -107,7 +107,8 @@ class Window(Adw.ApplicationWindow):
         ddWorkbooks = self.app.factory.create_dropdown_generic(Workbook, enable_search=True)
         self.app.add_widget('dropdown-workbooks', ddWorkbooks)
         ddWorkbooks.set_valign(Gtk.Align.CENTER)
-        ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
+        # ~ ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
+
         ddWorkbooks.set_hexpand(False)
         boxDpdWorkbooks.append(ddWorkbooks)
         headerbar.pack_start(boxDpdWorkbooks)
@@ -120,20 +121,20 @@ class Window(Adw.ApplicationWindow):
         # ~ self.props.width_request = 1024
         # ~ self.props.height_request = 768
 
-    def _on_workbook_selected(self, dropdown, gparam):
-        dashboard = self.app.get_widget('dashboard')
-        editor = self.app.get_widget('editor')
-        translator = self.app.get_widget('translator')
-        workbook = dropdown.get_selected_item()
-        if workbook is None:
-            return
+    # ~ def _on_workbook_selected(self, dropdown, gparam):
+        # ~ dashboard = self.app.get_widget('dashboard')
+        # ~ editor = self.app.get_widget('editor')
+        # ~ translator = self.app.get_widget('translator')
+        # ~ workbook = dropdown.get_selected_item()
+        # ~ if workbook is None:
+            # ~ return
 
-        if workbook.id is None:
-            viewstack = self.app.get_widget('dashboard-viewstack')
-            viewstack.set_visible_child_name('wb-none')
-        else:
-            dashboard.set_current_workbook(workbook)
-            dashboard.display_report()
+        # ~ if workbook.id is None:
+            # ~ viewstack = self.app.get_widget('dashboard-viewstack')
+            # ~ viewstack.set_visible_child_name('wb-none')
+        # ~ else:
+            # ~ dashboard.set_current_workbook(workbook)
+            # ~ self.app.actions.report_display()
 
     def _create_actions(self) -> None:
         """Create actions for main menu"""

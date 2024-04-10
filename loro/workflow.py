@@ -65,6 +65,7 @@ class Workflow(GObject.GObject):
 
         if len(files) == 0:
             self.log.warning("Workbook '%s' doesn't contain any file", workbook)
+            self.emit('workflow-finished', workbook)
             return
 
         while not self.model_loaded:
@@ -108,10 +109,9 @@ class Workflow(GObject.GObject):
             with open(output_path, 'w') as fsvg:
                 fsvg.write(svg)
                 self.log.debug(output_path)
-        self.emit('workflow-finished', workbook)
-        self.running = False
-
         self.log.debug("Workflow finished for Workbook '%s'", workbook)
+        self.running = False
+        self.emit('workflow-finished', workbook)
 
     def process_input(self, workbook:str, filename: str, sentences: [], topic, subtopic) -> None:
         jobs = []
