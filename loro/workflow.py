@@ -131,7 +131,8 @@ class Workflow(GObject.GObject):
                     self.set_progress(jid/len(jobs)*1.0)
 
             if jid == 0:
-                self.emit('workflow-finished')
+                self.set_progress(1.0)
+                # ~ self.emit('workflow-finished')
 
     def set_progress(self, fraction):
         self.fraction = fraction
