@@ -28,6 +28,7 @@ logging = get_logger('Async')
 
 
 class RunAsync(threading.Thread):
+
     def __init__(self, task_func, callback=None, *args, **kwargs):
         self.source_id = None
         if threading.current_thread() is not threading.main_thread():
@@ -40,14 +41,14 @@ class RunAsync(threading.Thread):
 
         self.callback = callback if callback else lambda r, e: None
         # ~ self.daemon = kwargs.pop("daemon", True)
-
+        logging.debug("Running async job '%s.%s'", self.task_func.__module__, self.task_func.__name__)
         self.start()
 
     def target(self, *args, **kwargs):
         result = None
         error = None
 
-        logging.debug("Running async job '%s.%s'", self.task_func.__module__, self.task_func.__name__)
+        # ~ logging.debug("Running async job '%s.%s'", self.task_func.__module__, self.task_func.__name__)
 
         try:
             result = self.task_func(*args, **kwargs)
@@ -61,6 +62,6 @@ class RunAsync(threading.Thread):
 
             logging.error([str(exception), traceback_info])
         self.source_id = GLib.idle_add(self.callback, result, error)
-
+        logging.debug("Finished async job [%d] '%s.%s'", self.source_id, self.task_func.__module__, self.task_func.__name__)
         return self.source_id
 
