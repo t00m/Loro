@@ -25,39 +25,59 @@ class Stats(GObject.GObject):
         stats['lemmas'] = {}
 
         for token in tokens:
-            lemma = tokens[token]['lemmas'][0]
+            lemma = tokens[token]['lemma']
+            postag = tokens[token]['postag']
             # Analyze POS Tags
             try:
-                for postag in tokens[token]['postags']:
-                    if postag not in stats['postags']:
-                        stats['postags'][postag] = {}
-                        stats['postags'][postag]['count'] = 1
-                        stats['postags'][postag]['tokens'] = [token]
-                        stats['postags'][postag]['lemmas'] = [lemma]
-                    else:
-                        stats['postags'][postag]['count'] += 1
-                        if token not in stats['postags'][postag]['tokens']:
-                            stats['postags'][postag]['tokens'].append(token)
-                        if lemma not in stats['postags'][postag]['lemmas']:
-                            stats['postags'][postag]['lemmas'].append(lemma)
-            except Exception as error:
-                self.log.error(error)
-                raise
+                stats['postags'][postag]['count'] += 1
+                if token not in stats['postags'][postag]['tokens']:
+                    stats['postags'][postag]['tokens'].append(token)
+                if lemma not in stats['postags'][postag]['lemmas']:
+                    stats['postags'][postag]['lemmas'].append(lemma)
+            except KeyError:
+                stats['postags'][postag] = {}
+                stats['postags'][postag]['count'] = 1
+                stats['postags'][postag]['tokens'] = [token]
+                stats['postags'][postag]['lemmas'] = [lemma]
+
+                # ~ if postag not in stats['postags']:
+                    # ~ stats['postags'][postag] = {}
+                    # ~ stats['postags'][postag]['count'] = 1
+                    # ~ stats['postags'][postag]['tokens'] = [token]
+                    # ~ stats['postags'][postag]['lemmas'] = [lemma]
+                # ~ else:
+                    # ~ stats['postags'][postag]['count'] += 1
+                    # ~ if token not in stats['postags'][postag]['tokens']:
+                        # ~ stats['postags'][postag]['tokens'].append(token)
+                    # ~ if lemma not in stats['postags'][postag]['lemmas']:
+                        # ~ stats['postags'][postag]['lemmas'].append(lemma)
+            # ~ except Exception as error:
+                # ~ self.log.error(error)
+                # ~ raise
 
             # Analyze lemmas
             try:
-                for lemma in tokens[token]['lemmas']:
-                    if lemma not in stats['lemmas']:
-                        stats['lemmas'][lemma] = {}
-                        stats['lemmas'][lemma]['count'] = 1
-                        stats['lemmas'][lemma]['tokens'] = [token]
-                    else:
-                        stats['lemmas'][lemma]['count'] += 1
-                        if token not in stats['lemmas'][lemma]['tokens']:
-                            stats['lemmas'][lemma]['tokens'].append(token)
-            except Exception as error:
-                self.log.error(error)
-                stats = {}
+                stats['lemmas'][lemma]['count'] += 1
+                if token not in stats['lemmas'][lemma]['tokens']:
+                    stats['lemmas'][lemma]['tokens'].append(token)
+            except KeyError:
+                stats['lemmas'][lemma] = {}
+                stats['lemmas'][lemma]['count'] = 1
+                stats['lemmas'][lemma]['tokens'] = [token]
+
+
+                # ~ for lemma in tokens[token]['lemma']:
+                    # ~ if lemma not in stats['lemmas']:
+                        # ~ stats['lemmas'][lemma] = {}
+                        # ~ stats['lemmas'][lemma]['count'] = 1
+                        # ~ stats['lemmas'][lemma]['tokens'] = [token]
+                    # ~ else:
+                        # ~ stats['lemmas'][lemma]['count'] += 1
+                        # ~ if token not in stats['lemmas'][lemma]['tokens']:
+                            # ~ stats['lemmas'][lemma]['tokens'].append(token)
+            # ~ except Exception as error:
+                # ~ self.log.error(error)
+                # ~ stats = {}
         self.emit('stats-finished')
         return stats
 

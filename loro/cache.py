@@ -187,7 +187,8 @@ class Cache:
     def add_token(self, workbook:str, token: Token, sid: str, topic: str, subtopic: str):
         cache = self.get_cache(workbook)
         try:
-            token_data = cache['tokens']['data'][token.text]
+            tid = "%s_%s" % (token.text, token.pos_)
+            token_data = cache['tokens']['data'][tid]
             if not sid in token_data['sentences']:
                 token_data['sentences'].extend([sid])
             if not token.lemma_ in token_data['lemmas']:
@@ -201,10 +202,12 @@ class Cache:
             token_data['count'] += 1
         except KeyError:
             token_data = {}
+            token_data['tid'] = tid
+            token_data['title'] = token.text
             token_data['sentences']= [sid]
-            token_data['lemmas'] = [token.lemma_]
-            token_data['postags'] = [token.pos_]
-            token_data['topics'] = {} #[topic]
+            token_data['lemma'] = token.lemma_
+            token_data['postag'] = token.pos_
+            token_data['topics'] = {}
             token_data['topics'][topic] = {}
             token_data['topics'][topic][subtopic] = {}
             token_data['count'] = 1
@@ -232,7 +235,7 @@ class Cache:
                 lemma_data[token.lemma_] = [sid]
 
             cache['topics']['data'] = topic_data
-            cache['tokens']['data'][token.text] = token_data
+            cache['tokens']['data'][tid] = token_data
             cache['lemmas']['data'] = lemma_data
             self.set_cache(workbook, cache)
 
