@@ -30,23 +30,22 @@ class StatusPage(Gtk.Box):
         self.append(scw)
 
         # Title
-        hbox_title = self.app.factory.create_box_horizontal(spacing=12, margin=12, hexpand=True)
-        self.app.add_widget('status-box-title', hbox_title)
+        self.hbox_title = self.app.factory.create_box_horizontal(spacing=12, margin=12, vexpand=True, hexpand=True)
         self.lblTitle = Gtk.Label()
         self.lblTitle.get_style_context().add_class(class_name='title-1')
-        hbox_title.append(self.lblTitle)
-        hbox_title.set_valign(Gtk.Align.START)
-        hbox_title.set_halign(Gtk.Align.CENTER)
-        self.mainbox.append(hbox_title)
+        self.hbox_title.append(self.lblTitle)
+        self.hbox_title.set_valign(Gtk.Align.END)
+        self.hbox_title.set_halign(Gtk.Align.CENTER)
+        self.mainbox.append(self.hbox_title)
 
         # Description
-        hbox = self.app.factory.create_box_horizontal(spacing=12, margin=12, hexpand=True)
+        self.hbox_desc = self.app.factory.create_box_horizontal(spacing=12, margin=12, vexpand=True, hexpand=True)
         self.lblDesc = Gtk.Label()
         self.lblDesc.get_style_context().add_class(class_name='title-4')
-        hbox.append(self.lblDesc)
-        hbox.set_valign(Gtk.Align.START)
-        hbox.set_halign(Gtk.Align.CENTER)
-        self.mainbox.append(hbox)
+        self.hbox_desc.append(self.lblDesc)
+        self.hbox_desc.set_valign(Gtk.Align.START)
+        self.hbox_desc.set_halign(Gtk.Align.CENTER)
+        self.mainbox.append(self.hbox_desc)
 
     def set_title(self, title: str):
         self.lblTitle.set_markup(title)
@@ -58,12 +57,11 @@ class StatusPageNoWorkbooks(StatusPage):
     __gtype_name__ = 'StatusPageNoWorkbooks'
 
     def __init__(self, app):
-        super().__init__(app)
+        super(StatusPageNoWorkbooks, self).__init__(app)
         self.set_title('No workbooks available')
-        # ~ self.set_description("Please, create a new workbook.\n Once created, add files to it.")
-        hbox_title = self.app.get_widget('status-box-title')
-        hbox_title.set_valign(Gtk.Align.CENTER)
-        hbox_title.set_vexpand(True)
+        self.set_description("Please, create a new one")
+        self.hbox_title.set_valign(Gtk.Align.END)
+        self.hbox_title.set_vexpand(True)
 
 
 class StatusPageCurrentWorkbook(StatusPage):
@@ -71,6 +69,11 @@ class StatusPageCurrentWorkbook(StatusPage):
 
     def __init__(self, app):
         super(StatusPageCurrentWorkbook, self).__init__(app)
+
+        self.hbox_title.set_valign(Gtk.Align.START)
+        self.hbox_title.set_vexpand(False)
+        self.hbox_desc.set_valign(Gtk.Align.START)
+        self.hbox_desc.set_vexpand(False)
 
         # Toolbar
         toolbar = self.app.factory.create_box_horizontal()
