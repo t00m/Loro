@@ -158,8 +158,7 @@ class Workflow(GObject.GObject):
         sid_tokens = []
         for token in doc:
             if is_valid_word(token.text):
-                thistoken = self.app.cache.add_token(workbook, token, sid, topic, subtopic)
-                tid = "%s_%s" % (token.text, token.pos_)
+                tid = self.app.cache.add_token(workbook, token, sid, topic, subtopic)
                 sid_tokens.append(tid)
         self.app.cache.add_sentence(workbook, filename, sid, sentence.strip(), sid_tokens)
         self.docbin[sid] = doc
