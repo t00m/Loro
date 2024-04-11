@@ -48,7 +48,7 @@ class Report(GObject.GObject):
         self.templates = {}
         self._add_templates()
         self.log.debug("Reporting initialized")
-        self.app.workflow.connect('workflow-finished', self.update_report)
+        # ~ self.app.workflow.connect('workflow-finished', self.update_report)
 
     def _add_templates(self):
         self.templates['HEADER'] = Template(filename=TPL_HEADER)
@@ -86,7 +86,7 @@ class Report(GObject.GObject):
         var['workbook']['source'] = source
         var['workbook']['target'] = target
         var['workbook']['cache'] = self.app.cache.get_cache(workbook)
-        # ~ json_save('/tmp/loro.cache.json', var['workbook']['cache'])
+        json_save('/tmp/loro.cache.json', var['workbook']['cache'])
 
         var['workbook']['stats'] = self.app.stats.get(workbook)
         var['html'] = {}
@@ -115,17 +115,21 @@ class Report(GObject.GObject):
         workbook = var['workbook']['id']
         n = 0
         for token in var['workbook']['cache']['tokens']['data']:
+            data = var['workbook']['cache']['tokens']['data'][token]
+            title = data['title']
             var['html']['index'] = False
-            var['html']['title'] = "Token: %s" % token
-            var['token'] = {}
-            var['token']['name'] = token
-            var['token']['properties'] = var['workbook']['cache']['tokens']['data'][token]
-            var['token']['duden'] = self.app.duden.get_word(token)
+            var['html']['title'] = "Token: %s" % title
+            # ~ var['token'] = {}
+            var['token'] = data
+            duden_word = self.app.duden.get_word(title)
+            if len(duden_word) == 0:
+                duden_word = self.app.duden.get_word(title.lower())
+            var['duden'] = duden_word
             header = self.render_template('HEADER', var)
             body = self.render_template('BODY_TOKEN', var)
             footer = self.render_template('FOOTER_TOKEN', var)
             html = header + body + footer
-            url = os.path.join(var['html']['output'], 'Token_%s.html' % token)
+            url = os.path.join(var['html']['output'], 'Token_%s.html' % data['tid'])
             self._write_page(url, html)
             n += 1
         self.log.debug("Created %d pages for tokens", n)
@@ -133,7 +137,9 @@ class Report(GObject.GObject):
     def _build_lemma_pages(self, var: dict):
         workbook = var['workbook']['id']
         n = 0
+        # ~ self.log.error(var['workbook']['stats']['postags'])
         for postag in var['workbook']['stats']['postags']:
+            # ~ self.log.error("Lemmas for %s:\n%s", postag, var['workbook']['stats']['postags'][postag]['lemmas'])
             for lemma in var['workbook']['stats']['postags'][postag]['lemmas']:
                 var['html']['index'] = False
                 var['html']['title'] = "%s: %s" % (self.app.nlp.explain_term(postag), lemma)
@@ -154,16 +160,17 @@ class Report(GObject.GObject):
     def _build_sentence_pages(self, var: dict):
         workbook = var['workbook']['id']
         n = 0
-        # ~ self.log.debug(var['workbook']['cache']['sentences']['data'])
         for sid in var['workbook']['cache']['sentences']['data']:
+            data = var['workbook']['cache']['sentences']['data'][sid]
             var['html']['index'] = False
             var['html']['title'] = "Sentence: %s" % sid
-            var['sentence'] = {}
+            var['tokens'] = var['workbook']['cache']['tokens']['data']
+            # ~ print(var['tokens'])
+            var['sentence'] = data
             var['sentence']['sid'] = sid
             var['sentence']['svg'] = open(os.path.join(var['html']['output'], '%s.svg' % sid)).read()
             var['sentence']['text'] = var['workbook']['cache']['sentences']['data'][sid]['DE']
-            # ~ self.log.debug(var['sentence']['properties'])
-            var['sentence']['properties'] = var['workbook']['cache']['sentences']['data'][sid]
+            # ~ print(var['sentence'])
             header = self.render_template('HEADER', var)
             body = self.render_template('BODY_SENTENCE', var)
             footer = self.render_template('FOOTER_SENTENCE', var)

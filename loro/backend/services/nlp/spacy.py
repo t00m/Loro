@@ -2,12 +2,14 @@
 # python3 -m spacy download de_core_news_sm
 # POS TAGGING (spacy.glossary.GLOSSARY)
 # Using properties of token i.e. Part of Speech and Lemmatization
-# ~ for token in doc:
-    # ~ print(token, " | ",
-          # ~ spacy.explain(token.pos_),
-          # ~ " | ", token.lemma_)
-# ~ nlp.meta["sources"]
-# ~ pip3 install -U $(spacy info de_core_news_sm --url) --user --break-system-packages
+# ~ Text: The original word text.
+# ~ Lemma: The base form of the word.
+# ~ POS: The simple UPOS part-of-speech tag.
+# ~ Tag: The detailed part-of-speech tag.
+# ~ Dep: Syntactic dependency, i.e. the relation between tokens.
+# ~ Shape: The word shape – capitalization, punctuation, digits.
+# ~ is alpha: Is the token an alpha character?
+# ~ is stop: Is the token part of a stop list, i.e. the most common words of the language?
 # ~ https://github.com/explosion/spacy-models/releases?q=german&expanded=true
 
 import spacy
@@ -69,9 +71,10 @@ class NLP:
     def render_sentence(self, doc):
         options = {
             "compact": False,
-            "fine_grained": False,
-            "add_lemma": True,
-            "color": "blue"
+            "fine_grained": True,
+            "add_lemma": False,
+            "color": "blue",
+            "jupyter": True
         }
         return displacy.render(doc, style="dep", page=False, jupyter=False, options=options)
 

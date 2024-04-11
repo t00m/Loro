@@ -39,16 +39,14 @@ class Dashboard(Gtk.Box):
         self.log.debug('Updating dashboard')
         window = self.app.get_widget('window')
         if window is None:
-            self.log.warning("Window still not ready! Keep waiting...")
+            self.log.warning("Window not ready yet! Keep waiting...")
             return True
 
-        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        workbook = ddWorkbooks.get_selected_item()
-
+        workbook = self.app.actions.workbook_get_current()
         if workbook is None:
             return
+        self.log.debug("Displaying workbook '%s'", workbook.id)
 
-        self.log.debug("Workbook.Id: %s", workbook.id)
         viewstack = self.app.get_widget('dashboard-viewstack')
         if workbook.id is None:
             viewstack.set_visible_child_name('wb-none')
@@ -62,6 +60,6 @@ class Dashboard(Gtk.Box):
             box_pgb = self.app.get_widget('status-box-progressbar')
             box_pgb.set_visible(False)
             viewstack.set_visible_child_name('wb-current')
-            self.app.actions.report_display()
+            # ~ self.app.actions.report_display()
 
         return False

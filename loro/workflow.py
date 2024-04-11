@@ -108,7 +108,7 @@ class Workflow(GObject.GObject):
             output_path = os.path.join(html_dir, '%s.svg' % sid)
             with open(output_path, 'w') as fsvg:
                 fsvg.write(svg)
-                self.log.debug(output_path)
+                # ~ self.log.debug(output_path)
         self.log.debug("Workflow finished for Workbook '%s'", workbook)
         self.running = False
         self.emit('workflow-finished', workbook)
@@ -159,7 +159,8 @@ class Workflow(GObject.GObject):
         for token in doc:
             if is_valid_word(token.text):
                 thistoken = self.app.cache.add_token(workbook, token, sid, topic, subtopic)
-                sid_tokens.append(token.text)
+                tid = "%s_%s" % (token.text, token.pos_)
+                sid_tokens.append(tid)
         self.app.cache.add_sentence(workbook, filename, sid, sentence.strip(), sid_tokens)
         self.docbin[sid] = doc
         return jid

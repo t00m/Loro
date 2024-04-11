@@ -12,7 +12,7 @@ import os
 
 try:
     import duden
-    DUDEN_SERVICE = True
+    DUDEN_SERVICE = False
 except ModuleNotFoundError:
     DUDEN_SERVICE = False
 

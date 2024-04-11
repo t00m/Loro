@@ -212,3 +212,7 @@ class WidgetActions(GObject.GObject):
             for workbook in wbnames:
                 data.append((workbook, "Workbook %s" % workbook))
         self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)
+
+    def workbook_get_current(self, *args):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        return ddWorkbooks.get_selected_item()

@@ -19,21 +19,14 @@ class Cache:
 
     def __del__(self):
         pass
-        # ~ self.log.debug("Read from File[%d] / Read from Memory[%d]", self.stats['rff'], self.stats['rfm'])
 
     def get_topics(self, workbook: str):
         cache = self.get_cache(workbook)
         return cache['topics']['data'].keys()
 
     def get_subtopics(self, workbook: str):
-        subtopics = set()
         cache = self.get_cache(workbook)
-        for topic in self.get_topics(workbook):
-            # ~ self.log.debug("Topic['%s']", topic)
-            for subtopic in cache['topics']['data'][topic]:
-                # ~ self.log.debug("\tSubtopic['%s']", subtopic)
-                subtopics.add(subtopic)
-        return subtopics
+        return cache['subtopics']['data'].keys()
 
     def get_tokens(self, workbook: str):
         cache = self.get_cache(workbook)
@@ -101,6 +94,15 @@ class Cache:
                 self.cache[key]['topics']['data'] = json_load(ftopics)
             else:
                 self.cache[key]['topics']['data'] = {}
+
+            # Subtopics section
+            fsubtopics = os.path.join(WB_CONFIG_DIR, '%s_subtopics_%s_%s.json' % (workbook, source, target))
+            self.cache[key]['subtopics'] = {}
+            self.cache[key]['subtopics']['file'] = fsubtopics
+            if os.path.exists(fsubtopics):
+                self.cache[key]['subtopics']['data'] = json_load(fsubtopics)
+            else:
+                self.cache[key]['subtopics']['data'] = {}
 
             # Workbook files section
             ffnames = os.path.join(WB_CONFIG_DIR, '%s_filenames_%s_%s.json' % (workbook, source, target))
@@ -186,60 +188,53 @@ class Cache:
 
     def add_token(self, workbook:str, token: Token, sid: str, topic: str, subtopic: str):
         cache = self.get_cache(workbook)
+        tid = "%s_%s" % (token.text.lower(), token.pos_)
+
         try:
-            tid = "%s_%s" % (token.text, token.pos_)
             token_data = cache['tokens']['data'][tid]
+            token_data['count'] += 1
             if not sid in token_data['sentences']:
                 token_data['sentences'].extend([sid])
-            if not token.lemma_ in token_data['lemmas']:
-                token_data['lemmas'].extend([token.lemma_])
-            if not token.pos_ in token_data['postags']:
-                token_data['postags'].extend([token.pos_])
             if not topic in token_data['topics']:
-                token_data['topics'][topic.upper()] = {}
-            if not subtopic in token_data[topic]:
-                token_data['topics'][topic.upper()][subtopic] = [sid]
-            token_data['count'] += 1
-        except KeyError:
+                token_data['topics'].append(topic.upper())
+            if not subtopic in token_data['subtopics']:
+                token_data['subtopics'].append(subtopic.upper())
+        except Exception as error:
             token_data = {}
+            token_data['count'] = 1
             token_data['tid'] = tid
             token_data['title'] = token.text
-            token_data['sentences']= [sid]
             token_data['lemma'] = token.lemma_
             token_data['postag'] = token.pos_
-            token_data['topics'] = {}
-            token_data['topics'][topic] = {}
-            token_data['topics'][topic][subtopic] = {}
-            token_data['count'] = 1
-        finally:
-            topic_data = cache['topics']['data']
-            if not topic in topic_data:
-                topic_data[topic] = {}
-                topic_data[topic][subtopic] = [sid]
-            else:
-                if not subtopic in topic_data[topic]:
-                    topic_data[topic][subtopic] = [sid]
-                else:
-                    sids = topic_data[topic][subtopic]
-                    if not sid in sids:
-                        sids.append(sid)
-                        topic_data[topic][subtopic] = sids
+            token_data['sentences'] = [sid]
+            token_data['topics'] = [topic]
+            token_data['subtopics'] = [subtopic]
 
-            lemma_data = cache['lemmas']['data']
-            try:
-                sentences = lemma_data[token.lemma_]
-                if not sid in sentences:
-                    sentences.append(sid)
-                lemma_data[token.lemma_] = sentences
-            except:
-                lemma_data[token.lemma_] = [sid]
+        topic_data = cache['topics']['data']
+        try:
+            topic_data[topic].append(sid)
+        except:
+            topic_data[topic] = [sid]
 
-            cache['topics']['data'] = topic_data
-            cache['tokens']['data'][tid] = token_data
-            cache['lemmas']['data'] = lemma_data
-            self.set_cache(workbook, cache)
+        subtopic_data = cache['subtopics']['data']
+        try:
+            subtopic_data[subtopic].append(sid)
+        except:
+            subtopic_data[subtopic] = [sid]
 
-            self.app.duden.get_metadata(token)
+        lemma_data = cache['lemmas']['data']
+        try:
+            lemma_data[token.lemma_].append(sid)
+        except:
+            lemma_data[token.lemma_] = [sid]
+
+        cache['topics']['data'] = topic_data
+        cache['subtopics']['data'] = subtopic_data
+        cache['tokens']['data'][tid] = token_data
+        cache['lemmas']['data'] = lemma_data
+        self.set_cache(workbook, cache)
+
+            # ~ self.app.duden.get_metadata(token)
 
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
         # ~ self.log.debug("Added token '%s'", token.text)

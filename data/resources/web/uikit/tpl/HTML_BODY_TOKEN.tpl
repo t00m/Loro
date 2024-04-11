@@ -1,21 +1,21 @@
 <%! from loro.backend.services.nlp import spacy %>
 <%
     app = var['app']
-    token = var['token']['name']
-    postag = app.nlp.explain_term(var['token']['properties']['postag']).title()
-    lemma = var['token']['properties']['lemma']
+    title = var['token']['title']
+    postag = app.nlp.explain_term(var['token']['postag']).title()
+    lemma = var['token']['lemma']
     source = var['workbook']['source']
 %>
 
 <div class="uk-section"><!-- UK-SECTION :: START -->
     <div class="uk-container"> <!-- UK-CONTAINER :: START -->
-    <h3 id="TOKEN">${postag}: ${var['token']['properties']['title']}</h3>
+    <h3 id="TOKEN">${postag}: ${title}</h3>
 
     <ul class="uk-list uk-list-striped uk-list-primary">
-% for key in var['token']['duden']:
+% for key in var['duden']:
     <%
     try:
-        value = var['token']['duden'][key]
+        value = var['duden'][key]
         if value is None:
             text = ''
         elif isinstance(value, str):
@@ -42,7 +42,7 @@
     <div class="uk-container"> <!-- UK-CONTAINER :: START -->
     <h3 id="SENTENCES">Sentences</h3>
     <ul class="uk-list uk-list-striped uk-list-primary">
-% for sid in var['workbook']['cache']['tokens']['data'][token]['sentences']:
+% for sid in var['token']['sentences']:
         <li>
             <a class="uk-link-text" href="Sentence_${sid}.html">
                 ${var['workbook']['cache']['sentences']['data'][sid][source]}
