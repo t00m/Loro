@@ -169,7 +169,7 @@ class WidgetActions(GObject.GObject):
             progressbar = self.app.get_widget('progressbar')
 
             while True:
-                time.sleep(0.5)
+                time.sleep(0.250)
                 filename, fraction = self.app.workflow.get_progress()
                 running = fraction > 0.0
                 if running:
