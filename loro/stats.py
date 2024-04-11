@@ -30,15 +30,33 @@ class Stats(GObject.GObject):
         stats['lemmas'] = {}
         stats['tokens'] = {}
         stats['counters'] = {}
+        stats['counters']['TokenByPOS'] = {}
+        stats['counters']['LemmaByPOS'] = {}
 
         tokens_counter = Counter()
         for tid in tokens:
             token = tokens[tid]
+            count = tokens[tid]['count']
             stats['tokens'][tid] = token['count']
             tokens_counter[tid] = tokens[tid]['count']
             lemma = tokens[tid]['lemma']
             postag = tokens[tid]['postag']
-            # Analyze POS Tags
+
+            # Counter for tokens by POS
+            try:
+                stats['counters']['TokenByPOS'][postag]
+            except KeyError:
+                stats['counters']['TokenByPOS'][postag] = Counter()
+            stats['counters']['TokenByPOS'][postag][tid] = count
+
+            # Counter for tokens by POS
+            try:
+                stats['counters']['LemmaByPOS'][postag]
+            except KeyError:
+                stats['counters']['LemmaByPOS'][postag] = Counter()
+            stats['counters']['LemmaByPOS'][postag][lemma] = count
+
+            # Analyze POS tags
             try:
                 stats['postags'][postag]['count'] += 1
                 if token not in stats['postags'][postag]['tokens']:
@@ -63,16 +81,19 @@ class Stats(GObject.GObject):
 
         stats['counters']['tokens'] = tokens_counter
 
+        # Counter for POS tags
         postags_counter = Counter()
         for postag in stats['postags']:
             postags_counter[postag] = stats['postags'][postag]['count']
         stats['counters']['postags'] = postags_counter
 
+        # Counter for lemmas
         lemmas_counter = Counter()
         for lemma in stats['lemmas']:
             lemmas_counter[lemma] = stats['lemmas'][lemma]['count']
         stats['counters']['lemmas'] = lemmas_counter
 
+        self.log.debug("Workbook '%s' stats generated", workbook)
         self.emit('stats-finished')
         return stats
 
