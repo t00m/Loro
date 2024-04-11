@@ -203,8 +203,8 @@ class Cache:
             token_data = {}
             token_data['count'] = 1
             token_data['tid'] = tid
-            token_data['title'] = token.text
-            token_data['lemma'] = token.lemma_
+            token_data['title'] = token.text.title()
+            token_data['lemma'] = token.lemma_.lower()
             token_data['postag'] = token.pos_
             token_data['sentences'] = [sid]
             token_data['topics'] = [topic]
@@ -224,9 +224,9 @@ class Cache:
 
         lemma_data = cache['lemmas']['data']
         try:
-            lemma_data[token.lemma_].append(sid)
+            lemma_data[token.lemma_.lower()].append(sid)
         except:
-            lemma_data[token.lemma_] = [sid]
+            lemma_data[token.lemma_.lower()] = [sid]
 
         cache['topics']['data'] = topic_data
         cache['subtopics']['data'] = subtopic_data
@@ -238,6 +238,7 @@ class Cache:
 
         # ~ self.tokens[token.text]['gender'] = token.morph.get('gender')
         # ~ self.log.debug("Added token '%s'", token.text)
+        return tid
 
     def get_token(name: str) -> {}:
         try:
