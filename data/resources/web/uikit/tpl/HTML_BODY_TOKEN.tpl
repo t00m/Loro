@@ -2,14 +2,14 @@
 <%
     app = var['app']
     token = var['token']['name']
-    postag = app.nlp.explain_term(var['token']['properties']['postags'][0]).title()
-    lemma = var['token']['properties']['lemmas'][0]
+    postag = app.nlp.explain_term(var['token']['properties']['postag']).title()
+    lemma = var['token']['properties']['lemma']
     source = var['workbook']['source']
 %>
 
 <div class="uk-section"><!-- UK-SECTION :: START -->
     <div class="uk-container"> <!-- UK-CONTAINER :: START -->
-    <h3 id="TOKEN">${postag}: ${var['token']['name']}</h3>
+    <h3 id="TOKEN">${postag}: ${var['token']['properties']['title']}</h3>
 
     <ul class="uk-list uk-list-striped uk-list-primary">
 % for key in var['token']['duden']:

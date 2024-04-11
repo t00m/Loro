@@ -6,10 +6,11 @@
 % for token in var['lemma']['tokens']:
 <%
 app = var['app']
-postag = app.nlp.explain_term(var['workbook']['cache']['tokens']['data'][token]['postags'][0]).title()
+postag = app.nlp.explain_term(var['workbook']['cache']['tokens']['data'][token]['postag']).title()
+token_name = var['workbook']['cache']['tokens']['data'][token]['title']
 %>
         <li>
-            <a class="uk-link-text" href="Token_${token}.html">${token}</a> (${postag})
+            <a class="uk-link-text" href="Token_${token}.html">${token_name}</a> (${postag})
         </li>
 % endfor
     </lu>
