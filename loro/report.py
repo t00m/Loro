@@ -11,6 +11,7 @@ from loro.backend.core.log import get_logger
 from loro.backend.core.util import get_project_target_workbook_dir
 from loro.backend.core.util import create_directory, delete_directory
 from loro.backend.core.util import json_save
+from loro.backend.core.util import exec_cmd
 from loro.backend.services.nlp import spacy
 
 # UIKIT (getuikit.com)
@@ -36,6 +37,7 @@ TPL_FOOTER_FILE = os.path.join(DIR_TPL, 'HTML_FOOTER_FILE.tpl')
 TPL_FOOTER_LEMMA = os.path.join(DIR_TPL, 'HTML_FOOTER_LEMMA.tpl')
 TPL_FOOTER_TOKEN = os.path.join(DIR_TPL, 'HTML_FOOTER_TOKEN.tpl')
 TPL_FOOTER_SENTENCE = os.path.join(DIR_TPL, 'HTML_FOOTER_SENTENCE.tpl')
+TPL_PDF_WORKBOOK_REPORT = os.path.join(DIR_TPL, 'PDF_WORKBOOK_REPORT.tpl')
 
 
 class Report(GObject.GObject):
@@ -63,6 +65,7 @@ class Report(GObject.GObject):
         self.templates['FOOTER_LEMMA'] = Template(filename=TPL_FOOTER_LEMMA)
         self.templates['FOOTER_TOKEN'] = Template(filename=TPL_FOOTER_TOKEN)
         self.templates['FOOTER_SENTENCE'] = Template(filename=TPL_FOOTER_SENTENCE)
+        self.templates['PDF_WORKBOOK_REPORT'] = Template(filename=TPL_PDF_WORKBOOK_REPORT)
         self.log.debug("Loro templates added")
 
     def template(self, name: str):
@@ -228,10 +231,30 @@ class Report(GObject.GObject):
         self.log.debug("Report['%s'] generated" % workbook)
         # ~ self.emit('report-finished', workbook)
 
+    def _get_var(self, workbook: str) -> {}:
+        source, target = ENV['Projects']['Default']['Languages']
+        var = {}
+        var['app'] = self.app
+        var['workbook'] = {}
+        var['workbook']['id'] = workbook
+        var['workbook']['title'] = "Workbook %s" % workbook
+        var['workbook']['description'] = "(description)"
+        var['workbook']['source'] = source
+        var['workbook']['target'] = target
+        var['workbook']['cache'] = self.app.cache.get_cache(workbook)
+        var['workbook']['stats'] = self.app.stats.get(workbook)
+        var['workbook']['topics'] = self.app.cache.get_topics(workbook)
+        var['workbook']['subtopics'] = self.app.cache.get_subtopics(workbook)
+        return var
 
-# ~ <%! from loro.backend.services.nlp import spacy %>
-# ~ <p class="uk-text-lead">
-# ~ % for postag in var['workbook']['stats']['postags']:
-    # ~ <h3 class="uk-margin-small-bottom" id="${postag}">${spacy.explain_term(postag).title()}</h3>
-# ~ % endfor
-# ~ </p>
+    def build_pdf(self, workbook):
+        var = self._get_var(workbook)
+        var['timestamp'] = '2022-10-19'
+        adoc = self.render_template('PDF_WORKBOOK_REPORT', var)
+        with open('/tmp/report.adoc', 'w') as fadoc:
+            fadoc.write(adoc)
+
+        cmd = "asciidoctor-pdf -d book -a toc -a toclevels=3 /tmp/report.adoc"
+        exec_cmd(cmd)
+        cmd = "xdg-open '/tmp/report.pdf'"
+        os.system(cmd)

@@ -26,6 +26,16 @@ from loro.backend.core.constants import LORO_USER_CONFIG_DIR
 
 log = get_logger('Util')
 
+def exec_cmd(cmd):
+    """Execute an operating system command.
+    Return:
+    - document
+    - True if success, False if not
+
+    """
+    process = subprocess.Popen([cmd], shell=True, stdout=subprocess.PIPE)
+    return process.communicate()
+
 def get_project_dir() -> str:
     source, target = ENV['Projects']['Default']['Languages']
     return os.path.join(os.path.join(LORO_USER_PROJECTS_DIR, source))

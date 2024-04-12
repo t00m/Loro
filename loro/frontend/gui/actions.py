@@ -95,6 +95,11 @@ class WidgetActions(GObject.GObject):
             self.update_dropdown_workbooks()
 
     def workbook_edit(self, *args):
+        window = self.app.get_widget('window')
+        window.show_stack_page('editor')
+        return
+
+
         def _confirm(_, res, entry, old_name):
             if res == "cancel":
                 return
@@ -157,7 +162,7 @@ class WidgetActions(GObject.GObject):
             if workbook is None:
                 return
             self.log.debug("Workbook['%s'] update requested", workbook.id)
-            toolbar = self.app.get_widget('status-box-toolbar')
+            toolbar = self.app.get_widget('workbook-toolbar')
             toolbar.set_visible(False)
             box_pgb = self.app.get_widget('status-box-progressbar')
             box_pgb.set_visible(True)
@@ -216,3 +221,4 @@ class WidgetActions(GObject.GObject):
     def workbook_get_current(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         return ddWorkbooks.get_selected_item()
+

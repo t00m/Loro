@@ -102,4 +102,12 @@ class Stats(GObject.GObject):
         DIR_WB_CONFIG = self.app.cache.get_cache_dir(workbook)
         FILE_WB_STATS = os.path.join(DIR_WB_CONFIG, '%s_stats.json' % workbook)
         json_save(FILE_WB_STATS, stats)
+        # ~ for postag in stats['counters']['TokenByPOS']:
+            # ~ pos_counter = stats['counters']['TokenByPOS'][postag]
+            # ~ self.log.debug("(POSTAG) %s: %s", postag, pos_counter.most_common(10))
+
+        # ~ for postag in stats['counters']['LemmaByPOS']:
+            # ~ lemma_counter = stats['counters']['LemmaByPOS'][postag]
+            # ~ self.log.debug("(LEMMAS) %s: %s", postag, lemma_counter.most_common(10))
+
         return stats

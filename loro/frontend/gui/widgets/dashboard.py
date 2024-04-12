@@ -55,11 +55,11 @@ class Dashboard(Gtk.Box):
             page.set_title("Workbook %s" % workbook.id)
             page.set_description("Some description")
             page.set_topics(workbook.id)
-            toolbar = self.app.get_widget('status-box-toolbar')
+            toolbar = self.app.get_widget('workbook-toolbar')
             toolbar.set_visible(True)
             box_pgb = self.app.get_widget('status-box-progressbar')
             box_pgb.set_visible(False)
             viewstack.set_visible_child_name('wb-current')
-            # ~ self.app.actions.report_display()
+            self.app.report.build_pdf(workbook.id)
 
         return False
