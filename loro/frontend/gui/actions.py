@@ -181,13 +181,9 @@ class WidgetActions(GObject.GObject):
             self.log.debug("Workbook['%s'] update requested", workbook.id)
             viewstack = self.app.get_widget('dashboard-viewstack')
             viewstack.set_visible_child_name('wb-progressbar')
-            # ~ toolbar = self.app.get_widget('workbook-toolbar')
-            # ~ toolbar.set_visible(False)
-            # ~ box_pgb = self.app.get_widget('status-box-progressbar')
-            # ~ box_pgb.set_visible(True)
-            # ~ box_pgb.set_valign(Gtk.Align.CENTER)
             files = self.app.workbooks.get_files(workbook.id)
             self.app.workflow.start(workbook.id, files)
+            self.app.report.build_pdf(workbook.id)
 
         def pulse():
             progressbar = self.app.get_widget('progressbar')

@@ -135,6 +135,7 @@ class StatusPageProgressbar(StatusPage):
         hbox = self.app.factory.create_box_horizontal(hexpand=True, vexpand=True)
         self.app.add_widget('status-box-progressbar', hbox)
         progressbar = self.app.add_widget('progressbar', Gtk.ProgressBar())
+        progressbar.get_style_context().add_class(class_name='title-4')
         progressbar.set_hexpand(True)
         progressbar.set_valign(Gtk.Align.CENTER)
         progressbar.set_show_text(True)
