@@ -94,9 +94,26 @@ class WidgetActions(GObject.GObject):
             # ~ window.emit('workbooks-updated')
             self.update_dropdown_workbooks()
 
+    def workbook_translate(self, *args):
+        notebook = self.app.get_widget('notebook')
+        translator = self.app.get_widget('translator')
+        translator.update()
+        notebook.set_current_page(3)
+        return
+
+    def workbook_summary(self, *args):
+        notebook = self.app.get_widget('notebook')
+        notebook.set_current_page(0)
+
+    def workbook_study(self, *args):
+        notebook = self.app.get_widget('notebook')
+        notebook.set_current_page(1)
+
     def workbook_edit(self, *args):
-        window = self.app.get_widget('window')
-        window.show_stack_page('editor')
+        notebook = self.app.get_widget('notebook')
+        editor = self.app.get_widget('editor')
+        editor.update()
+        notebook.set_current_page(2)
         return
 
 
@@ -162,11 +179,13 @@ class WidgetActions(GObject.GObject):
             if workbook is None:
                 return
             self.log.debug("Workbook['%s'] update requested", workbook.id)
-            toolbar = self.app.get_widget('workbook-toolbar')
-            toolbar.set_visible(False)
-            box_pgb = self.app.get_widget('status-box-progressbar')
-            box_pgb.set_visible(True)
-            box_pgb.set_valign(Gtk.Align.CENTER)
+            viewstack = self.app.get_widget('dashboard-viewstack')
+            viewstack.set_visible_child_name('wb-progressbar')
+            # ~ toolbar = self.app.get_widget('workbook-toolbar')
+            # ~ toolbar.set_visible(False)
+            # ~ box_pgb = self.app.get_widget('status-box-progressbar')
+            # ~ box_pgb.set_visible(True)
+            # ~ box_pgb.set_valign(Gtk.Align.CENTER)
             files = self.app.workbooks.get_files(workbook.id)
             self.app.workflow.start(workbook.id, files)
 
@@ -207,13 +226,16 @@ class WidgetActions(GObject.GObject):
     def update_dropdown_workbooks(self, *args):
         workbooks = self.app.workbooks.get_all()
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        toolbar = self.app.get_widget('window-toolbar')
         data = []
         wbnames = workbooks.keys()
         if len(wbnames) == 0:
             ddWorkbooks.set_visible(False)
+            toolbar.set_visible(False)
             data.append((None, 'No workbooks available'))
         else:
             ddWorkbooks.set_visible(True)
+            toolbar.set_visible(True)
             for workbook in wbnames:
                 data.append((workbook, "Workbook %s" % workbook))
         self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)

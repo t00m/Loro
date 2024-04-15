@@ -70,10 +70,32 @@ class Editor(Gtk.Box):
         # ~ self.append(line)
 
         ## Editor
+        mainbox = self.app.factory.create_box_vertical(hexpand=True, vexpand=True)
+        self.append(mainbox)
+
+        # Toolbar
+        toolbar = Gtk.CenterBox()
+        toolbar.get_style_context().add_class(class_name='toolbar')
+        toolbar.get_style_context().add_class(class_name='linked')
+        button_r = self.app.factory.create_button(icon_name=ICON['WB_REFRESH'], title='Compile workbook', tooltip='Refresh/Compile workbook', width=16, callback=self.app.actions.workbook_compile)
+        button_r.get_style_context().add_class(class_name='success')
+        self.app.add_widget('status-workbook-refresh', button_r)
+        toolbar.set_start_widget(button_r)
+        button_d = self.app.factory.create_button(icon_name=ICON['WB_DELETE'], title='Delete workbook', tooltip='Delete workbook', width=16, callback=self.app.actions.workbook_delete)
+        button_d.get_style_context().add_class(class_name='error')
+        toolbar.set_end_widget(button_d)
+        mainbox.append(toolbar)
+
+        mainbox.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
+        # Editor
         editor = self.app.factory.create_box_horizontal(hexpand=True, vexpand=True)
         editor.set_margin_top(margin=0)
+        mainbox.append(editor)
         self.selector = Selector(app=self.app)
         self.selector.set_margin_bottom(margin=0)
+
+
 
         ### Left toolbox
         vboxLeftSidebar = self.app.factory.create_box_horizontal(spacing=6, margin=0, vexpand=True, hexpand=False)
@@ -140,14 +162,13 @@ class Editor(Gtk.Box):
         self.visor.append(scrwindow)
         editor.append(self.visor)
 
-        self.append(editor)
+        # ~ self.append(editor)
         # ~ self.app.window.connect('window-presented', self._finish_loading)
         self._on_toggle_views(self.btnHideAv, None)
         return
 
     def _finish_loading(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        ddWorkbooks = window.ddWorkbooks
         ddWorkbooks.connect("notify::selected-item", self._on_workbook_selected)
 
     def _on_toggle_views(self, button, gparam):

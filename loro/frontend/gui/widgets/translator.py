@@ -35,6 +35,8 @@ class Translator(Gtk.Box):
         cvtl = self.app.add_widget('translator-view-tokens', ColumnViewTranslation(self.app))
         cvtl.set_filter(self._do_filter_view_tokens)
         self.append(cvtl)
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        ddWorkbooks.connect("notify::selected-item", self.update)
 
     def _do_filter_view_tokens(self, item, filter_list_model):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
@@ -65,7 +67,7 @@ class Translator(Gtk.Box):
                 if not self.app.translate.exists_sentence(sid):
                     self.app.translate.set_sentence(sid, target, '')
 
-    def update(self):
+    def update(self, *args):
         source, target = ENV['Projects']['Default']['Languages']
         cvtl = self.app.get_widget('translator-view-tokens')
         items = []
