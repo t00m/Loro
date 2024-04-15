@@ -13,10 +13,10 @@ from loro.backend.core.log import get_logger
 from loro.frontend.gui.models import Workbook
 from loro.frontend.gui.widgets.preferences import PreferencesWindow
 from loro.frontend.gui.widgets.check import CheckWindow
-from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.dashboard import Dashboard
-from loro.frontend.gui.widgets.browser import Browser
-from loro.frontend.gui.widgets.translator import Translator
+# ~ from loro.frontend.gui.widgets.editor import Editor
+# ~ from loro.frontend.gui.widgets.browser import Browser
+# ~ from loro.frontend.gui.widgets.translator import Translator
 from loro.frontend.gui.icons import ICON
 
 
@@ -72,34 +72,35 @@ class Window(Adw.ApplicationWindow):
         ddWorkbooks.set_valign(Gtk.Align.CENTER)
         ddWorkbooks.set_hexpand(False)
         boxDpdWorkbooks.append(ddWorkbooks)
-        headerbar.pack_start(boxDpdWorkbooks)
+        headerbar.set_title_widget(boxDpdWorkbooks)
+        # ~ headerbar.pack_start(boxDpdWorkbooks)
 
         # Workbook Toolbar
-        toolbar = self.app.factory.create_box_horizontal(spacing=0, margin=0)
-        self.app.add_widget('workbook-toolbar', toolbar)
-        toolbar.get_style_context().add_class(class_name='toolbar')
-        toolbar.get_style_context().add_class(class_name='linked')
-        button_r = self.app.factory.create_button(icon_name=ICON['WB_REFRESH'], tooltip='Refresh/Compile workbook', width=16, callback=self.app.actions.workbook_compile)
-        self.app.add_widget('status-workbook-refresh', button_r)
-        button_e = self.app.factory.create_button(icon_name=ICON['WB_EDIT'], tooltip='Edit workbook', width=16, callback=self.app.actions.workbook_edit)
-        self.app.add_widget('status-workbook-edit', button_e)
-        button_d = self.app.factory.create_button(icon_name=ICON['WB_DELETE'], tooltip='Delete workbook', width=16, callback=self.app.actions.workbook_delete)
-        self.app.add_widget('status-workbook-delete', button_d)
-        button_d.get_style_context().add_class(class_name='error')
-        toolbar.append(button_r)
-        toolbar.append(button_e)
-        toolbar.append(button_d)
-        headerbar.set_title_widget(toolbar)
+        # ~ toolbar = self.app.factory.create_box_horizontal(spacing=0, margin=0)
+        # ~ self.app.add_widget('workbook-toolbar', toolbar)
+        # ~ toolbar.get_style_context().add_class(class_name='toolbar')
+        # ~ toolbar.get_style_context().add_class(class_name='linked')
+        # ~ button_r = self.app.factory.create_button(icon_name=ICON['WB_REFRESH'], tooltip='Refresh/Compile workbook', width=16, callback=self.app.actions.workbook_compile)
+        # ~ self.app.add_widget('status-workbook-refresh', button_r)
+        # ~ button_e = self.app.factory.create_button(icon_name=ICON['WB_EDIT'], tooltip='Edit workbook', width=16, callback=self.app.actions.workbook_edit)
+        # ~ self.app.add_widget('status-workbook-edit', button_e)
+        # ~ button_d = self.app.factory.create_button(icon_name=ICON['WB_DELETE'], tooltip='Delete workbook', width=16, callback=self.app.actions.workbook_delete)
+        # ~ self.app.add_widget('status-workbook-delete', button_d)
+        # ~ button_d.get_style_context().add_class(class_name='error')
+        # ~ toolbar.append(button_r)
+        # ~ toolbar.append(button_e)
+        # ~ toolbar.append(button_d)
+        # ~ headerbar.set_title_widget(toolbar)
 
         # Viewstack
-        editor = self.app.add_widget('editor', Editor(self.app))
-        browser = self.app.add_widget('browser', Browser(self.app))
+        # ~ editor = self.app.add_widget('editor', Editor(self.app))
+        # ~ browser = self.app.add_widget('browser', Browser(self.app))
         dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
         viewstack = self.app.add_widget('window-viewstack', Adw.ViewStack())
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
         viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-go-home-symbolic')
-        viewstack.add_titled_with_icon(editor, 'editor', 'Editor', 'com.github.t00m.Loro-text-editor-symbolic')
-        viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-study-symbolic')
+        # ~ viewstack.add_titled_with_icon(editor, 'editor', 'Editor', 'com.github.t00m.Loro-text-editor-symbolic')
+        # ~ viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-study-symbolic')
         # ~ viewswitcher = self.app.add_widget('viewswitcher', Adw.ViewSwitcher())
         # ~ viewswitcher.set_stack(viewstack)
         mainbox.append(viewstack)
