@@ -139,7 +139,7 @@ class Report(GObject.GObject):
         self._build_sentence_pages(var)
         self._build_file_pages(var)
         self._build_index(var)
-        self.log.debug("Report for workbook '%s' built", workbook)
+        self.log.debug("HTML Report for workbook '%s' generated", workbook)
         # ~ return url
 
     def _prepare(self, var: dict) -> bool:
