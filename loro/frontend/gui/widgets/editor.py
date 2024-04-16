@@ -41,6 +41,7 @@ class Editor(Gtk.Box):
         # ~ self.update()
         # ~ self._set_enable_renaming(False)
         # ~ self._set_enable_deleting(False)
+        self.log.debug("Editor initialited")
 
     def _set_enable_renaming(self, enabled):
         self.btnRename.set_sensitive(enabled)
@@ -50,24 +51,6 @@ class Editor(Gtk.Box):
 
     def _build_editor(self):
         # Content View
-
-        ## Workbooks
-        # ~ hbox = self.app.factory.create_box_horizontal(spacing=6, margin=6, vexpand=False, hexpand=True)
-        # ~ self.ddWorkbooks = self.app.factory.create_dropdown_generic(Workbook, enable_search=True)
-        # ~ self.ddWorkbooks.set_hexpand(False)
-        # ~ hbox.append(self.ddWorkbooks)
-        # ~ expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.HORIZONTAL, hexpand=True)
-        # ~ self.btnWBAdd = self.app.factory.create_button(icon_name=ICON['WB_NEW'], width=16, tooltip='Add a new workbook', callback=self._on_workbook_add)
-        # ~ self.btnWBEdit = self.app.factory.create_button(icon_name=ICON['WB_EDIT'], width=16, tooltip='Edit workbook name', callback=self._on_workbook_edit)
-        # ~ self.btnWBDel = self.app.factory.create_button(icon_name=ICON['WB_DELETE'], width=16, tooltip='Delete selected workbook', callback=self.app.actions.workbook_delete)
-        # ~ hbox.append(expander)
-        # ~ hbox.append(self.btnWBAdd)
-        # ~ hbox.append(self.btnWBEdit)
-        # ~ hbox.append(self.btnWBDel)
-        # ~ self.append(hbox)
-
-        # ~ line = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        # ~ self.append(line)
 
         ## Editor
         mainbox = self.app.factory.create_box_vertical(hexpand=True, vexpand=True)
@@ -85,7 +68,6 @@ class Editor(Gtk.Box):
         button_d.get_style_context().add_class(class_name='error')
         toolbar.set_end_widget(button_d)
         mainbox.append(toolbar)
-
         mainbox.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
         # Editor
@@ -163,7 +145,6 @@ class Editor(Gtk.Box):
         editor.append(self.boxnull)
 
         ### Rigth toolbox
-        # ~ vboxRightSidebar = self.app.factory.create_box_horizontal(spacing=6, margin=0, vexpand=True, hexpand=False)
         self.RightSidebarToolbox = self.app.factory.create_box_vertical(spacing=6, margin=0, vexpand=True, hexpand=False)
         self.RightSidebarToolbox.set_margin_top(margin=6)
         self.btnHideSourceEditor = self.app.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-right-symbolic', tooltip='Show/Hide editor', callback=self._on_toggle_editor)
@@ -171,7 +152,6 @@ class Editor(Gtk.Box):
         self.RightSidebarToolbox.append(self.btnHideSourceEditor)
         separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
         self.RightSidebarToolbox.append(separator)
-        # ~ vboxRightSidebar.append(RightSidebarToolbox)
         editor.append(self.RightSidebarToolbox)
 
         self._on_toggle_views(self.btnHideAv, None)
