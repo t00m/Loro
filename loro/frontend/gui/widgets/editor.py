@@ -95,8 +95,6 @@ class Editor(Gtk.Box):
         self.selector = Selector(app=self.app)
         self.selector.set_margin_bottom(margin=0)
 
-
-
         ### Left toolbox
         vboxLeftSidebar = self.app.factory.create_box_horizontal(spacing=6, margin=0, vexpand=True, hexpand=False)
         LeftSidebarToolbox = self.app.factory.create_box_vertical()
@@ -110,7 +108,6 @@ class Editor(Gtk.Box):
         separator2 = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
         self.btnDelete = self.app.factory.create_button(icon_name=ICON['TRASH'], width=16, tooltip='Delete doc', callback=self._on_document_delete)
         expander = Gtk.Box(spacing=6, orientation=Gtk.Orientation.VERTICAL, hexpand=True)
-        # ~ self.btnRefresh = self.app.factory.create_button(icon_name=ICON['REFRESH'], width=16, tooltip='Refresh', callback=self._update_editor)
         LeftSidebarToolbox.append(self.btnHideAv)
         LeftSidebarToolbox.append(separator1)
         LeftSidebarToolbox.append(self.btnAdd)
@@ -119,14 +116,12 @@ class Editor(Gtk.Box):
         LeftSidebarToolbox.append(separator2)
         LeftSidebarToolbox.append(self.btnDelete)
         LeftSidebarToolbox.append(expander)
-        # ~ LeftSidebarToolbox.append(self.btnRefresh)
         vboxLeftSidebar.append(LeftSidebarToolbox)
         editor.append(vboxLeftSidebar)
 
         self.selector.set_action_add_to_used(self._on_view_used_add)
         self.selector.set_action_remove_from_used(self._on_view_used_remove)
         self.cvfilesAv = ColumnViewFilesAvailable(self.app)
-        # ~ self.cvfilesAv.set_header_visible(False)
         self.cvfilesAv.set_single_selection()
         self.cvfilesAv.get_style_context().add_class(class_name='monospace')
         self.cvfilesAv.set_hexpand(True)
@@ -145,7 +140,7 @@ class Editor(Gtk.Box):
         self.selector.add_columnview_used(self.cvfilesUsed)
         editor.append(self.selector)
 
-        ## Right: Editor view
+        ## Right: Editor view/toolbar and right toolbar
         ### Editor Toolbox
         self.visor = self.app.factory.create_box_vertical(hexpand=True, vexpand=True)
         toolbox = self.app.factory.create_box_horizontal(spacing=6)
@@ -162,8 +157,23 @@ class Editor(Gtk.Box):
         self.visor.append(scrwindow)
         editor.append(self.visor)
 
-        # ~ self.append(editor)
-        # ~ self.app.window.connect('window-presented', self._finish_loading)
+        # Empty box (trick)
+        self.boxnull = self.app.factory.create_box_vertical(hexpand=False, vexpand=True)
+        self.boxnull.append(Gtk.Label.new(' '))
+        editor.append(self.boxnull)
+
+        ### Rigth toolbox
+        # ~ vboxRightSidebar = self.app.factory.create_box_horizontal(spacing=6, margin=0, vexpand=True, hexpand=False)
+        self.RightSidebarToolbox = self.app.factory.create_box_vertical(spacing=6, margin=0, vexpand=True, hexpand=False)
+        self.RightSidebarToolbox.set_margin_top(margin=6)
+        self.btnHideSourceEditor = self.app.factory.create_button_toggle(icon_name='com.github.t00m.Loro-sidebar-show-right-symbolic', tooltip='Show/Hide editor', callback=self._on_toggle_editor)
+        self.btnHideSourceEditor.set_active(True)
+        self.RightSidebarToolbox.append(self.btnHideSourceEditor)
+        separator = Gtk.Separator(orientation=Gtk.Orientation.VERTICAL)
+        self.RightSidebarToolbox.append(separator)
+        # ~ vboxRightSidebar.append(RightSidebarToolbox)
+        editor.append(self.RightSidebarToolbox)
+
         self._on_toggle_views(self.btnHideAv, None)
         return
 
@@ -179,9 +189,15 @@ class Editor(Gtk.Box):
         # ~ self.visor.set_visible(not visible)
         if not visible:
             self.selector.set_hexpand(False)
+            self.boxnull.set_visible(True)
         else:
             self.selector.set_hexpand(True)
+            self.boxnull.set_visible(False)
 
+    def _on_toggle_editor(self, button, gparam):
+        visible = button.get_active()
+        self.visor.set_visible(visible)
+        self.boxnull.set_hexpand(not visible)
 
     def _on_view_used_add(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
@@ -189,7 +205,7 @@ class Editor(Gtk.Box):
         filepath = self.cvfilesAv.get_item()
         filename = os.path.basename(filepath.id)
         self.app.workbooks.update(workbook.id, filename, True)
-        # ~ self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, True)
+        self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, True)
         self._update_files_view(workbook.id)
 
     def _on_view_used_remove(self, *args):
@@ -198,7 +214,7 @@ class Editor(Gtk.Box):
         filepath = self.cvfilesUsed.get_item()
         filename = os.path.basename(filepath.id)
         self.app.workbooks.update(workbook.id, filename, False)
-        # ~ self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, False)
+        self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, False)
         self._update_files_view(workbook.id)
 
     def _on_view_available_select_filename(self, selection, position, n_items):
