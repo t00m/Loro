@@ -198,7 +198,7 @@ class WidgetActions(GObject.GObject):
             viewstack.set_visible_child_name('wb-progressbar')
             files = self.app.workbooks.get_files(workbook.id)
             self.app.workflow.start(workbook.id, files)
-            self.app.report.build_pdf(workbook.id)
+            # ~ self.app.report.build_pdf(workbook.id)
 
         def pulse(*args):
             progressbar = self.app.get_widget('progressbar')
