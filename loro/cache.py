@@ -20,6 +20,10 @@ class Cache:
     def __del__(self):
         pass
 
+    def get_filenames(self, workbook: str):
+        cache = self.get_cache(workbook)
+        return cache['filenames']['data'].keys()
+
     def get_topics(self, workbook: str):
         cache = self.get_cache(workbook)
         return cache['topics']['data'].keys()

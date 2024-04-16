@@ -110,6 +110,8 @@ class Report(GObject.GObject):
 
     def build_web(self, workbook: str) -> str:
         self.log.debug("Building report for workbook '%s'", workbook)
+        progressbar = self.app.get_widget('progressbar')
+        progressbar.set_text("Creating HTML Report")
         source, target = ENV['Projects']['Default']['Languages']
         DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = {}
