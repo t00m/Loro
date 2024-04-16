@@ -200,7 +200,7 @@ class WidgetActions(GObject.GObject):
             self.app.workflow.start(workbook.id, files)
             self.app.report.build_pdf(workbook.id)
 
-        def pulse():
+        def pulse(*args):
             progressbar = self.app.get_widget('progressbar')
 
             while True:

@@ -49,7 +49,7 @@ class Workflow(GObject.GObject):
     def spacy_model_loaded(self, *args):
         self.model_loaded = True
 
-    def __load_spacy_model(self):
+    def __load_spacy_model(self, *args):
         """SpaCy model lazy loading"""
         source, target = ENV['Projects']['Default']['Languages']
         self.log.debug("Loading model '%s' for language '%s'", self.model_name, source)
