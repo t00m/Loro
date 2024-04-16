@@ -84,15 +84,30 @@ class WidgetActions(GObject.GObject):
         dialog.present()
 
     def workbook_delete(self, *args):
-        #FIXME: Require confirmation
+        def on_dialog_response(dialog, response):
+            if response == Gtk.ResponseType.YES:
+                if workbook.id is not None:
+                    self.app.workbooks.delete(workbook.id)
+                    self.update_dropdown_workbooks()
+            dialog.destroy()
+
         self.log.debug("Deleting workbook")
+        window = self.app.get_widget('window')
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
-        if workbook.id is not None:
-            self.app.workbooks.delete(workbook.id)
-            # ~ window = self.app.get_widget('window')
-            # ~ window.emit('workbooks-updated')
-            self.update_dropdown_workbooks()
+
+        dialog = Gtk.MessageDialog(
+            transient_for=window,
+            modal=True,
+            message_type=Gtk.MessageType.WARNING,
+            buttons=Gtk.ButtonsType.YES_NO,
+            text=_("Do you really want to remove Workbook %s?" % workbook.id),
+            secondary_text = '\nPlease, remember:\n\n- Reports will be deleted.\n- Files linked to this workbook will be kept.'
+        )
+        dialog.connect("response", on_dialog_response)
+        dialog.present()
+
+
 
     def workbook_translate(self, *args):
         notebook = self.app.get_widget('notebook')
