@@ -19,16 +19,18 @@ class Workbook:
         self.log = get_logger('Workbook')
         self.app = app
         self._check()
-        # ~ self.log.debug('Workbooks initializated')
+        self.log.debug('Workbooks initializated')
         # ~ self.log.debug('Workbooks found: %d', len(self.get_all()))
 
     def _check(self, *args):
+        self.log.debug("Checking available workbooks")
         workbooks_path = os.path.join(get_project_config_dir(), 'workbooks.json')
         if not os.path.exists(workbooks_path):
             self._save({})
-            self.log.debug("Created workbooks configuration (empty)")
+            self.log.debug("Workbook configuration created (empty)")
 
         for workbook in self.get_all():
+            # ~ self.log.debug("Checking workbook '%s'", workbook)
             cache_dir = self.app.cache.get_cache_dir(workbook)
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
