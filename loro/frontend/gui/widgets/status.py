@@ -129,7 +129,10 @@ class StatusPageProgressbar(StatusPage):
 
     def __init__(self, app):
         super(StatusPageProgressbar, self).__init__(app)
-        self.vbox_head.set_visible(False)
+
+        self.set_title('Compiling workbook')
+        self.set_description('Please, wait until all operations are finished')
+        self.vbox_head.set_visible(True)
 
         # Progressbar box
         hbox = self.app.factory.create_box_horizontal(hexpand=True, vexpand=True)
