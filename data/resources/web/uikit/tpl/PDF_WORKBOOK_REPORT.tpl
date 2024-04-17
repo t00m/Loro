@@ -135,3 +135,28 @@ No adverbs in this workbook
 % endfor
 
 
+== Dictionary
+
+<% tlcache = var['app'].translate.get_cache_tokens() %>
+
+[cols="25%,25%,50%"]
+|===
+| Word | Part of Speech | Translation
+
+% for tid in var['workbook']['cache']['tokens']['data'].keys():
+
+<%
+token = var['workbook']['cache']['tokens']['data'][tid]
+postag = var['app'].nlp.explain_term(token['postag']).title()
+target = var['workbook']['target']
+try:
+    translation = tlcache[tid][target]
+except KeyError:
+    translation = ''
+%>
+| ${token['title']}
+| ${postag}
+| ${translation}
+
+% endfor
+|===
