@@ -10,6 +10,7 @@ from gi.repository import Gio, Adw, GLib, Gtk  # type:ignore
 from loro.backend.core.log import get_logger
 from loro.frontend.gui.widgets.status import StatusPageNoWorkbooks
 from loro.frontend.gui.widgets.status import StatusPageCurrentWorkbook
+from loro.frontend.gui.widgets.status import StatusPageProgressbar
 
 
 class Dashboard(Gtk.Box):
@@ -29,14 +30,16 @@ class Dashboard(Gtk.Box):
         viewstack = self.app.add_widget('dashboard-viewstack', Adw.ViewStack())
         sttWBNone = StatusPageNoWorkbooks(self.app)
         sttWBCurrent = StatusPageCurrentWorkbook(self.app)
+        sttWBProgress = StatusPageProgressbar(self.app)
         viewstack.add_titled(sttWBNone, 'wb-none', 'No workbooks')
         viewstack.add_titled(sttWBCurrent, 'wb-current', 'Current workbook')
+        viewstack.add_titled(sttWBProgress, 'wb-progressbar', 'Progress workbook')
         viewstack.set_visible_child_name('wb-current')
         self.append(viewstack)
         self.app.workflow.connect('workflow-finished', self.update)
 
     def update(self, *args):
-        self.log.debug('Updating dashboard')
+        # ~ self.log.debug('Updating dashboard')
         window = self.app.get_widget('window')
         if window is None:
             self.log.warning("Window not ready yet! Keep waiting...")
@@ -45,21 +48,17 @@ class Dashboard(Gtk.Box):
         workbook = self.app.actions.workbook_get_current()
         if workbook is None:
             return
-        self.log.debug("Displaying workbook '%s'", workbook.id)
 
+        self.log.debug("Displaying workbook '%s'", workbook.id)
         viewstack = self.app.get_widget('dashboard-viewstack')
         if workbook.id is None:
             viewstack.set_visible_child_name('wb-none')
         else:
             page = viewstack.get_child_by_name('wb-current')
-            page.set_title("Workbook %s" % workbook.id)
-            page.set_description("Some description")
-            page.set_topics(workbook.id)
-            toolbar = self.app.get_widget('status-box-toolbar')
-            toolbar.set_visible(True)
-            box_pgb = self.app.get_widget('status-box-progressbar')
-            box_pgb.set_visible(False)
+            # ~ page.set_title("Workbook %s" % workbook.id)
+            # ~ page.set_description("Some description")
+            # ~ page.set_topics(workbook.id)
             viewstack.set_visible_child_name('wb-current')
-            # ~ self.app.actions.report_display()
+            # ~ self.app.report.build_pdf(workbook.id)
 
         return False

@@ -40,32 +40,84 @@ class Browser(Gtk.Box):
         # ~ logging.getLogger().setLevel(logging.CRITICAL)
         logging.getLogger("urllib3").setLevel(logging.CRITICAL)
         self._setup_widget()
+        self.wv.load_uri('') # webkit-pdfjs-viewer://pdfjs/web/viewer.html?file=)
         self.log.debug("Browser initialized")
-        self.app.report.connect('report-finished', self.load_report)
+        # ~ self.app.report.connect('report-finished', self.load_reports)
         # ~ loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
         # ~ self.log.debug(loggers)
 
     def _setup_widget(self):
         # Webkit context
-        # ~ self.web_context = WebKit.WebContext.get_default()
-        # ~ self.web_context.set_cache_model(WebKit.CacheModel.DOCUMENT_VIEWER)
-        # ~ self.web_context.set_process_model(WebKit.ProcessModel.MULTIPLE_SECONDARY_PROCESSES)
-        # ~ web_context.register_uri_scheme('basico', self._on_basico_scheme)
+        self.web_context = WebKit.WebContext.get_default()
+        self.web_context.set_cache_model(WebKit.CacheModel.DOCUMENT_BROWSER)
 
         # Webkit settings
-        # ~ self.web_settings = WebKit.Settings()
-        # ~ self.web_settings.set_enable_smooth_scrolling(True)
-        # ~ self.web_settings.set_enable_plugins(False)
+        self.web_settings = WebKit.Settings()
+        self.web_settings.set_enable_smooth_scrolling(True)
+        self.web_settings.set_allow_file_access_from_file_urls(True)
+        self.web_settings.set_enable_html5_local_storage(True)
+        self.web_settings.set_enable_html5_database(True)
+        self.web_settings.set_enable_page_cache(True)
+        self.web_settings.set_enable_offline_web_application_cache(True)
+        self.web_settings.set_allow_file_access_from_file_urls(True)
+        self.web_settings.set_allow_modal_dialogs(True)
+        self.web_settings.set_allow_top_navigation_to_data_urls(True)
+        self.web_settings.set_allow_universal_access_from_file_urls(True)
+        self.web_settings.set_auto_load_images(True)
+        self.web_settings.set_disable_web_security(True)
+        self.web_settings.set_enable_back_forward_navigation_gestures(True)
+        self.web_settings.set_enable_caret_browsing(True)
+        self.web_settings.set_enable_developer_extras(True)
+        self.web_settings.set_enable_dns_prefetching(True)
+        self.web_settings.set_enable_encrypted_media(True)
+        self.web_settings.set_enable_fullscreen(True)
+        self.web_settings.set_enable_html5_database(True)
+        self.web_settings.set_enable_html5_local_storage(True)
+        self.web_settings.set_enable_hyperlink_auditing(True)
+        self.web_settings.set_enable_javascript(True)
+        self.web_settings.set_enable_javascript_markup(True)
+        self.web_settings.set_enable_media(True)
+        self.web_settings.set_enable_media_capabilities(True)
+        self.web_settings.set_enable_media_stream(True)
+        self.web_settings.set_enable_mediasource(True)
+        self.web_settings.set_enable_mock_capture_devices(True)
+        self.web_settings.set_enable_offline_web_application_cache(True)
+        self.web_settings.set_enable_page_cache(True)
+        self.web_settings.set_enable_resizable_text_areas(True)
+        self.web_settings.set_enable_site_specific_quirks(True)
+        self.web_settings.set_enable_smooth_scrolling(True)
+        self.web_settings.set_enable_spatial_navigation(True)
+        self.web_settings.set_enable_tabs_to_links(True)
+        self.web_settings.set_enable_webaudio(True)
+        self.web_settings.set_enable_webgl(True)
+        self.web_settings.set_enable_webrtc(True)
+        self.web_settings.set_enable_write_console_messages_to_stdout(True)
+        self.web_settings.set_javascript_can_access_clipboard(True)
+        self.web_settings.set_javascript_can_open_windows_automatically(True)
+        self.web_settings.set_media_playback_allows_inline(True)
+        self.web_settings.set_media_playback_requires_user_gesture(True)
 
-        # ~ WebKit.WebView.__init__(self,
-                                 # ~ web_context=self.web_context,
-                                 # ~ settings=self.web_settings)
+        WebKit.WebView.__init__(self,
+                     web_context=self.web_context,
+                     settings=self.web_settings)
+
         # ~ self.connect('context-menu', self._on_append_items)
-        toolbar = self.app.factory.create_box_horizontal(hexpand=True, vexpand=False)
+
+        # ~ toolbar = self.app.factory.create_box_horizontal(hexpand=True, vexpand=False)
+
+        toolbar = self.app.add_widget('browser-toolbar', Gtk.CenterBox())
         toolbar.get_style_context().add_class(class_name='toolbar')
-        self.app.add_widget('browser-toolbar', toolbar)
-        btnPrint = self.app.factory.create_button(icon_name='com.github.t00m.Loro-printer-symbolic', width=16, callback=self.print_report)
-        toolbar.append(btnPrint)
+        toolbar.get_style_context().add_class(class_name='linkded')
+        hboxButtons = self.app.factory.create_box_horizontal()
+        btnPDFReport = self.app.factory.create_button(title='PDF Report', callback=self.load_report_pdf)
+        btnWebReport = self.app.factory.create_button(title='Web Report', callback=self.load_report_html)
+        hboxButtons.append(btnPDFReport)
+        hboxButtons.append(btnWebReport)
+        toolbar.set_center_widget(hboxButtons)
+        # ~ btnPrint = self.app.factory.create_button(icon_name='com.github.t00m.Loro-printer-symbolic', width=16, callback=self.print_report)
+        # ~ toolbar.set_end_widget(btnPrint)
+
+
         self.wv = self.app.add_widget('browser-webview', WebKit.WebView())
         self.wv.connect('decide-policy', self._on_decide_policy)
         self.wv.connect('load-changed', self._on_load_changed)
@@ -98,15 +150,8 @@ class Browser(Gtk.Box):
 
         return [action, args]
 
-    def _on_append_items(self, webview, context_menu, hit_result_event, event):
-        """Attach custom actions to browser context menu"""
-        # ~ # Example:
-        # ~ action = Gtk.Action("help", "Basico Help", None, None)
-        # ~ action.connect("activate", self.display_help)
-        # ~ option = WebKit.ContextMenuItem().new(action)
-        # ~ context_menu.prepend(option)
-        pass
-
+    def display_help(self, *args):
+        self.log.debug(args)
 
     def load_url(self, url: str):
         if not url.startswith('file://'):
@@ -114,18 +159,31 @@ class Browser(Gtk.Box):
         self.wv.load_uri(url)
         # ~ self.log.debug("URL %s loaded", url)
 
-    def load_report(self, *args):
-        ddWorkbooks = self.app.get_widget('dd-workbooks')
+    def _get_workbook_html_dir(self):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        workbook = ddWorkbooks.get_selected_item()
+        return os.path.join(get_project_target_workbook_dir(workbook.id), 'html')
+
+    def load_report_pdf(self, *args):
+        output_dir = self._get_workbook_html_dir()
+        pdf_report = os.path.join(output_dir, 'report.pdf')
+        self.load_url(pdf_report)
+
+    def load_report_html(self, *args):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         # ~ self.log.debug("Loading report for Workbook '%s'", workbook.id)
         source, target = ENV['Projects']['Default']['Languages']
-        DIR_OUTPUT = get_project_target_workbook_dir(workbook.id)
+        DIR_OUTPUT = os.path.join(get_project_target_workbook_dir(workbook.id), 'html')
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
-        # ~ self.log.debug(report_url)
+        self.log.debug(report_url)
         self.load_url(report_url)
-        # ~ self.load_url('file:///home/t00m/Documentos/Loro/Projects/DE/output/EN/A1/A1.html')
-        # ~ GLib.idle_add(self.load_report_url)
-        # ~ self.log.debug("Report loaded")
+        self.log.debug("Web Report loaded")
+
+    def load_landing_page(self, workflow, workbook: str):
+        url = self.app.report.build_landing_page(workbook)
+        self.log.debug("Landing page: %s", url)
+        self.load_url(url)
 
     def load_report_url(self):
         # ~ content = open(self.report_url, 'r').read()

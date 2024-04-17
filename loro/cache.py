@@ -16,9 +16,14 @@ class Cache:
         self.log = get_logger('Cache')
         self.app = app
         self.cache = {}
+        self.log.debug("Cache initialited")
 
     def __del__(self):
         pass
+
+    def get_filenames(self, workbook: str):
+        cache = self.get_cache(workbook)
+        return cache['filenames']['data'].keys()
 
     def get_topics(self, workbook: str):
         cache = self.get_cache(workbook)
@@ -56,7 +61,6 @@ class Cache:
             self.cache[key]
             return self.cache[key]
         except KeyError:
-            self.log.debug("Creating new cache for workbook '%s'", workbook)
             self.cache[key] = {}
 
             # Tokens section
@@ -65,26 +69,32 @@ class Cache:
             self.cache[key]['tokens']['file'] = ftokens
             if os.path.exists(ftokens):
                 self.cache[key]['tokens']['data'] = json_load(ftokens)
+                self.log.debug("Loading tokens cache for workbook '%s'", workbook)
             else:
                 self.cache[key]['tokens']['data'] = {}
+                self.log.debug("Creating tokens cache for workbook '%s'", workbook)
 
             # Lemmas section
             flemmas = os.path.join(WB_CONFIG_DIR, '%s_lemmas_%s_%s.json' % (workbook, source, target))
             self.cache[key]['lemmas'] = {}
             self.cache[key]['lemmas']['file'] = flemmas
             if os.path.exists(flemmas):
+                self.log.debug("Loading lemmas cache for workbook '%s'", workbook)
                 self.cache[key]['lemmas']['data'] = json_load(flemmas)
             else:
                 self.cache[key]['lemmas']['data'] = {}
+                self.log.debug("Creating lemmas cache for workbook '%s'", workbook)
 
             # Sentences section
             fsents = os.path.join(WB_CONFIG_DIR, '%s_sentences_%s_%s.json' % (workbook, source, target))
             self.cache[key]['sentences'] = {}
             self.cache[key]['sentences']['file'] = fsents
             if os.path.exists(fsents):
+                self.log.debug("Loading sentences cache for workbook '%s'", workbook)
                 self.cache[key]['sentences']['data'] = json_load(fsents)
             else:
                 self.cache[key]['sentences']['data'] = {}
+                self.log.debug("Creating sentences cache for workbook '%s'", workbook)
 
             # Topics section
             ftopics = os.path.join(WB_CONFIG_DIR, '%s_topics_%s_%s.json' % (workbook, source, target))
@@ -92,8 +102,10 @@ class Cache:
             self.cache[key]['topics']['file'] = ftopics
             if os.path.exists(ftopics):
                 self.cache[key]['topics']['data'] = json_load(ftopics)
+                self.log.debug("Loading topics cache for workbook '%s'", workbook)
             else:
                 self.cache[key]['topics']['data'] = {}
+                self.log.debug("Creating topics cache for workbook '%s'", workbook)
 
             # Subtopics section
             fsubtopics = os.path.join(WB_CONFIG_DIR, '%s_subtopics_%s_%s.json' % (workbook, source, target))
@@ -101,8 +113,10 @@ class Cache:
             self.cache[key]['subtopics']['file'] = fsubtopics
             if os.path.exists(fsubtopics):
                 self.cache[key]['subtopics']['data'] = json_load(fsubtopics)
+                self.log.debug("Loading subtopics cache for workbook '%s'", workbook)
             else:
                 self.cache[key]['subtopics']['data'] = {}
+                self.log.debug("Creating subtopics cache for workbook '%s'", workbook)
 
             # Workbook files section
             ffnames = os.path.join(WB_CONFIG_DIR, '%s_filenames_%s_%s.json' % (workbook, source, target))
@@ -110,8 +124,11 @@ class Cache:
             self.cache[key]['filenames']['file'] = ffnames
             if os.path.exists(ftopics):
                 self.cache[key]['filenames']['data'] = json_load(ffnames)
+                self.log.debug("Loading files cache for workbook '%s'", workbook)
+
             else:
                 self.cache[key]['filenames']['data'] = {}
+                self.log.debug("Creating files cache for workbook '%s'", workbook)
 
             self.save(workbook)
 
@@ -129,18 +146,18 @@ class Cache:
         return files
 
     def initialize(self, workbook):
-        # ~ self.log.debug("Initializing workbook '%s'", workbook)
+        self.log.debug("Initializing workbook '%s'", workbook)
         cache_files = self.get_cache_files(workbook)
         for filepath in cache_files:
             if os.path.exists(filepath):
                 os.unlink(filepath)
-                # ~ self.log.debug("\tDeleting file '%s'", os.path.basename(filepath))
+                self.log.debug("Deleting file '%s'", os.path.basename(filepath))
 
         for filepath in cache_files:
             dirpath = os.path.dirname(filepath)
             if not os.path.exists(dirpath):
                 os.makedirs(dirpath, exist_ok=True)
-                # ~ self.log.debug("\tCreating directory '%s'", dirpath)
+                self.log.debug("Creating directory '%s'", dirpath)
 
         key = self.get_cache_key(workbook)
         del(self.cache[key])

@@ -32,6 +32,7 @@ class Stats(GObject.GObject):
         stats['counters'] = {}
         stats['counters']['TokenByPOS'] = {}
         stats['counters']['LemmaByPOS'] = {}
+        stats['summary'] = {}
 
         tokens_counter = Counter()
         for tid in tokens:
@@ -93,6 +94,44 @@ class Stats(GObject.GObject):
             lemmas_counter[lemma] = stats['lemmas'][lemma]['count']
         stats['counters']['lemmas'] = lemmas_counter
 
+        stats['summary']['topics'] = ', '.join(self.app.cache.get_topics(workbook))
+        stats['summary']['subtopics'] = ', '.join(self.app.cache.get_subtopics(workbook))
+        stats['summary']['filenames'] = ', '.join(self.app.cache.get_filenames(workbook))
+        stats['summary']['postags'] = ', '.join(["%d %s" % (v, self.app.nlp.explain_term(k)) for k, v in sorted(stats['counters']['postags'].items(), key=lambda x: x[0], reverse=False)])
+
+        try:
+            counter_nouns = stats['counters']['LemmaByPOS']['NOUN']
+            stats['summary']['nouns_all'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_nouns.items(), key=lambda x: x[0], reverse=False)])
+            stats['summary']['nouns_common'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_nouns.most_common(10), key=lambda x: x[1], reverse=True)])
+        except KeyError:
+            raise
+            stats['summary']['nouns_all'] = 'No nouns in this workbook'
+            stats['summary']['nouns_common'] = ''
+
+        try:
+            counter_verbs = stats['counters']['LemmaByPOS']['VERB']
+            stats['summary']['verbs_all'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_verbs.items(), key=lambda x: x[0], reverse=False)])
+            stats['summary']['verbs_common'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_verbs.most_common(10), key=lambda x: x[1], reverse=True)])
+        except KeyError:
+            stats['summary']['verbs_all'] = 'No verbs in this workbook'
+            stats['summary']['verbs_common'] = ''
+
+        try:
+            counter_adjs = stats['counters']['LemmaByPOS']['ADJ']
+            stats['summary']['adjs_all'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_adjs.items(), key=lambda x: x[0], reverse=False)])
+            stats['summary']['adjs_common'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_adjs.most_common(10), key=lambda x: x[1], reverse=True)])
+        except KeyError:
+            stats['summary']['adjs_all'] = 'No adjetives in this workbook'
+            stats['summary']['adjs_common'] = ''
+
+        try:
+            counter_advs = stats['counters']['LemmaByPOS']['ADV']
+            stats['summary']['advs_all'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_advs.items(), key=lambda x: x[0], reverse=False)])
+            stats['summary']['advs_common'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_advs.most_common(10), key=lambda x: x[1], reverse=True)])
+        except KeyError:
+            stats['summary']['advs_all'] = 'No adverbs in this workbook'
+            stats['summary']['advs_common'] = ''
+
         self.log.debug("Workbook '%s' stats generated", workbook)
         self.emit('stats-finished')
         return stats
@@ -102,4 +141,12 @@ class Stats(GObject.GObject):
         DIR_WB_CONFIG = self.app.cache.get_cache_dir(workbook)
         FILE_WB_STATS = os.path.join(DIR_WB_CONFIG, '%s_stats.json' % workbook)
         json_save(FILE_WB_STATS, stats)
+        # ~ for postag in stats['counters']['TokenByPOS']:
+            # ~ pos_counter = stats['counters']['TokenByPOS'][postag]
+            # ~ self.log.debug("(POSTAG) %s: %s", postag, pos_counter.most_common(10))
+
+        # ~ for postag in stats['counters']['LemmaByPOS']:
+            # ~ lemma_counter = stats['counters']['LemmaByPOS'][postag]
+            # ~ self.log.debug("(LEMMAS) %s: %s", postag, lemma_counter.most_common(10))
+
         return stats

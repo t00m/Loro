@@ -84,17 +84,54 @@ class WidgetActions(GObject.GObject):
         dialog.present()
 
     def workbook_delete(self, *args):
-        #FIXME: Require confirmation
+        def on_dialog_response(dialog, response):
+            if response == Gtk.ResponseType.YES:
+                if workbook.id is not None:
+                    self.app.workbooks.delete(workbook.id)
+                    self.update_dropdown_workbooks()
+            dialog.destroy()
+
         self.log.debug("Deleting workbook")
+        window = self.app.get_widget('window')
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
-        if workbook.id is not None:
-            self.app.workbooks.delete(workbook.id)
-            # ~ window = self.app.get_widget('window')
-            # ~ window.emit('workbooks-updated')
-            self.update_dropdown_workbooks()
+
+        dialog = Gtk.MessageDialog(
+            transient_for=window,
+            modal=True,
+            message_type=Gtk.MessageType.WARNING,
+            buttons=Gtk.ButtonsType.YES_NO,
+            text=_("Do you really want to remove Workbook %s?" % workbook.id),
+            secondary_text = '\nPlease, remember:\n\n- Reports will be deleted.\n- Files linked to this workbook will be kept.'
+        )
+        dialog.connect("response", on_dialog_response)
+        dialog.present()
+
+
+
+    def workbook_translate(self, *args):
+        notebook = self.app.get_widget('notebook')
+        translator = self.app.get_widget('translator')
+        translator.update()
+        notebook.set_current_page(3)
+        return
+
+    def workbook_summary(self, *args):
+        notebook = self.app.get_widget('notebook')
+        notebook.set_current_page(0)
+
+    def workbook_study(self, *args):
+        notebook = self.app.get_widget('notebook')
+        notebook.set_current_page(1)
 
     def workbook_edit(self, *args):
+        notebook = self.app.get_widget('notebook')
+        editor = self.app.get_widget('editor')
+        editor.update()
+        notebook.set_current_page(2)
+        return
+
+
         def _confirm(_, res, entry, old_name):
             if res == "cancel":
                 return
@@ -157,15 +194,13 @@ class WidgetActions(GObject.GObject):
             if workbook is None:
                 return
             self.log.debug("Workbook['%s'] update requested", workbook.id)
-            toolbar = self.app.get_widget('status-box-toolbar')
-            toolbar.set_visible(False)
-            box_pgb = self.app.get_widget('status-box-progressbar')
-            box_pgb.set_visible(True)
-            box_pgb.set_valign(Gtk.Align.CENTER)
+            viewstack = self.app.get_widget('dashboard-viewstack')
+            viewstack.set_visible_child_name('wb-progressbar')
             files = self.app.workbooks.get_files(workbook.id)
             self.app.workflow.start(workbook.id, files)
+            # ~ self.app.report.build_pdf(workbook.id)
 
-        def pulse():
+        def pulse(*args):
             progressbar = self.app.get_widget('progressbar')
 
             while True:
@@ -202,13 +237,16 @@ class WidgetActions(GObject.GObject):
     def update_dropdown_workbooks(self, *args):
         workbooks = self.app.workbooks.get_all()
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        toolbar = self.app.get_widget('window-toolbar')
         data = []
         wbnames = workbooks.keys()
         if len(wbnames) == 0:
             ddWorkbooks.set_visible(False)
+            toolbar.set_visible(False)
             data.append((None, 'No workbooks available'))
         else:
             ddWorkbooks.set_visible(True)
+            toolbar.set_visible(True)
             for workbook in wbnames:
                 data.append((workbook, "Workbook %s" % workbook))
         self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)
@@ -216,3 +254,4 @@ class WidgetActions(GObject.GObject):
     def workbook_get_current(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         return ddWorkbooks.get_selected_item()
+

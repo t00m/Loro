@@ -33,8 +33,8 @@ class ColLabel(Gtk.Box):
     def __init__(self):
         super(ColLabel, self).__init__()
         label = Gtk.Label()
-        label.set_single_line_mode(False)
-        label.set_selectable(False)
+        label.set_single_line_mode(True)
+        label.set_selectable(True)
         label.set_ellipsize(False)
         self.append(label)
 
@@ -214,7 +214,9 @@ class ColumnView(Gtk.Box):
 
     def _do_filter_view(self, item, filter_list_model):
         text = self.search_entry.get_text()
-        if text.upper() in item.title.upper():
+        found = text.upper() in item.title.upper()
+        self.log.debug("'%s' in '%s'? %s", item.title, text, found)
+        if found:
             return True
         return False
 

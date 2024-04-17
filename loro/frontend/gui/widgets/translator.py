@@ -27,7 +27,7 @@ class Translator(Gtk.Box):
         self.app = app
         self.log = get_logger('Translator')
         self._setup_widget()
-        self._check()
+        # ~ self._check()
         # ~ self.update()
         self.log.debug("Translator initialized")
 
@@ -35,22 +35,32 @@ class Translator(Gtk.Box):
         cvtl = self.app.add_widget('translator-view-tokens', ColumnViewTranslation(self.app))
         cvtl.set_filter(self._do_filter_view_tokens)
         self.append(cvtl)
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        ddWorkbooks.connect("notify::selected-item", self.update)
 
     def _do_filter_view_tokens(self, item, filter_list_model):
+        cvtl = self.app.get_widget('translator-view-tokens')
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         if workbook is None:
             return True
 
         if workbook.id is None:
-            return True
+            return False
+
         workbook_tokens = self.app.cache.get_tokens(workbook.id)
         if item.id in workbook_tokens:
-            return True
+            text = cvtl.search_entry.get_text()
+            found = text.upper() in item.title.upper()
+            # ~ self.log.debug("'%s' in '%s'? %s", text, item.title, found)
+            if found:
+                return True
         return False
 
     def _check(self):
         """
+        FIXME: Do not use this approach. It loads all workbooks.
+
         Scan workbooks and check if tokens/sentences were already
         registered for translations
         """
@@ -65,16 +75,24 @@ class Translator(Gtk.Box):
                 if not self.app.translate.exists_sentence(sid):
                     self.app.translate.set_sentence(sid, target, '')
 
-    def update(self):
+    def update(self, *args):
+        workbook = self.app.actions.workbook_get_current()
+        if workbook is None:
+            return
+
         source, target = ENV['Projects']['Default']['Languages']
         cvtl = self.app.get_widget('translator-view-tokens')
         items = []
-        cache = self.app.translate.get_cache_tokens()
-        for token in cache:
+        tlcache = self.app.translate.get_cache_tokens()
+        tokens = self.app.cache.get_tokens(workbook.id)
+        for tid in tokens:
+            token = tokens[tid]
+            postag = self.app.nlp.explain_term(token['postag']).title()
             items.append(TokenTranslation(
-                                id = token,
-                                title = token,
-                                translation = cache[token][target]
+                                id = tid,
+                                title = token['title'],
+                                postag = postag,
+                                translation = tlcache[tid][target]
                             )
                         )
         cvtl.update(items)
@@ -85,3 +103,4 @@ class Translator(Gtk.Box):
         translation = entry.get_text()
         self.app.translate.set_token(item.id, target, translation)
         self.log.debug("Token '%s' translated to '%s'", item.id, entry.get_text())
+        self.update()

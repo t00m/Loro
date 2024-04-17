@@ -11,6 +11,7 @@ from loro.backend.core.log import get_logger
 from loro.backend.core.util import get_project_target_workbook_dir
 from loro.backend.core.util import create_directory, delete_directory
 from loro.backend.core.util import json_save
+from loro.backend.core.util import exec_cmd
 from loro.backend.services.nlp import spacy
 
 # UIKIT (getuikit.com)
@@ -36,6 +37,8 @@ TPL_FOOTER_FILE = os.path.join(DIR_TPL, 'HTML_FOOTER_FILE.tpl')
 TPL_FOOTER_LEMMA = os.path.join(DIR_TPL, 'HTML_FOOTER_LEMMA.tpl')
 TPL_FOOTER_TOKEN = os.path.join(DIR_TPL, 'HTML_FOOTER_TOKEN.tpl')
 TPL_FOOTER_SENTENCE = os.path.join(DIR_TPL, 'HTML_FOOTER_SENTENCE.tpl')
+TPL_PDF_WORKBOOK_REPORT = os.path.join(DIR_TPL, 'PDF_WORKBOOK_REPORT.tpl')
+TPL_HTML_WORKBOOK_LANDING_PAGE = os.path.join(DIR_TPL, 'HTML_WORKBOOK_LANDING_PAGE.tpl')
 
 
 class Report(GObject.GObject):
@@ -48,7 +51,7 @@ class Report(GObject.GObject):
         self.templates = {}
         self._add_templates()
         self.log.debug("Reporting initialized")
-        # ~ self.app.workflow.connect('workflow-finished', self.update_report)
+        self.app.workflow.connect('workflow-finished', self.update_report)
 
     def _add_templates(self):
         self.templates['HEADER'] = Template(filename=TPL_HEADER)
@@ -63,6 +66,8 @@ class Report(GObject.GObject):
         self.templates['FOOTER_LEMMA'] = Template(filename=TPL_FOOTER_LEMMA)
         self.templates['FOOTER_TOKEN'] = Template(filename=TPL_FOOTER_TOKEN)
         self.templates['FOOTER_SENTENCE'] = Template(filename=TPL_FOOTER_SENTENCE)
+        self.templates['PDF_WORKBOOK_REPORT'] = Template(filename=TPL_PDF_WORKBOOK_REPORT)
+        self.templates['WORKBOOK_LANDING_PAGE'] = Template(filename=TPL_HTML_WORKBOOK_LANDING_PAGE)
         self.log.debug("Loro templates added")
 
     def template(self, name: str):
@@ -75,8 +80,38 @@ class Report(GObject.GObject):
     def get_url(self, workbook: str) -> str:
         return os.path.join(get_project_target_workbook_dir(workbook), 'html', 'index.html')
 
-    def build(self, workbook: str) -> str:
+    def build_landing_page(self, workbook: str):
+        self.log.debug("Building landing page for workbook '%s'", workbook)
+        source, target = ENV['Projects']['Default']['Languages']
+        DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
+        var = {}
+        var['app'] = self.app
+        var['workbook'] = {}
+        var['workbook']['id'] = workbook
+        var['workbook']['source'] = source
+        var['workbook']['target'] = target
+        var['workbook']['cache'] = self.app.cache.get_cache(workbook)
+        var['workbook']['stats'] = self.app.stats.get(workbook)
+        var['html'] = {}
+        var['html']['title'] = "Workbook %s" % workbook
+        var['html']['uikit'] = {}
+        var['html']['uikit']['css'] = UIKIT_CSS
+        var['html']['uikit']['css_print'] = PRINT_CSS
+        var['html']['uikit']['icon'] = UIKIT_ICON_MIN_JS
+        var['html']['uikit']['js'] = UIKIT_MIN_JS
+        var['html']['output'] = DIR_HTML
+        var['html']['index'] = True
+        url = os.path.join(var['html']['output'], 'index.html')
+        html = self.render_template('WORKBOOK_LANDING_PAGE', var)
+        self._write_page(url, html)
+        self.log.debug("Landing page created")
+        return url
+
+
+    def build_web(self, workbook: str) -> str:
         self.log.debug("Building report for workbook '%s'", workbook)
+        progressbar = self.app.get_widget('progressbar')
+        progressbar.set_text("Creating HTML Report")
         source, target = ENV['Projects']['Default']['Languages']
         DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = {}
@@ -104,7 +139,7 @@ class Report(GObject.GObject):
         self._build_sentence_pages(var)
         self._build_file_pages(var)
         self._build_index(var)
-        self.log.debug("Report for workbook '%s' built", workbook)
+        self.log.debug("HTML Report for workbook '%s' generated", workbook)
         # ~ return url
 
     def _prepare(self, var: dict) -> bool:
@@ -204,7 +239,7 @@ class Report(GObject.GObject):
         workbook = var['workbook']['id']
         var['html']['title'] = "Workbook %s" % workbook
         var['html']['index'] = True
-        url = os.path.join(var['html']['output'], 'index.html')
+        url = os.path.join(var['html']['output'], '%s.html' % workbook)
 
         files = self.app.workbooks.get_files(workbook)
         var['workbook']['files'] = files
@@ -224,14 +259,47 @@ class Report(GObject.GObject):
             # ~ self.log.debug("Page '%s' created", basename)
 
     def update_report(self, workflow, workbook):
-        self.build(workbook)
-        self.log.debug("Report['%s'] generated" % workbook)
+        self.build_web(workbook)
+        self.build_pdf(workbook)
+        self.log.debug("Reports for workbook '%s' generated" % workbook)
         # ~ self.emit('report-finished', workbook)
 
+    def _get_var(self, workbook: str) -> {}:
+        source, target = ENV['Projects']['Default']['Languages']
+        DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
+        var = {}
+        var['app'] = self.app
+        var['workbook'] = {}
+        var['workbook']['id'] = workbook
+        var['workbook']['title'] = "Workbook %s" % workbook
+        var['workbook']['description'] = "(description)"
+        var['workbook']['source'] = source
+        var['workbook']['target'] = target
+        var['workbook']['cache'] = self.app.cache.get_cache(workbook)
+        var['workbook']['stats'] = self.app.stats.get(workbook)
+        var['workbook']['topics'] = self.app.cache.get_topics(workbook)
+        var['workbook']['subtopics'] = self.app.cache.get_subtopics(workbook)
+        var['html'] = {}
+        var['html']['title'] = "Workbook %s" % workbook
+        var['html']['uikit'] = {}
+        var['html']['uikit']['css'] = UIKIT_CSS
+        var['html']['uikit']['css_print'] = PRINT_CSS
+        var['html']['uikit']['icon'] = UIKIT_ICON_MIN_JS
+        var['html']['uikit']['js'] = UIKIT_MIN_JS
+        var['html']['output'] = DIR_HTML
+        return var
 
-# ~ <%! from loro.backend.services.nlp import spacy %>
-# ~ <p class="uk-text-lead">
-# ~ % for postag in var['workbook']['stats']['postags']:
-    # ~ <h3 class="uk-margin-small-bottom" id="${postag}">${spacy.explain_term(postag).title()}</h3>
-# ~ % endfor
-# ~ </p>
+    def build_pdf(self, workbook):
+        progressbar = self.app.get_widget('progressbar')
+        progressbar.set_text("Creating PDF Report")
+        var = self._get_var(workbook)
+        var['timestamp'] = '2022-10-19'
+        adoc = self.render_template('PDF_WORKBOOK_REPORT', var)
+        adoc_path = os.path.join(var['html']['output'], 'report.adoc')
+        with open(adoc_path, 'w') as fadoc:
+            fadoc.write(adoc)
+
+        cmd = "asciidoctor-pdf -d book -a toc -a toclevels=3 %s" % adoc_path
+        exec_cmd(cmd)
+        self.log.debug('PDF Report generated')
+        self.emit('report-finished', workbook)
