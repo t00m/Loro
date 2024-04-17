@@ -32,9 +32,13 @@ class Translator(Gtk.Box):
         self.log.debug("Translator initialized")
 
     def _setup_widget(self):
+        notebook = self.app.add_widget('translator-notebook', Gtk.Notebook())
+        notebook.set_show_border(False)
         cvtl = self.app.add_widget('translator-view-tokens', ColumnViewTranslation(self.app))
         cvtl.set_filter(self._do_filter_view_tokens)
-        self.append(cvtl)
+        notebook.append_page(cvtl, Gtk.Label.new('Words'))
+        notebook.append_page(Gtk.Label.new('Sentences'), Gtk.Label.new('Sentences'))
+        self.append(notebook)
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         ddWorkbooks.connect("notify::selected-item", self.update)
 
