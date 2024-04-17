@@ -26,6 +26,7 @@ from loro.backend.core.log import get_logger
 # ~ from loro.backend.services.nlp.spacy import explain_term
 from loro.frontend.gui.widgets.selector import Selector
 from loro.frontend.gui.widgets.filedialog import open_file_dialog
+from loro.backend.core.util import get_default_languages
 
 class Editor(Gtk.Box):
     __gtype_name__ = 'Editor'
@@ -246,7 +247,7 @@ class Editor(Gtk.Box):
 
     def _update_files_view(self, wbname: str):
         # Update files
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         files = get_inputs()
         itemsAv = []
         itemsUsed = []
@@ -294,7 +295,7 @@ class Editor(Gtk.Box):
             start = textbuffer.get_start_iter()
             end = textbuffer.get_end_iter()
             contents = textbuffer.get_text(start, end, False)
-            source, target = ENV['Projects']['Default']['Languages']
+            source, target = get_default_languages()
             filepath = os.path.join(get_project_input_dir(), filename)
             with open(filepath, 'w') as fout:
                 fout.write(contents)

@@ -17,7 +17,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.frontend.gui.widgets.views import ColumnViewTranslation
 from loro.frontend.gui.models import TokenTranslation
-
+from loro.backend.core.util import get_default_languages
 
 class Translator(Gtk.Box):
     __gtype_name__ = 'Translator'
@@ -68,7 +68,7 @@ class Translator(Gtk.Box):
         Scan workbooks and check if tokens/sentences were already
         registered for translations
         """
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         translations = self.app.translate
         workbooks = self.app.workbooks.get_all()
         for workbook in workbooks:
@@ -84,7 +84,7 @@ class Translator(Gtk.Box):
         if workbook is None:
             return
 
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         cvtl = self.app.get_widget('translator-view-tokens')
         items = []
         tlcache = self.app.translate.get_cache_tokens()
@@ -92,17 +92,21 @@ class Translator(Gtk.Box):
         for tid in tokens:
             token = tokens[tid]
             postag = self.app.nlp.explain_term(token['postag']).title()
+            try:
+                translation = tlcache[tid][target]
+            except:
+                translation = ''
             items.append(TokenTranslation(
                                 id = tid,
                                 title = token['title'],
                                 postag = postag,
-                                translation = tlcache[tid][target]
+                                translation = translation
                             )
                         )
         cvtl.update(items)
 
     def set_translation(self, entry, item):
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         cache = self.app.translate.get_cache_tokens()
         translation = entry.get_text()
         self.app.translate.set_token(item.id, target, translation)

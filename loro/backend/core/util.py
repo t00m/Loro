@@ -18,26 +18,30 @@ import hashlib
 import subprocess
 import multiprocessing
 
-from loro.backend.core.env import ENV
-from loro.backend.core.log import get_logger
+from loro.backend.core.config import Config
 from loro.backend.core.constants import LORO_USER_DIR
 from loro.backend.core.constants import LORO_USER_PROJECTS_DIR
 from loro.backend.core.constants import LORO_USER_CONFIG_DIR
+from loro.backend.core.env import ENV
+from loro.backend.core.log import get_logger
 
 log = get_logger('Util')
+config = Config()
 
 def exec_cmd(cmd):
     """Execute an operating system command.
     Return:
     - document
     - True if success, False if not
-
     """
     process = subprocess.Popen([cmd], shell=True, stdout=subprocess.PIPE)
     return process.communicate()
 
+def get_default_languages() -> ():
+    return config.get_default_languages()
+
 def get_project_dir() -> str:
-    source, target = ENV['Projects']['Default']['Languages']
+    source, target = get_default_languages()
     return os.path.join(os.path.join(LORO_USER_PROJECTS_DIR, source))
 
 def get_project_config_dir() -> str:
@@ -50,7 +54,7 @@ def get_project_output_dir() -> str:
     return os.path.join(get_project_dir(), 'output')
 
 def get_project_target_dir() -> str:
-    source, target = ENV['Projects']['Default']['Languages']
+    source, target = get_default_languages()
     return os.path.join(get_project_output_dir(), target)
 
 def get_project_target_workbook_dir(workbook: str):

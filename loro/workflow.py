@@ -20,6 +20,7 @@ from loro.backend.core.log import get_logger
 from loro.workbook import Workbook
 from loro.backend.core.run_async import RunAsync
 from loro.backend.core.util import get_project_target_workbook_html_dir
+from loro.backend.core.util import get_default_languages
 
 
 class Workflow(GObject.GObject):
@@ -32,7 +33,7 @@ class Workflow(GObject.GObject):
         GObject.signal_new('workflow-finished', Workflow, GObject.SignalFlags.RUN_LAST, GObject.TYPE_PYOBJECT, (GObject.TYPE_PYOBJECT,) )
         GObject.signal_new('model-loaded', Workflow, GObject.SignalFlags.RUN_LAST, None, () )
 
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         self.model_type = ENV['Languages'][source]['model']['default']
         self.model_name = ENV['Languages'][source]['model'][self.model_type]
         self.log.debug("Workflow configured for source '%s' and target '%s' languages", source, target)
@@ -51,7 +52,7 @@ class Workflow(GObject.GObject):
 
     def __load_spacy_model(self, *args):
         """SpaCy model lazy loading"""
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         self.log.debug("Loading model '%s' for language '%s'", self.model_name, source)
         self.app.nlp.load_model(self.model_name)
         self.log.debug("SpaCy model loaded successfully")
@@ -75,7 +76,7 @@ class Workflow(GObject.GObject):
         self.docbin = {}
         self.current_filename = ''
         self.fraction = 0.0
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         if not self.model_loaded:
             self.log.warning("Spacy model still loading")
             return
