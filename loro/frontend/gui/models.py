@@ -53,12 +53,18 @@ class TokenTranslation(Item):
     __title__ = 'TokenTranslation'
 
 
-    def __init__(self,  id: str,                # Token
-                        title: str = '',        # Token
+    def __init__(self,  id: str,                # Token Id
+                        title: str = '',        # Token Name
+                        postag: str = '',       # Token Postag
                         translation: str = ''   # Translation
                 ):
         super().__init__(id, title)
+        self._postag = postag
         self._translation = translation
+
+    @GObject.Property
+    def postag(self):
+        return self._postag
 
     @GObject.Property
     def translation(self):

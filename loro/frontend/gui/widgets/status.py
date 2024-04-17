@@ -86,14 +86,14 @@ class StatusPageCurrentWorkbook(StatusPage):
         summary = self.app.add_widget('summary', Summary(self.app))
         browser = self.app.add_widget('browser', Browser(self.app))
         editor = self.app.add_widget('editor', Editor(self.app))
-        # ~ translator = self.app.add_widget('translator', Translator(self.app))
+        translator = self.app.add_widget('translator', Translator(self.app))
         notebook = self.app.add_widget('notebook', Gtk.Notebook())
         notebook.set_show_tabs(False)
         notebook.set_show_border(False)
         notebook.append_page(summary, Gtk.Label.new("Summary")) # Page 0
         notebook.append_page(browser, Gtk.Label.new("Browser")) # Page 1
         notebook.append_page(editor, Gtk.Label.new("Editor")) # Page 2
-        # ~ notebook.append_page(translator, Gtk.Label.new("Transalator")) # Page 3
+        notebook.append_page(translator, Gtk.Label.new("Transalator")) # Page 3
         self.mainbox.append(notebook)
 
         # ~ self.hbox_title.set_valign(Gtk.Align.START)
