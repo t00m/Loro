@@ -39,7 +39,7 @@ TPL_FOOTER_TOKEN = os.path.join(DIR_TPL, 'HTML_FOOTER_TOKEN.tpl')
 TPL_FOOTER_SENTENCE = os.path.join(DIR_TPL, 'HTML_FOOTER_SENTENCE.tpl')
 TPL_PDF_WORKBOOK_REPORT = os.path.join(DIR_TPL, 'PDF_WORKBOOK_REPORT.tpl')
 TPL_HTML_WORKBOOK_LANDING_PAGE = os.path.join(DIR_TPL, 'HTML_WORKBOOK_LANDING_PAGE.tpl')
-
+from loro.backend.core.util import get_default_languages
 
 class Report(GObject.GObject):
     def __init__(self, app):
@@ -82,7 +82,7 @@ class Report(GObject.GObject):
 
     def build_landing_page(self, workbook: str):
         self.log.debug("Building landing page for workbook '%s'", workbook)
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = {}
         var['app'] = self.app
@@ -112,7 +112,7 @@ class Report(GObject.GObject):
         self.log.debug("Building report for workbook '%s'", workbook)
         progressbar = self.app.get_widget('progressbar')
         progressbar.set_text("Creating HTML Report")
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = {}
         var['app'] = self.app
@@ -265,7 +265,7 @@ class Report(GObject.GObject):
         # ~ self.emit('report-finished', workbook)
 
     def _get_var(self, workbook: str) -> {}:
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = {}
         var['app'] = self.app

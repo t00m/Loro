@@ -10,6 +10,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import json_load, json_save
 from loro.backend.core.util import get_project_target_dir
+from loro.backend.core.util import get_default_languages
 
 class Cache:
     def __init__(self, app):
@@ -54,7 +55,7 @@ class Cache:
             json_save(filepath, data)
 
     def get_cache(self, workbook:str) -> {}:
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         WB_CONFIG_DIR = self.get_cache_dir(workbook)
         key = self.get_cache_key(workbook)
         try:
@@ -165,7 +166,7 @@ class Cache:
         self._save_cache(workbook)
 
     def get_cache_key(self, workbook):
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         return "%s-%s-%s" % (workbook, source, target)
 
     def save(self, workbook):
@@ -173,7 +174,7 @@ class Cache:
         # ~ self.log.debug("Workbook '%s' cache saved", workbook)
 
     def add_sentence(self, workbook:str, filename: str, sid: str, sentence: str, tokens: []) -> bool:
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         cache = self.get_cache(workbook)
         sentences = cache['sentences']['data']
         added = False

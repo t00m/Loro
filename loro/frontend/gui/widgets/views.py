@@ -65,9 +65,9 @@ class ColumnViewToken(ColumnView):
         self.column_title.set_title(_('Word'))
         self.column_title.set_expand(True)
 
-class ColumnViewTranslation(ColumnViewToken):
+class ColumnViewTranslationToken(ColumnViewToken):
     """ Custom ColumnView widget for tokens translation """
-    __gtype_name__ = 'ColumnViewTranslation'
+    __gtype_name__ = 'ColumnViewTranslationToken'
 
     def __init__(self, app):
         super().__init__(app)
@@ -107,7 +107,53 @@ class ColumnViewTranslation(ColumnViewToken):
         item = list_item.get_item()
         entry = box.get_first_child()
         translator = self.app.get_widget('translator')
-        entry.connect('activate', translator.set_translation, item)
+        entry.connect('activate', translator.set_translation_token, item)
+        entry.set_text(item.translation)
+
+
+class ColumnViewTranslationSentence(ColumnViewToken):
+    """ Custom ColumnView widget for sentence translation """
+    __gtype_name__ = 'ColumnViewTranslationSentence'
+
+    def __init__(self, app):
+        super().__init__(app)
+
+        self.factory_filename = Gtk.SignalListItemFactory()
+        self.factory_filename.connect("setup", self._on_factory_setup_filename)
+        self.factory_filename.connect("bind", self._on_factory_bind_filename)
+        self.factory_translation = Gtk.SignalListItemFactory()
+        self.factory_translation.connect("setup", self._on_factory_setup_translation)
+        self.factory_translation.connect("bind", self._on_factory_bind_translation)
+        self.column_filename = Gtk.ColumnViewColumn.new(_('Filename'), self.factory_filename)
+        self.column_translation = Gtk.ColumnViewColumn.new(_('Translation'), self.factory_translation)
+        self.column_title.set_expand(False)
+        self.column_translation.set_expand(True)
+        self.cv.append_column(self.column_filename)
+        self.column_filename.set_expand(False)
+        self.cv.append_column(self.column_translation)
+        self.prop_filename_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='filename')
+        self.column_filename.set_sorter(self.prop_filename_sorter)
+
+    def _on_factory_setup_filename(self, factory, list_item):
+        box = ColLabel()
+        list_item.set_child(box)
+
+    def _on_factory_bind_filename(self, factory, list_item):
+        box = list_item.get_child()
+        item = list_item.get_item()
+        label = box.get_first_child()
+        label.set_text(item.filename)
+
+    def _on_factory_setup_translation(self, factory, list_item):
+        box = ColEntry()
+        list_item.set_child(box)
+
+    def _on_factory_bind_translation(self, factory, list_item):
+        box = list_item.get_child()
+        item = list_item.get_item()
+        entry = box.get_first_child()
+        translator = self.app.get_widget('translator')
+        entry.connect('activate', translator.set_translation_sentence, item)
         entry.set_text(item.translation)
 
 class ColumnViewSentences(ColumnView):
@@ -213,5 +259,5 @@ class ColumnViewAnalysis(ColumnView):
         item = list_item.get_item()
         entry = box.get_first_child()
         dashboard = self.app.get_widget('dashboard')
-        entry.connect('activate', dashboard.set_translation)
+        # ~ entry.connect('activate', dashboard.set_translation)
         entry.set_text(item.translation)

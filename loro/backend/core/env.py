@@ -1,23 +1,10 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-"""
-Environment module.
-
 # File: env.py
 # Author: Tomás Vírseda
 # License: GPL v3
 # Description: Environment variables module
-"""
 
-import os
-
-# ~ from loro.backend.core.constants import LORO_USER_CNF
-# ~ from loro.backend.core.util import json_load, json_save
-
-# ~ try:
-    # ~ # Load user config
-    # ~ ENV = json_load(LORO_USER_CNF)
-# ~ except:
 ENV = {}
 ENV['Languages'] = {}
 ENV['Languages']['DE'] = {}

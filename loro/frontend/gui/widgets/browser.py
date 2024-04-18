@@ -28,6 +28,7 @@ from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.run_async import RunAsync
 from loro.backend.core.util import get_project_target_workbook_dir
+from loro.backend.core.util import get_default_languages
 
 
 class Browser(Gtk.Box):
@@ -40,11 +41,16 @@ class Browser(Gtk.Box):
         # ~ logging.getLogger().setLevel(logging.CRITICAL)
         logging.getLogger("urllib3").setLevel(logging.CRITICAL)
         self._setup_widget()
+        self._connect_signals()
         self.wv.load_uri('') # webkit-pdfjs-viewer://pdfjs/web/viewer.html?file=)
         self.log.debug("Browser initialized")
         # ~ self.app.report.connect('report-finished', self.load_reports)
         # ~ loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
         # ~ self.log.debug(loggers)
+
+    def _connect_signals(self):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        ddWorkbooks.connect("notify::selected-item", self.update)
 
     def _setup_widget(self):
         # Webkit context
@@ -173,7 +179,7 @@ class Browser(Gtk.Box):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         # ~ self.log.debug("Loading report for Workbook '%s'", workbook.id)
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         DIR_OUTPUT = os.path.join(get_project_target_workbook_dir(workbook.id), 'html')
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
         self.log.debug(report_url)
@@ -227,3 +233,6 @@ class Browser(Gtk.Box):
     def _on_load_failed(self, webview, load_event, failing_uri, error):
         self.log.error(error)
         self.load_url('file://error_404.html')
+
+    def update(self, *args):
+        pass

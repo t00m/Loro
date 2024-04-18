@@ -155,7 +155,7 @@ class Window(Adw.ApplicationWindow):
 
         _create_action(
             "preferences",
-            lambda *_: PreferencesWindow(self).show(),
+            lambda *_: PreferencesWindow(self, self.app).show(),
             # ~ ["<primary>comma"],
         )
         _create_action(

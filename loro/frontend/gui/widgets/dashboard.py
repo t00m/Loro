@@ -21,10 +21,13 @@ class Dashboard(Gtk.Box):
         self.log = get_logger('Dashboard')
         self.app = app
         self._build_dashboard()
-        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        ddWorkbooks.connect("notify::selected-item", self.update)
+        self._connect_signals()
         sid = GLib.timeout_add(interval=500, function=self.update)
         self.log.debug("Signal Id: %d", sid)
+
+    def _connect_signals(self):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        ddWorkbooks.connect("notify::selected-item", self.update)
 
     def _build_dashboard(self):
         viewstack = self.app.add_widget('dashboard-viewstack', Adw.ViewStack())

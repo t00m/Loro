@@ -11,6 +11,7 @@ from loro.backend.core.util import create_directory, delete_directory
 from loro.backend.core.util import get_project_target_workbook_build_dir
 from loro.backend.core.util import get_metadata_from_filename
 from kb4it.core.env import ENV as KB4ITENV
+from loro.backend.core.util import get_default_languages
 
 EOHMARK = KB4ITENV['CONF']['EOHMARK']
 
@@ -25,7 +26,7 @@ class Builder(GObject.GObject):
     def kb(self, workbook: str):
 
         # Initialize build directory
-        source, target = ENV['Projects']['Default']['Languages']
+        source, target = get_default_languages()
         DIR_BUILD = get_project_target_workbook_build_dir(workbook)
         if os.path.exists(DIR_BUILD):
             delete_directory(DIR_BUILD)
