@@ -15,8 +15,10 @@ from gi.repository import Gtk
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
-from loro.frontend.gui.widgets.views import ColumnViewTranslation
+from loro.frontend.gui.widgets.views import ColumnViewTranslationToken
+from loro.frontend.gui.widgets.views import ColumnViewTranslationSentence
 from loro.frontend.gui.models import TokenTranslation
+from loro.frontend.gui.models import SentenceTranslation
 from loro.backend.core.util import get_default_languages
 
 class Translator(Gtk.Box):
@@ -27,20 +29,27 @@ class Translator(Gtk.Box):
         self.app = app
         self.log = get_logger('Translator')
         self._setup_widget()
+        self._connect_signals()
         # ~ self._check()
         # ~ self.update()
         self.log.debug("Translator initialized")
 
+    def _connect_signals(self):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        ddWorkbooks.connect("notify::selected-item", self.update)
+
     def _setup_widget(self):
         notebook = self.app.add_widget('translator-notebook', Gtk.Notebook())
         notebook.set_show_border(False)
-        cvtl = self.app.add_widget('translator-view-tokens', ColumnViewTranslation(self.app))
+
+        cvtl = self.app.add_widget('translator-view-tokens', ColumnViewTranslationToken(self.app))
         cvtl.set_filter(self._do_filter_view_tokens)
         notebook.append_page(cvtl, Gtk.Label.new('Words'))
-        notebook.append_page(Gtk.Label.new('Sentences'), Gtk.Label.new('Sentences'))
+
+        cvts = self.app.add_widget('translator-view-sentences', ColumnViewTranslationSentence(self.app))
+        notebook.append_page(cvts, Gtk.Label.new('Sentences'))
+
         self.append(notebook)
-        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        ddWorkbooks.connect("notify::selected-item", self.update)
 
     def _do_filter_view_tokens(self, item, filter_list_model):
         cvtl = self.app.get_widget('translator-view-tokens')
@@ -89,6 +98,7 @@ class Translator(Gtk.Box):
         items = []
         tlcache = self.app.translate.get_cache_tokens()
         tokens = self.app.cache.get_tokens(workbook.id)
+
         for tid in tokens:
             token = tokens[tid]
             postag = self.app.nlp.explain_term(token['postag']).title()
@@ -104,6 +114,32 @@ class Translator(Gtk.Box):
                             )
                         )
         cvtl.update(items)
+
+        cvts = self.app.get_widget('translator-view-sentences')
+        items = []
+        tscache = self.app.translate.get_cache_sentences()
+        self.log.error(tscache)
+        sentences = self.app.cache.get_sentences(workbook.id)
+        self.log.error(sentences)
+        for sid in sentences:
+            sent_source = sentences[sid][source]
+            sent_target = tscache[sid][target]
+            sent_filename = sentences[sid]['filename'][0]
+            # ~ try:
+                # ~ translation = tlcache[tid][target]
+            # ~ except:
+                # ~ translation = ''
+            items.append(SentenceTranslation(
+                                id = sid,
+                                title = sent_source,
+                                filename = sent_filename,
+                                translation = sent_target
+                            )
+                        )
+        cvts.update(items)
+
+
+
 
     def set_translation(self, entry, item):
         source, target = get_default_languages()

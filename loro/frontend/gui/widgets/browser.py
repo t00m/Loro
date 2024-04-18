@@ -41,11 +41,16 @@ class Browser(Gtk.Box):
         # ~ logging.getLogger().setLevel(logging.CRITICAL)
         logging.getLogger("urllib3").setLevel(logging.CRITICAL)
         self._setup_widget()
+        self._connect_signals()
         self.wv.load_uri('') # webkit-pdfjs-viewer://pdfjs/web/viewer.html?file=)
         self.log.debug("Browser initialized")
         # ~ self.app.report.connect('report-finished', self.load_reports)
         # ~ loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
         # ~ self.log.debug(loggers)
+
+    def _connect_signals(self):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        ddWorkbooks.connect("notify::selected-item", self.update)
 
     def _setup_widget(self):
         # Webkit context
@@ -228,3 +233,6 @@ class Browser(Gtk.Box):
     def _on_load_failed(self, webview, load_event, failing_uri, error):
         self.log.error(error)
         self.load_url('file://error_404.html')
+
+    def update(self, *args):
+        pass

@@ -42,7 +42,12 @@ class Editor(Gtk.Box):
         # ~ self.update()
         # ~ self._set_enable_renaming(False)
         # ~ self._set_enable_deleting(False)
+        self._connect_signals()
         self.log.debug("Editor initialited")
+
+    def _connect_signals(self):
+        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
+        ddWorkbooks.connect("notify::selected-item", self.update)
 
     def _set_enable_renaming(self, enabled):
         self.btnRename.set_sensitive(enabled)
@@ -156,7 +161,6 @@ class Editor(Gtk.Box):
         editor.append(self.RightSidebarToolbox)
 
         self._on_toggle_views(self.btnHideAv, None)
-        return
 
     def _finish_loading(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')

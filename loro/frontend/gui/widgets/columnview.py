@@ -215,7 +215,7 @@ class ColumnView(Gtk.Box):
     def _do_filter_view(self, item, filter_list_model):
         text = self.search_entry.get_text()
         found = text.upper() in item.title.upper()
-        self.log.debug("'%s' in '%s'? %s", item.title, text, found)
+        # ~ self.log.debug("'%s' in '%s'? %s", item.title, text, found)
         if found:
             return True
         return False

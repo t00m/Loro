@@ -70,6 +70,29 @@ class TokenTranslation(Item):
     def translation(self):
         return self._translation
 
+class SentenceTranslation(Item):
+    """Custom data model"""
+    __gtype_name__ = 'SentenceTranslation'
+    __title__ = 'SentenceTranslation'
+
+
+    def __init__(self,  id: str,                # Sentence Id
+                        title: str = '',        # Sentence Source lang
+                        filename: str = '',       # Filename for sent
+                        translation: str = ''   # Translation
+                ):
+        super().__init__(id, title)
+        self._filename = filename
+        self._translation = translation
+
+    @GObject.Property
+    def filename(self):
+        return self._filename
+
+    @GObject.Property
+    def translation(self):
+        return self._translation
+
 class Sentence(Item):
     """Custom data model"""
     __gtype_name__ = 'Sentence'
