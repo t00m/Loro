@@ -16,12 +16,21 @@ from rich.traceback import install
 
 sys.path.insert(1, '@pkgdatadir@')
 
+from loro.backend.core.constants import LORO_USER_DIR
+from loro.backend.core.constants import LORO_USER_CONFIG_DIR
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
-from loro.backend.core.util import get_default_workers
 from loro.main import main
 
 log = get_logger('loro')
+
+initial_config = False
+for directory in [LORO_USER_DIR, LORO_USER_CONFIG_DIR]:
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
+        initial_config = True
+if initial_config:
+    log.debug("Initializing Loro installation")
 
 ENV['APP'] = {}
 ENV['APP']['ID'] = '@APP_ID@'
@@ -48,6 +57,7 @@ except:
 
 
 if __name__ == "__main__":
+    from loro.backend.core.util import get_default_workers
     WORKERS = get_default_workers()
 
     # Loro arguments

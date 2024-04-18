@@ -8,15 +8,18 @@ from loro.backend.core.constants import LORO_USER_CNF
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 
+log = get_logger('Config')
 
 def json_load(filepath: str) -> {}:
     """Load into a dictionary a file in json format"""
+    # ~ log.debug("Loading config from '%s'", filepath)
     with open(filepath, 'r') as fin:
         adict = json.load(fin)
     return adict
 
 def json_save(filepath: str, adict: {}) -> {}:
     """Save dictionary into a file in json format"""
+    # ~ log.debug("Saving config to '%s'", filepath)
     with open(filepath, 'w') as fout:
         json.dump(adict, fout, sort_keys=True, indent=4, ensure_ascii=False)
 
