@@ -107,7 +107,7 @@ class ColumnViewTranslationToken(ColumnViewToken):
         item = list_item.get_item()
         entry = box.get_first_child()
         translator = self.app.get_widget('translator')
-        entry.connect('activate', translator.set_translation, item)
+        entry.connect('activate', translator.set_translation_token, item)
         entry.set_text(item.translation)
 
 
@@ -153,7 +153,7 @@ class ColumnViewTranslationSentence(ColumnViewToken):
         item = list_item.get_item()
         entry = box.get_first_child()
         translator = self.app.get_widget('translator')
-        entry.connect('activate', translator.set_translation, item)
+        entry.connect('activate', translator.set_translation_sentence, item)
         entry.set_text(item.translation)
 
 class ColumnViewSentences(ColumnView):
@@ -259,5 +259,5 @@ class ColumnViewAnalysis(ColumnView):
         item = list_item.get_item()
         entry = box.get_first_child()
         dashboard = self.app.get_widget('dashboard')
-        entry.connect('activate', dashboard.set_translation)
+        # ~ entry.connect('activate', dashboard.set_translation)
         entry.set_text(item.translation)
