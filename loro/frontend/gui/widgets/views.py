@@ -134,6 +134,15 @@ class ColumnViewTranslationSentence(ColumnViewToken):
         self.prop_filename_sorter = Gtk.CustomSorter.new(sort_func=self._on_sort_string_func, user_data='filename')
         self.column_filename.set_sorter(self.prop_filename_sorter)
 
+    def _on_factory_bind_title(self, factory, list_item):
+        box = list_item.get_child()
+        item = list_item.get_item()
+        label = box.get_first_child()
+        label.set_markup(item.title)
+        label.set_ellipsize(True)
+        label.set_lines(5)
+        label.set_property('ellipsize', Pango.EllipsizeMode.MIDDLE)
+
     def _on_factory_setup_filename(self, factory, list_item):
         box = ColLabel()
         list_item.set_child(box)

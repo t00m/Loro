@@ -84,10 +84,7 @@ class Translator(Gtk.Box):
         for tid in tokens:
             token = tokens[tid]
             postag = self.app.nlp.explain_term(token['postag']).title()
-            try:
-                translation = tlcache[tid][target]
-            except:
-                translation = ''
+            translation = self.app.translate.get_token(tid, target)
             items.append(TokenTranslation(
                                 id = tid,
                                 title = token['title'],
@@ -99,15 +96,11 @@ class Translator(Gtk.Box):
 
         cvts = self.app.get_widget('translator-view-sentences')
         items = []
-        tscache = self.app.translate.get_cache_sentences()
         sentences = self.app.cache.get_sentences(workbook.id)
         for sid in sentences:
             sent_source = sentences[sid][source]
             sent_filename = sentences[sid]['filename'][0]
-            try:
-                translation = tscache[sid][target]
-            except:
-                translation = ''
+            translation = self.app.translate.get_sentence(sid, target)
             items.append(SentenceTranslation(
                                 id = sid,
                                 title = sent_source,
