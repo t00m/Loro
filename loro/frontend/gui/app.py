@@ -20,6 +20,7 @@ from loro.cache import Cache
 from loro.translate import Translate
 from loro.stats import Stats
 from loro.report import Report
+from loro.disrec import DisasterRecovery
 from loro.frontend.gui.factory import WidgetFactory
 from loro.frontend.gui.actions import WidgetActions
 
@@ -34,6 +35,7 @@ class Application(Adw.Application):
         self.set_resource_base_path("/com/github/t00m/Loro/")
         self._widgets = {}
         self.window = None
+        self.dr = DisasterRecovery(self)
         self.nlp = NLP(self)
         self.cache = Cache(self)
         self.workflow = Workflow(self)
