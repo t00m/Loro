@@ -101,7 +101,7 @@ class WidgetActions(GObject.GObject):
             modal=True,
             message_type=Gtk.MessageType.WARNING,
             buttons=Gtk.ButtonsType.YES_NO,
-            text=_("Do you really want to remove Workbook %s?" % workbook.id),
+            text=_("Do you really want to delete Workbook %s?" % workbook.id),
             secondary_text = '\nPlease, remember:\n\n- Reports will be deleted.\n- Files linked to this workbook will be kept.'
         )
         dialog.connect("response", on_dialog_response)
