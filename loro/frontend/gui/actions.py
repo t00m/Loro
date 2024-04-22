@@ -121,14 +121,16 @@ class WidgetActions(GObject.GObject):
         notebook.set_current_page(0)
 
     def workbook_study(self, *args):
+        window = self.app.get_widget('window')
+        window.show_stack_page('dashboard')
         notebook = self.app.get_widget('notebook')
-        notebook.set_current_page(1)
+        notebook.set_current_page(0)
 
     def workbook_edit(self, *args):
         notebook = self.app.get_widget('notebook')
         editor = self.app.get_widget('editor')
         editor.update()
-        notebook.set_current_page(2)
+        notebook.set_current_page(1)
         return
 
 
