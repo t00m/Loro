@@ -11,6 +11,7 @@ configure_file(
 sources = [
   'builder.py',
   'cache.py',
+  'disrec.py',
   'main.py',
   'report.py',
   'stats.py',
