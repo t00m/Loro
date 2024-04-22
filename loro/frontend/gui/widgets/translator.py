@@ -8,6 +8,7 @@
 
 import os
 import sys
+from html import escape
 
 import gi
 gi.require_version('Gtk', '4.0')
@@ -37,6 +38,20 @@ class Translator(Gtk.Box):
         ddWorkbooks.connect("notify::selected-item", self.update)
 
     def _setup_widget(self):
+        toolbar = Gtk.CenterBox()
+        self.app.add_widget('translator-toolbar', toolbar)
+        toolbar.get_style_context().add_class(class_name='toolbar')
+        # ~ toolbar.get_style_context().add_class(class_name='linked')
+
+        btnBackup = self.app.factory.create_button(title='Backup', tooltip='Backup workbook translations', callback=self.app.dr.backup_translations)
+        btnRestore = self.app.factory.create_button(title='Restore', tooltip='Restore workbook translations', callback=self.app.dr.backup_translations)
+        hboxBR = self.app.factory.create_box_horizontal()
+        hboxBR.append(btnBackup)
+        hboxBR.append(btnRestore)
+        hboxBR.get_style_context().add_class(class_name='linked')
+        toolbar.set_end_widget(hboxBR)
+        self.append(toolbar)
+
         notebook = self.app.add_widget('translator-notebook', Gtk.Notebook())
         notebook.set_show_border(False)
 
@@ -87,7 +102,7 @@ class Translator(Gtk.Box):
             translation = self.app.translate.get_token(tid, target)
             items.append(TokenTranslation(
                                 id = tid,
-                                title = token['title'],
+                                title = escape(token['title']),
                                 postag = postag,
                                 translation = translation
                             )
@@ -103,7 +118,7 @@ class Translator(Gtk.Box):
             translation = self.app.translate.get_sentence(sid, target)
             items.append(SentenceTranslation(
                                 id = sid,
-                                title = sent_source,
+                                title = escape(sent_source),
                                 filename = sent_filename,
                                 translation = translation
                             )

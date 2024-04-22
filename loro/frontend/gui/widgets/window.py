@@ -100,7 +100,7 @@ class Window(Adw.ApplicationWindow):
         dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
         viewstack = self.app.add_widget('window-viewstack', Adw.ViewStack())
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
-        viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-go-home-symbolic')
+        # ~ viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-go-home-symbolic')
         # ~ viewstack.add_titled_with_icon(editor, 'editor', 'Editor', 'com.github.t00m.Loro-text-editor-symbolic')
         # ~ viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-study-symbolic')
         # ~ viewswitcher = self.app.add_widget('viewswitcher', Adw.ViewSwitcher())

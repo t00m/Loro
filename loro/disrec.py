@@ -5,8 +5,10 @@
 # License: GPL v3
 # Description: Disaster Recovery (backup/restore)
 
+import shutil
 import zipfile
 
+from loro.backend.core.constants import LORO_USER_BACKUP_DIR
 from loro.backend.core.log import get_logger
 
 class DisasterRecovery:
@@ -18,6 +20,7 @@ class DisasterRecovery:
     def backup_translations(self, *args):
         tr_tokens = self.app.translate.get_cache_path_tokens()
         tr_sents = self.app.translate.get_cache_path_sentences()
+        self.log.debug(args)
 
     def zip(self, filename: str, directory: str):
         """ Zip directory into a file """
@@ -30,7 +33,7 @@ class DisasterRecovery:
             basename = sourcename[:dot]
         sourcedir = os.path.dirname(filename)
         source = os.path.join(sourcedir, basename)
-        zipfile = shutil.make_archive(source, 'zip', directory)
+        zipfile = shutil.make_archive(source, 'zip', LORO_USER_BACKUP_DIR)
         target = source + '.zip'
         shutil.move(zipfile, target)
         return target
