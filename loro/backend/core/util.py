@@ -15,13 +15,15 @@ import json
 import math
 import shutil
 import hashlib
+from datetime import datetime
 import subprocess
 import multiprocessing
 
 from loro.backend.core.config import Config
 from loro.backend.core.constants import LORO_USER_DIR
-from loro.backend.core.constants import LORO_USER_PROJECTS_DIR
+from loro.backend.core.constants import LORO_USER_BACKUP_DIR
 from loro.backend.core.constants import LORO_USER_CONFIG_DIR
+from loro.backend.core.constants import LORO_USER_PROJECTS_DIR
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 
@@ -75,8 +77,9 @@ def setup_project_dirs(source: str, target: str) -> None:
 
     for directory in [
                         LORO_USER_DIR,
-                        LORO_USER_PROJECTS_DIR,
+                        LORO_USER_BACKUP_DIR,
                         LORO_USER_CONFIG_DIR,
+                        LORO_USER_PROJECTS_DIR,
                         dir_project_source,
                         dir_project_config,
                         dir_project_source_input,
@@ -223,3 +226,9 @@ def get_default_workers():
     ncpu = multiprocessing.cpu_count()
     workers = ncpu/2
     return math.ceil(workers)
+
+def timestamp():
+    """Get timestamp (YYYYmmdd_hhmmss)"""
+    now = datetime.now()
+    return "%4d%02d%02d_%02d%02d%02d" % (now.year, now.month, now.day,
+                                        now.hour, now.minute, now.second)
