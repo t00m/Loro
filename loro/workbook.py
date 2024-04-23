@@ -9,9 +9,11 @@ from spacy.tokens import Token
 
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
-from loro.backend.core.util import json_load, json_save
+from loro.backend.core.util import delete_directory
 from loro.backend.core.util import get_project_config_dir
 from loro.backend.core.util import get_project_input_dir
+from loro.backend.core.util import get_project_target_workbook_dir
+from loro.backend.core.util import json_load, json_save
 
 
 class Workbook:
@@ -35,7 +37,6 @@ class Workbook:
             if not os.path.exists(cache_dir):
                 os.makedirs(cache_dir)
                 self.log.debug("Cache directory created for workbook '%s':", workbook)
-                self.log.debug("%s", cache_dir)
 
     def get_all(self):
         workbooks_path = os.path.join(get_project_config_dir(), 'workbooks.json')
@@ -63,12 +64,17 @@ class Workbook:
     def exists(self, name: str) -> bool:
         return name.upper() in self.get_all().keys()
 
-    def add(self, name: str) -> None:
+    def add(self, wname: str) -> None:
+        wname = wname.upper()
+        if len(wname) == 0 and self.exists(wname):
+            self.log.error("Workbook '%s' not added", wname)
+            return False
         workbooks = self.get_all()
-        workbooks[name.upper()] = []
+        workbooks[wname] = []
         self._save(workbooks)
-        self.log.debug("Workbook '%s' added", name)
+        self.log.debug("Workbook '%s' added", wname)
         self._check()
+        return True
 
     def rename(self, old_name: str, new_name: str) -> bool:
         if old_name == new_name:
@@ -113,10 +119,15 @@ class Workbook:
 
     def delete(self, name:str) -> None:
         if self.exists(name):
+            # Delete from disk
+            target = get_project_target_workbook_dir(name)
+            delete_directory(target)
+            self.log.info("Contents for workbook '%s' deleted from disk", name)
+            # Delete from configuration
             workbooks = self.get_all()
             del(workbooks[name])
             self._save(workbooks)
-            self.log.debug("Workbook '%s' deleted", name)
+            self.log.debug("Workbook '%s' deleted from configuration", name)
 
     def _save(self, workbooks):
         workbooks_path = os.path.join(get_project_config_dir(), 'workbooks.json')
