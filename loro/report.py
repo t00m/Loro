@@ -12,7 +12,9 @@ from loro.backend.core.util import get_project_target_workbook_dir
 from loro.backend.core.util import create_directory, delete_directory
 from loro.backend.core.util import json_save
 from loro.backend.core.util import exec_cmd
+from loro.backend.core.util import which
 from loro.backend.services.nlp import spacy
+from loro.backend.core.run_async import RunAsync
 
 # UIKIT (getuikit.com)
 DIR_UIKIT = os.path.join(ENV['APP']['PGKDATADIR'], 'resources', 'web', 'uikit')
@@ -262,7 +264,7 @@ class Report(GObject.GObject):
         self.build_web(workbook)
         self.build_pdf(workbook)
         self.log.debug("Reports for workbook '%s' generated" % workbook)
-        # ~ self.emit('report-finished', workbook)
+        self.emit('report-finished', workbook)
 
     def _get_var(self, workbook: str) -> {}:
         source, target = get_default_languages()
@@ -289,6 +291,11 @@ class Report(GObject.GObject):
         var['html']['output'] = DIR_HTML
         return var
 
+    # ~ def build(self, workbook):
+        # ~ self.build_web(workbook)
+        # ~ self.build_pdf(workbook)
+        # ~ self.emit('report-finished', workbook)
+
     def build_pdf(self, workbook):
         progressbar = self.app.get_widget('progressbar')
         progressbar.set_text("Creating PDF Report")
@@ -299,7 +306,9 @@ class Report(GObject.GObject):
         with open(adoc_path, 'w') as fadoc:
             fadoc.write(adoc)
 
+        # ~ if which('asciidoctor-pdf'):
         cmd = "asciidoctor-pdf -d book -a toc -a toclevels=3 %s" % adoc_path
-        exec_cmd(cmd)
+        GObject.idle_add(exec_cmd, cmd)
         self.log.debug('PDF Report generated')
-        self.emit('report-finished', workbook)
+        # ~ else:
+            # ~ self.log.error('asciidoctor-pdf command not available')
