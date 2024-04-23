@@ -20,6 +20,7 @@ from gi.repository import Gtk
 from loro.backend.core.env import ENV
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import get_project_target_workbook_dir
+from loro.backend.core.util import sanitize_string
 from loro.backend.core.run_async import RunAsync
 from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.models import Workbook
@@ -28,6 +29,10 @@ class WidgetActions(GObject.GObject):
     def __init__(self, app):
         self.log = get_logger('Actions')
         self.app = app
+
+    def update_app(self, *args):
+        editor = self.app.get_widget('editor')
+        editor.update()
 
     def document_display(self, doc):
         self.log.debug("Displaying %s", doc)
@@ -49,18 +54,21 @@ class WidgetActions(GObject.GObject):
     def workbook_create(self, *args):
         def _confirm(_, res, entry):
             if res == "cancel":
+                self.log.debug("Action canceled by user")
                 return
-            name = entry.get_text()
-            # ~ self.log.debug("Accepted workbook name: %s", name)
-            self.app.workbooks.add(name)
-            # ~ window = self.app.get_widget('window')
-            # ~ window.emit('workbooks-updated')
-            self.update_dropdown_workbooks()
+            name = sanitize_string(entry.get_text())
+            created = self.app.workbooks.add(name)
+            if created:
+                self.update_dropdown_workbooks()
+                self.update_app()
+            else:
+                self.log.error("Workbook not created")
 
         def _allow(entry, gparam, dialog):
-            name = entry.get_text()
+            name = sanitize_string(entry.get_text())
+            valid_name = len(name) > 0
             exists = self.app.workbooks.exists(name)
-            dialog.set_response_enabled("add", not exists)
+            dialog.set_response_enabled("add", not exists and valid_name)
 
         window = self.app.get_widget('window')
         vbox = self.app.factory.create_box_vertical(margin=6, spacing=6)
@@ -89,12 +97,18 @@ class WidgetActions(GObject.GObject):
                 if workbook.id is not None:
                     self.app.workbooks.delete(workbook.id)
                     self.update_dropdown_workbooks()
+                    self.update_app()
+            else:
+                self.log.debug("Action canceled by user")
             dialog.destroy()
 
         self.log.debug("Deleting workbook")
         window = self.app.get_widget('window')
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
+        if workbook.id is None:
+            self.log.debug("Action canceled. No workbooks available")
+            return
 
         dialog = Gtk.MessageDialog(
             transient_for=window,
@@ -114,7 +128,6 @@ class WidgetActions(GObject.GObject):
         translator = self.app.get_widget('translator')
         translator.update()
         notebook.set_current_page(3)
-        return
 
     def workbook_summary(self, *args):
         notebook = self.app.get_widget('notebook')
@@ -127,15 +140,14 @@ class WidgetActions(GObject.GObject):
         notebook.set_current_page(0)
 
     def workbook_edit(self, *args):
+        self.update_app()
         notebook = self.app.get_widget('notebook')
-        editor = self.app.get_widget('editor')
-        editor.update()
         notebook.set_current_page(1)
         return
 
-
         def _confirm(_, res, entry, old_name):
             if res == "cancel":
+                self.log.debug("Action canceled by user")
                 return
             # ~ window = self.app.get_widget('window')
             new_name = entry.get_text()
@@ -154,6 +166,7 @@ class WidgetActions(GObject.GObject):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         if workbook.id is None:
+            self.log.debug("Action canceled. No workbooks available")
             return
 
         vbox = self.app.factory.create_box_vertical(margin=3, spacing=3, hexpand=True, vexpand=True)
@@ -189,14 +202,24 @@ class WidgetActions(GObject.GObject):
         dialog.set_default_size(1024, 728)
         dialog.present()
 
+    def workbook_compiled(self, *args):
+        # ~ self.log.debug("Update application after compilling")
+        progressbar = self.app.get_widget('progressbar')
+        progressbar.set_fraction(1.0)
+        progressbar.set_text('Workbook compiled successfully')
+        time.sleep(1)
+        self.update_app()
+        self.show_browser()
+
     def workbook_compile(self, *args):
         def start_workflow(*args):
             ddWorkbooks = self.app.get_widget('dropdown-workbooks')
             workbook = ddWorkbooks.get_selected_item()
             if workbook is None:
+                self.log.debug("Action canceled. No workbooks available")
                 return
             self.log.debug("Workbook['%s'] update requested", workbook.id)
-            viewstack = self.app.get_widget('dashboard-viewstack')
+            viewstack = self.app.get_widget('window-viewstack')
             viewstack.set_visible_child_name('wb-progressbar')
             files = self.app.workbooks.get_files(workbook.id)
             self.app.workflow.start(workbook.id, files)
@@ -226,7 +249,7 @@ class WidgetActions(GObject.GObject):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         workbook = ddWorkbooks.get_selected_item()
         if workbook.id is None:
-            self.log.warning("No workbooks available")
+            self.log.debug("Action canceled. No workbooks available")
             return
         DIR_OUTPUT = get_project_target_workbook_dir(workbook.id)
         report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
@@ -239,16 +262,16 @@ class WidgetActions(GObject.GObject):
     def update_dropdown_workbooks(self, *args):
         workbooks = self.app.workbooks.get_all()
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        toolbar = self.app.get_widget('window-toolbar')
+        # ~ toolbar = self.app.get_widget('window-toolbar')
         data = []
         wbnames = workbooks.keys()
         if len(wbnames) == 0:
             ddWorkbooks.set_visible(False)
-            toolbar.set_visible(False)
+            # ~ toolbar.set_visible(False)
             data.append((None, 'No workbooks available'))
         else:
             ddWorkbooks.set_visible(True)
-            toolbar.set_visible(True)
+            # ~ toolbar.set_visible(True)
             for workbook in wbnames:
                 data.append((workbook, "Workbook %s" % workbook))
         self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)
@@ -257,3 +280,25 @@ class WidgetActions(GObject.GObject):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         return ddWorkbooks.get_selected_item()
 
+    def show_warning_noworkbooks(self, *args):
+        window = self.app.get_widget('window')
+        window.show_stack_page('wb-none')
+        self.log.debug("No workbooks available")
+
+    def show_editor(self, *args):
+        workbook = self.workbook_get_current()
+        if workbook.id is not None:
+            window = self.app.get_widget('window')
+            window.show_stack_page('editor')
+        else:
+            self.log.debug("Action canceled. No workbooks available")
+            self.show_warning_noworkbooks()
+
+    def show_browser(self, *args):
+        workbook = self.workbook_get_current()
+        if workbook.id is not None:
+            window = self.app.get_widget('window')
+            window.show_stack_page('browser')
+        else:
+            self.log.debug("Action canceled. No workbooks available")
+            self.show_warning_noworkbooks()

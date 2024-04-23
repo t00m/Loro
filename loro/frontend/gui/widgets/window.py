@@ -13,10 +13,11 @@ from loro.backend.core.log import get_logger
 from loro.frontend.gui.models import Workbook
 from loro.frontend.gui.widgets.preferences import PreferencesWindow
 from loro.frontend.gui.widgets.check import CheckWindow
-from loro.frontend.gui.widgets.dashboard import Dashboard
-# ~ from loro.frontend.gui.widgets.editor import Editor
-# ~ from loro.frontend.gui.widgets.browser import Browser
-# ~ from loro.frontend.gui.widgets.translator import Translator
+from loro.frontend.gui.widgets.editor import Editor
+from loro.frontend.gui.widgets.browser import Browser
+from loro.frontend.gui.widgets.status import StatusPageNoWorkbooks
+from loro.frontend.gui.widgets.status import StatusPageCurrentWorkbook
+from loro.frontend.gui.widgets.status import StatusPageProgressbar
 from loro.frontend.gui.icons import ICON
 
 
@@ -32,6 +33,7 @@ class Window(Adw.ApplicationWindow):
         self._create_actions()
         self._build_ui()
         self.present()
+        self.connect('show', self._on_show_window)
         self.app.actions.update_dropdown_workbooks()
 
     def _build_ui(self):
@@ -47,6 +49,9 @@ class Window(Adw.ApplicationWindow):
         menu: Gio.Menu = Gio.Menu.new()
         upper_section: Gio.Menu = Gio.Menu.new()
         upper_section.append(_("Create workbook"), "app.workbook_new")
+        upper_section.append(_("Study workbook"), "app.workbook_study")
+        upper_section.append(_("Edit workbook"), "app.workbook_edit")
+        upper_section.append(_("Delete workbook"), "app.workbook_delete")
         bottom_section: Gio.Menu = Gio.Menu.new()
         bottom_section.append(_("Preferences"), "app.preferences")
         bottom_section.append(_("Status"), "app.status")
@@ -74,33 +79,24 @@ class Window(Adw.ApplicationWindow):
         boxDpdWorkbooks.append(ddWorkbooks)
         headerbar.pack_start(boxDpdWorkbooks)
 
-        # Workbook Toolbar
-        toolbar = self.app.factory.create_box_horizontal(spacing=0, margin=0)
-        self.app.add_widget('window-toolbar', toolbar)
-        toolbar.get_style_context().add_class(class_name='toolbar')
-        toolbar.get_style_context().add_class(class_name='linked')
-        self.app.add_widget('status-box-toolbar', toolbar)
-        button_b= self.app.factory.create_button(icon_name=ICON['WB_STUDY'], width=16, tooltip='Study this workbook', callback=self.app.actions.workbook_study)
-        self.app.add_widget('status-workbook-study', button_b)
-        button_e = self.app.factory.create_button(icon_name=ICON['WB_EDIT'], width=16, tooltip='Edit workbook', callback=self.app.actions.workbook_edit)
-        self.app.add_widget('status-workbook-edit', button_e)
-        toolbar.append(button_b)
-        toolbar.append(button_e)
-        headerbar.set_title_widget(toolbar)
-
         # Viewstack
-        # ~ editor = self.app.add_widget('editor', Editor(self.app))
-        # ~ browser = self.app.add_widget('browser', Browser(self.app))
-        dashboard = self.app.add_widget('dashboard', Dashboard(self.app))
+        editor = self.app.add_widget('editor', Editor(self.app))
+        browser = self.app.add_widget('browser', Browser(self.app))
+        progressbar = StatusPageProgressbar(self.app)
+        noworkbook = StatusPageNoWorkbooks(self.app)
         viewstack = self.app.add_widget('window-viewstack', Adw.ViewStack())
+        viewstack.add_titled_with_icon(editor, 'editor', 'Editor', ICON['WB_EDIT'])
+        viewstack.add_titled_with_icon(browser, 'browser', 'Study', ICON['WB_STUDY'])
+        viewstack.add_titled(progressbar, 'wb-progressbar', 'Progress workbook')
+        viewstack.add_titled(noworkbook, 'wb-none', 'No workbooks')
         viewstack.connect("notify::visible-child", self._on_stack_page_changed)
-        viewstack.add_titled_with_icon(dashboard, 'dashboard', 'Dashboard', 'com.github.t00m.Loro-go-home-symbolic')
-        # ~ viewstack.add_titled_with_icon(editor, 'editor', 'Editor', 'com.github.t00m.Loro-text-editor-symbolic')
-        # ~ viewstack.add_titled_with_icon(browser, 'study', 'Study', 'com.github.t00m.Loro-study-symbolic')
-        # ~ viewswitcher = self.app.add_widget('viewswitcher', Adw.ViewSwitcher())
-        # ~ viewswitcher.set_stack(viewstack)
+
         mainbox.append(viewstack)
+
         self.set_content(mainbox)
+
+    def _on_show_window(self, *args):
+        self.log.error("Window presented: %s", args)
 
     def _on_close_request(self, *args):
         self.log.info("Quit application requested by user")
@@ -122,6 +118,7 @@ class Window(Adw.ApplicationWindow):
             if shortcuts:
                 self.props.application.set_accels_for_action(f"app.{name}", shortcuts)
             self.props.application.add_action(action)
+            return action
 
         def _about(*args) -> None:
             """Show about window"""
@@ -144,7 +141,25 @@ class Window(Adw.ApplicationWindow):
         _create_action(
             "workbook_new",
             lambda *_: self.app.actions.workbook_create(),
-            # ~ ["<primary>comma"],
+            ["<primary>Insert"],
+        )
+
+        _create_action(
+            "workbook_study",
+            lambda *_: self.app.actions.show_browser(),
+            ["<primary>Return"],
+        )
+
+        _create_action(
+            "workbook_edit",
+            lambda *_: self.app.actions.show_editor(),
+            ["<primary>Home"],
+        )
+
+        _create_action(
+            "workbook_delete",
+            lambda *_: self.app.actions.workbook_delete(),
+            ["<primary>Delete"],
         )
 
         _create_action(

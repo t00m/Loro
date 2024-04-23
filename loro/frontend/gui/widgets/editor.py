@@ -42,10 +42,10 @@ class Editor(Gtk.Box):
         # ~ self.update()
         # ~ self._set_enable_renaming(False)
         # ~ self._set_enable_deleting(False)
-        self._connect_signals()
+        # ~ self._connect_signals()
         self.log.debug("Editor initialited")
 
-    def _connect_signals(self):
+    def connect_signals(self):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
         ddWorkbooks.connect("notify::selected-item", self.update)
 
@@ -470,16 +470,18 @@ class Editor(Gtk.Box):
             self.log.info("File '%s' saved", os.path.basename(self.selected_file))
 
     def update(self, *args):
-        ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        workbook = ddWorkbooks.get_selected_item()
+        workbook = self.app.actions.workbook_get_current()
         if workbook is None:
             return
+
         self.current_workbook = workbook.id
         if workbook is not None:
-            # ~ self.log.debug("Selected workbook: %s", workbook.id)
-            if workbook.id != 'None':
+            if workbook.id is not None:
                 self._update_files_view(workbook.id)
                 self.cvfilesUsed.set_title("On workbook %s" % workbook.id)
+                self.app.actions.show_editor()
+            else:
+                self.app.actions.show_warning_noworkbooks()
 
         # ~ # Update workbooks
         # ~ ddWorkbooks = self.app.get_widget('dropdown-workbooks')

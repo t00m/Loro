@@ -27,6 +27,7 @@ from loro.frontend.gui.actions import WidgetActions
 
 class Application(Adw.Application):
     def __init__(self) -> None:
+        # ~ GObject.signal_new('app-loaded', Editor, GObject.SignalFlags.RUN_LAST, None, () )
         super().__init__(
             application_id=ENV['APP']['ID'],
             flags=Gio.ApplicationFlags.DEFAULT_FLAGS,
@@ -45,6 +46,7 @@ class Application(Adw.Application):
         self.factory = WidgetFactory(self)
         self.actions = WidgetActions(self)
         self.report = Report(self)
+        self.report.connect('report-finished', self.actions.workbook_compiled)
         self.duden = Duden(self)
 
     def do_activate(self) -> None:
@@ -52,6 +54,9 @@ class Application(Adw.Application):
         self.window = Window(application=self)
         self.window.set_default_size(1024, 728)
         self.add_widget('window', self.window)
+        editor = self.get_widget('editor')
+        editor.connect_signals()
+        self.actions.update_app()
 
     def add_widget(self, name: str, widget):
         # Add widget, but do not overwrite

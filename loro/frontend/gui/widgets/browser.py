@@ -171,6 +171,10 @@ class Browser(Gtk.Box):
         return os.path.join(get_project_target_workbook_dir(workbook.id), 'html')
 
     def load_report_pdf(self, *args):
+        workbook = self.app.actions.workbook_get_current()
+        if workbook.id is None:
+            return
+
         output_dir = self._get_workbook_html_dir()
         pdf_report = os.path.join(output_dir, 'report.pdf')
         self.load_url(pdf_report)
