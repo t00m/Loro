@@ -59,7 +59,7 @@ class Editor(Gtk.Box):
         # Content View
 
         ## Editor
-        mainbox = self.app.factory.create_box_vertical(hexpand=True, vexpand=True)
+        mainbox = self.app.factory.create_box_vertical(margin=0, spacing=0, hexpand=True, vexpand=True)
         self.append(mainbox)
 
         # Toolbar
@@ -113,6 +113,7 @@ class Editor(Gtk.Box):
         LeftSidebarToolbox.append(self.btnDelete)
         LeftSidebarToolbox.append(expander)
         vboxLeftSidebar.append(LeftSidebarToolbox)
+        vboxLeftSidebar.append(Gtk.Separator())
         editor.append(vboxLeftSidebar)
 
         self.selector.set_action_add_to_used(self._on_view_used_add)

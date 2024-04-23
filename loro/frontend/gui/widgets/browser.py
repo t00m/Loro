@@ -119,7 +119,10 @@ class Browser(Gtk.Box):
         btnWebReport = self.app.factory.create_button(title='Web Report', callback=self.load_report_html)
         hboxButtons.append(btnPDFReport)
         hboxButtons.append(btnWebReport)
-        toolbar.set_center_widget(hboxButtons)
+        toolbar.set_start_widget(hboxButtons)
+
+        btnHomepage = self.app.factory.create_button(icon_name='com.github.t00m.Loro-go-home-symbolic', tooltip='Workbook home page', callback=self.load_home_page)
+        toolbar.set_center_widget(btnHomepage)
         # ~ btnPrint = self.app.factory.create_button(icon_name='com.github.t00m.Loro-printer-symbolic', width=16, callback=self.print_report)
         # ~ toolbar.set_end_widget(btnPrint)
 
@@ -131,9 +134,13 @@ class Browser(Gtk.Box):
         self.wv.set_hexpand(True)
         self.wv.set_vexpand(True)
         self.append(toolbar)
+        self.append(Gtk.Separator())
         self.append(self.wv)
         self.set_hexpand(True)
         self.set_vexpand(True)
+
+    def load_home_page(self, *args):
+        self.log.debug("Workbook home page")
 
     def print_report(self, *args):
         printOperation = WebKit.PrintOperation.new(self.wv)
