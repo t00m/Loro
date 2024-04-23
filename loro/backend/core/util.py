@@ -10,6 +10,7 @@
 
 import os
 import re
+import sys
 import glob
 import json
 import math
@@ -232,3 +233,34 @@ def timestamp():
     now = datetime.now()
     return "%4d%02d%02d_%02d%02d%02d" % (now.year, now.month, now.day,
                                         now.hour, now.minute, now.second)
+
+def sanitize_string(string: str):
+    return re.sub(r'(?u)[^-\w]', '', string)
+
+def which(program):
+    """
+    Check if a program is available in $PATH
+    """
+    if sys.platform == 'win32':
+        program = program + '.exe'
+
+    def is_exe(fpath):
+        """
+        Missing method docstring (missing-docstring)
+        """
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            log.debug("Program '%s' found in '%s'", program, fpath)
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    log.error("Program '%s' not found", program)
+    return None
