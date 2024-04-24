@@ -26,7 +26,7 @@
             </div>
 
         </div>
-        <div class="uk-position-top">
+        <div class="uk-position-top" style="z-index: 980;" uk-sticky="show-on-up: true">
             <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar uk-sticky>
                 <div class="uk-navbar-left">
                     <a class="uk-navbar-toggle uk-hidden@m" href="#offcanvas-nav" uk-toggle>
