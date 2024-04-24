@@ -19,25 +19,25 @@
 <body>
     <!--======= HEADER =======-->
     <header id="home" class="header-area">
-        <div class="uk-background-cover uk-flex uk-flex-center uk-flex-middle typewriter" style="background-image: url(assets/images/headerbg.jpg);" uk-height-viewport>
-            <div class="uk-width-expand@m">
-                <h1>Super Simple Website</h1>
+        <div class="uk-background-default uk-flex uk-flex-center uk-flex-middle typewriter" uk-height-viewport>
+            <div class="uk-align-center">
+                <h1>${var['html']['title']}</h1>
                 <p class="uk-text-center uk-margin-large-top"><a class="uk-button uk-button-primary" href="#about" uk-scroll="offset:60;">Learn More</a></p>
             </div>
 
         </div>
         <div class="uk-position-top" style="z-index: 980;" uk-sticky="show-on-up: true">
-            <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar uk-sticky>
+            <nav class="uk-background-default uk-navbar" uk-navbar uk-sticky>
                 <div class="uk-navbar-left">
                     <a class="uk-navbar-toggle uk-hidden@m" href="#offcanvas-nav" uk-toggle>
                         <span uk-navbar-toggle-icon></span>
                         <span>Menu</span>
                     </a>
-                    <a class="uk-navbar-item uk-logo uk-visible@m" href="/"><img data-src="assets/images/onepage.svg" alt="one-page" height="32" width="160" uk-svg></a>
+                    <a class="uk-navbar-item uk-logo uk-visible@m" href="/"><img data-src="resources/images/logo.svg" alt="one-page" height="32" width="160" uk-svg></a>
                 </div>
                 <div class="uk-navbar-center">
                     <a class="uk-navbar-item uk-logo uk-hidden@m" href="/">
-                        <img data-src="assets/images/onepage.svg" alt="onepage" height="32" width="160" uk-svg>
+                        <img data-src="resources/images/logo.svg" alt="Loro" height="32" width="160" uk-svg>
                     </a>
                     <ul class="uk-navbar-nav uk-visible@m" uk-scrollspy-nav="closest: li; scroll: true;offset:90;">
                         <li class="nav-item uk-active">
@@ -58,14 +58,16 @@
                     </ul>
                 </div>
                 <div class="uk-navbar-right">
-                    <a class="uk-margin-right" href="#" target="_blank" uk-icon="facebook"></a>
-                    <a class="uk-margin-right" href="#" target="_blank" uk-icon="instagram"></a>
+<!--
+                    <a class="uk-margin-right" href="#" target="_blank" uk-icon=""></a>
+                    <a class="uk-margin-right" href="#" target="_blank" uk-icon=""></a>
+-->
                 </div>
             </nav>
         </div>
     </header>
     <!--======= ABOUT ========-->
-    <section id="about" class="about-area">
+    <section id="about" class="about-area" style="min-height: max(0px, 100vh);">
         <div class="uk-container">
             <div class="uk-margin-medium-bottom">
                 <h2 class="title uk-text-center">About us</h2>
@@ -101,7 +103,7 @@
         </div>
     </section>
     <!--======= SERVICE ======-->
-    <section id="service" class="service-area uk-background-muted">
+    <section id="service" class="service-area uk-background-default" style="min-height: max(0px, 100vh);">
         <div class="uk-container">
             <h2 class="title uk-text-center">Our Services</h2>
             <p class="uk-text-center">Lorem ipsum dolor sit amet, consetetur sadipscing elitr,<br/>sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
@@ -155,8 +157,7 @@
         </div>
     </section>
     <!--======= CALL TO ACTION ======-->
-    <section id="calltoaction" class="uk-background-blend-multiply uk-background-primary uk-background-cover uk-height-large uk-panel uk-flex uk-flex-center uk-flex-middle" style="background-image: url(assets/images/call-to-action.jpg);">
-
+    <section id="calltoaction" class="uk-background-default uk-height-large uk-panel uk-flex uk-flex-center uk-flex-middle" style="min-height: max(0px, 100vh);">
         <div class="uk-container uk-text-center">
             <h2 class="title uk-text-emphasis">Have any project on mind?</h2>
             <p class="uk-text-emphasis">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor<br/>invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
@@ -168,7 +169,7 @@
 
     </section>
     <!--======= PORTFOLIO ======-->
-    <section id="portfolio" class="portfolio-area">
+    <section id="portfolio" class="portfolio-area" style="min-height: max(0px, 100vh);">
         <div class="uk-container">
             <h2 class="title">Recent Works</h2>
             <p>Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
@@ -202,7 +203,7 @@
         </div>
     </section>
     <!--======= CONTACT ======-->
-    <section id="contact" class="contact-area uk-background-muted">
+    <section id="contact" class="contact-area uk-background-default" style="min-height: max(0px, 100vh);">
         <div class="uk-container">
             <h2 class="title uk-text-center">Get In Touch</h2>
             <p class="uk-text-center">Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua.</p>
@@ -261,11 +262,11 @@
         </div>
 
     </section>
-    <footer id="footer " class="footer-area uk-background-secondary uk-padding-small ">
+    <footer id="footer " class="footer-area uk-background-secondary">
         <div class="uk-flex uk-flex-center uk-margin-top ">
             <ul class="uk-subnav " uk-margin=" ">
                 <li class="uk-first-column ">
-                    <a href="#">© <span id="year"></span> onepage</a>
+                    <a href="#">© <span id="year"></span> Loro</a>
                 </li>
                 <li><a href="imprint">Imprint</a></li>
                 <li><a href="privacy-policy">Privacy</a></li>
@@ -277,7 +278,7 @@
     <div id="offcanvas-nav" uk-offcanvas="mode:slide; overlay: true ">
         <div class="uk-offcanvas-bar">
             <button class="uk-offcanvas-close " type="button " uk-close></button>
-            <div class="uk-text-center "><img data-src="assets/images/onepage-logo-mobile.svg " width="40" height="40" alt="onepage" uk-svg></div>
+            <div class="uk-text-center "><img data-src="resources/images/logo.svg " width="40" height="40" alt="Loro" uk-svg></div>
             <ul class="uk-nav uk-nav-primary" uk-scrollspy-nav="closest: li; scroll: true">
                 <li class="nav-item">
                     <a href="#home" class="nav-link" uk-scroll><span data-hover="home">Home</span></a>

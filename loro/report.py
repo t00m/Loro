@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import shutil
 
 from mako.template import Template
 from gi.repository import GObject
@@ -13,6 +14,7 @@ from loro.backend.core.util import create_directory, delete_directory
 from loro.backend.core.util import json_save
 from loro.backend.core.util import exec_cmd
 from loro.backend.core.util import which
+from loro.backend.core.util import copydir
 from loro.backend.services.nlp import spacy
 from loro.backend.core.run_async import RunAsync
 
@@ -144,8 +146,16 @@ class Report(GObject.GObject):
         self._build_file_pages(var)
         self._build_index(var)
         self.build_landing_page(workbook)
+        self.copy_resources(var)
         self.log.debug("HTML Report for workbook '%s' generated", workbook)
         # ~ return url
+
+    def copy_resources(self, var):
+        source = DIR_UIKIT
+        target = os.path.join(var['html']['output'], 'resources')
+        self.log.debug("Copying from '%s' to '%s'", source, target)
+        delete_directory(target)
+        shutil.copytree(source, target, symlinks=False, ignore=None, copy_function=shutil.copy2, ignore_dangling_symlinks=False)
 
     def _prepare(self, var: dict) -> bool:
         # ~ delete_directory(var['html']['output'])
