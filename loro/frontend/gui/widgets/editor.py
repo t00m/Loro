@@ -84,9 +84,10 @@ class Editor(Gtk.Box):
         self.current_workbook = workbook.id
         if workbook is not None:
             if workbook.id is not None:
+                wbeditor = self.app.get_widget('wbeditor')
                 self.log.debug(workbook.id)
-                # ~ self._update_files_view(workbook.id)
-                # ~ self.cvfilesUsed.set_title("On workbook %s" % workbook.id)
+                wbeditor.update_files_view(workbook.id)
+                wbeditor.cvfilesUsed.set_title("On workbook %s" % workbook.id)
                 # ~ self.app.actions.show_editor()
-            # ~ else:
-                # ~ self.app.actions.show_warning_noworkbooks()
+            else:
+                self.app.actions.show_warning_noworkbooks()

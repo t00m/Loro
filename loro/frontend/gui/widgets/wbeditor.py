@@ -5,6 +5,7 @@
 # License: GPL v3
 # Description: Workbook editor
 
+import os
 from gi.repository import Adw, Gtk  # type:ignore
 
 from loro.backend.core.log import get_logger
@@ -160,7 +161,7 @@ class WorkbookEditor(Gtk.Box):
         filename = os.path.basename(filepath.id)
         self.app.workbooks.update(workbook.id, filename, True)
         self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, True)
-        self._update_files_view(workbook.id)
+        self.update_files_view(workbook.id)
 
     def _on_view_used_remove(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
@@ -169,7 +170,7 @@ class WorkbookEditor(Gtk.Box):
         filename = os.path.basename(filepath.id)
         self.app.workbooks.update(workbook.id, filename, False)
         self.log.debug("File '%s' enabled for workbook '%s'? %s", filename, workbook.id, False)
-        self._update_files_view(workbook.id)
+        self.update_files_view(workbook.id)
 
     def _on_view_available_select_filename(self, selection, position, n_items):
         model = self.cvfilesAv.get_model_filter()
@@ -215,10 +216,10 @@ class WorkbookEditor(Gtk.Box):
         # ~ if workbook is not None:
             # ~ self.log.debug("Selected workbook: %s", workbook.id)
             # ~ if workbook.id != 'None':
-                # ~ self._update_files_view(workbook.id)
+                # ~ self.update_files_view(workbook.id)
                 # ~ self.cvfilesUsed.set_title("On workbook %s" % workbook.id)
 
-    def _update_files_view(self, wbname: str):
+    def update_files_view(self, wbname: str):
         # Update files
         source, target = get_default_languages()
         files = get_inputs()
@@ -350,7 +351,7 @@ class WorkbookEditor(Gtk.Box):
             target_path = os.path.join(get_project_input_dir(), new_name)
             shutil.move(source_path, target_path)
             # ~ self.log.debug("Document renamed from '%s' to '%s'", os.path.basename(source_path), os.path.basename(target_path))
-            self._update_files_view(self.current_workbook)
+            self.update_files_view(self.current_workbook)
 
             return new_name
 
