@@ -96,6 +96,8 @@ class Report(GObject.GObject):
         var['workbook']['stats'] = self.app.stats.get(workbook)
         var['html'] = {}
         var['html']['title'] = "Workbook %s" % workbook
+        var['html']['favicon'] = ''
+        var['html']['keywords'] = ''
         var['html']['uikit'] = {}
         var['html']['uikit']['css'] = UIKIT_CSS
         var['html']['uikit']['css_print'] = PRINT_CSS
@@ -141,6 +143,7 @@ class Report(GObject.GObject):
         self._build_sentence_pages(var)
         self._build_file_pages(var)
         self._build_index(var)
+        self.build_landing_page(workbook)
         self.log.debug("HTML Report for workbook '%s' generated", workbook)
         # ~ return url
 
@@ -306,9 +309,9 @@ class Report(GObject.GObject):
         with open(adoc_path, 'w') as fadoc:
             fadoc.write(adoc)
 
-        # ~ if which('asciidoctor-pdf'):
-        cmd = "asciidoctor-pdf -d book -a toc -a toclevels=3 %s" % adoc_path
-        GObject.idle_add(exec_cmd, cmd)
-        self.log.debug('PDF Report generated')
-        # ~ else:
-            # ~ self.log.error('asciidoctor-pdf command not available')
+        if which('asciidoctor-pdf'):
+            cmd = "asciidoctor-pdf -d book -a toc -a toclevels=3 %s" % adoc_path
+            GObject.idle_add(exec_cmd, cmd)
+            self.log.debug('PDF Report generated')
+        else:
+            self.log.error('asciidoctor-pdf command not available')

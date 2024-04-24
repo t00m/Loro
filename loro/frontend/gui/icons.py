@@ -38,6 +38,7 @@ ICON['WB_EDIT'] = 'com.github.t00m.Loro-document-edit-symbolic'
 ICON['WB_TRANSLATE'] = 'com.github.t00m.Loro-translate-symbolic'
 ICON['WB_DELETE'] = 'com.github.t00m.Loro-user-trash-symbolic'
 ICON['WB_REFRESH'] = 'com.github.t00m.Loro-view-refresh-symbolic'
+ICON['WB_COMPILE'] = 'com.github.t00m.Loro-compile'
 ICON["DIALOG-INFO"] = "com.github.t00m.Loro-dialog-information-symbolic"
 ICON["DIALOG-WARNING"] = "com.github.t00m.Loro-dialog-warning-symbolic"
 ICON["DIALOG-ERROR"] = "com.github.t00m.Loro-dialog-error-symbolic"

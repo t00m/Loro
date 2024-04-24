@@ -192,7 +192,7 @@ class Browser(Gtk.Box):
         # ~ self.log.debug("Loading report for Workbook '%s'", workbook.id)
         source, target = get_default_languages()
         DIR_OUTPUT = os.path.join(get_project_target_workbook_dir(workbook.id), 'html')
-        report_url = os.path.join(DIR_OUTPUT, '%s.html' % workbook.id)
+        report_url = os.path.join(DIR_OUTPUT, 'index.html') # % workbook.id)
         self.log.debug(report_url)
         self.load_url(report_url)
         self.log.debug("Web Report loaded")

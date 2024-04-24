@@ -260,6 +260,7 @@ def which(program):
             path = path.strip('"')
             exe_file = os.path.join(path, program)
             if is_exe(exe_file):
+                log.debug("Program '%s' found in '%s'", program, path)
                 return exe_file
 
     log.error("Program '%s' not found", program)

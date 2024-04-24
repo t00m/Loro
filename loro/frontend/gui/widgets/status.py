@@ -15,7 +15,7 @@ from loro.frontend.gui.icons import ICON
 from loro.frontend.gui.widgets.summary import Summary
 from loro.frontend.gui.widgets.editor import Editor
 from loro.frontend.gui.widgets.browser import Browser
-from loro.frontend.gui.widgets.translator import Translator
+# ~ from loro.frontend.gui.widgets.translator import Translator
 
 class StatusPage(Gtk.Box):
     __gtype_name__ = 'StatusPage'
