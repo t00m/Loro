@@ -68,9 +68,12 @@
             <div uk-grid>
                 <div class="uk-width-1-2@m">
                     <h3 class="about-title">About this workbook</h3>
+                    <p>Some stats:</p>
                     <p>${var['workbook']['stats']['summary']['postags']}</p>
+                    <p>${var['workbook']['stats']['summary']}</p>
                 </div>
                 <div class="uk-width-1-2@m">
+                    <h3 class="about-title">Translations status</h3>
                     <div class="uk-overflow-hidden">
                         <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
                             <h6 class="skill-title">Words translated <span class="uk-float-right">95%</span></h6>

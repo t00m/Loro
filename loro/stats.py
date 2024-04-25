@@ -104,7 +104,6 @@ class Stats(GObject.GObject):
             stats['summary']['nouns_all'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_nouns.items(), key=lambda x: x[0], reverse=False)])
             stats['summary']['nouns_common'] = ', '.join(["%s (%d)" % (k, v) for k, v in sorted(counter_nouns.most_common(10), key=lambda x: x[1], reverse=True)])
         except KeyError:
-            raise
             stats['summary']['nouns_all'] = 'No nouns in this workbook'
             stats['summary']['nouns_common'] = ''
 

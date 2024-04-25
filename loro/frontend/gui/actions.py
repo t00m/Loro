@@ -56,11 +56,12 @@ class WidgetActions(GObject.GObject):
             if res == "cancel":
                 self.log.debug("Action canceled by user")
                 return
-            name = sanitize_string(entry.get_text())
+            name = sanitize_string(entry.get_text()).upper()
             created = self.app.workbooks.add(name)
             if created:
-                self.update_dropdown_workbooks()
+                self.update_dropdown_workbooks(name)
                 self.update_app()
+                self.show_editor()
             else:
                 self.log.error("Workbook not created")
 
@@ -205,11 +206,12 @@ class WidgetActions(GObject.GObject):
     def workbook_compiled(self, *args):
         # ~ self.log.debug("Update application after compilling")
         progressbar = self.app.get_widget('progressbar')
+        browser = self.app.get_widget('browser')
         progressbar.set_fraction(1.0)
         progressbar.set_text('Workbook compiled successfully')
         time.sleep(1)
         self.update_app()
-        # ~ self.app.browser.load_home_page()
+        browser.load_home_page()
         self.show_browser()
 
     def workbook_compile(self, *args):
@@ -260,22 +262,26 @@ class WidgetActions(GObject.GObject):
         browser = self.app.get_widget('browser')
         browser.load_url(report_url)
 
-    def update_dropdown_workbooks(self, *args):
+    def update_dropdown_workbooks(self, wbname:str = ''):
         workbooks = self.app.workbooks.get_all()
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
-        # ~ toolbar = self.app.get_widget('window-toolbar')
+        selected = 0
         data = []
         wbnames = workbooks.keys()
         if len(wbnames) == 0:
             ddWorkbooks.set_visible(False)
-            # ~ toolbar.set_visible(False)
             data.append((None, 'No workbooks available'))
         else:
             ddWorkbooks.set_visible(True)
-            # ~ toolbar.set_visible(True)
+            n = 0
             for workbook in wbnames:
                 data.append((workbook, "Workbook %s" % workbook))
+                if workbook == wbname:
+                    selected = n
+                n += 1
+            self.log.debug("Selecting workbook %d (%s)", selected, wbname)
         self.app.actions.dropdown_populate(ddWorkbooks, Workbook, data)
+        ddWorkbooks.set_selected(selected)
 
     def workbook_get_current(self, *args):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')

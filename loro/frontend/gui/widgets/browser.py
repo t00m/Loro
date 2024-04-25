@@ -128,7 +128,7 @@ class Browser(Gtk.Box):
 
 
         self.wv = self.app.add_widget('browser-webview', WebKit.WebView())
-        self.wv.connect('decide-policy', self._on_decide_policy)
+        # ~ self.wv.connect('decide-policy', self._on_decide_policy)
         self.wv.connect('load-changed', self._on_load_changed)
         self.wv.connect('load-failed',self._on_load_failed)
         self.wv.set_hexpand(True)
@@ -142,8 +142,11 @@ class Browser(Gtk.Box):
     def load_home_page(self, *args):
         try:
             workbook = self.app.actions.workbook_get_current().id
+            self.log.debug("Loading home page for Workbook '%s'", workbook)
         except:
             workbook = ''
+            self.log.debug("Loading default home page")
+
         url = self.app.report.get_url(workbook)
         self.load_url(url)
 
@@ -226,14 +229,11 @@ class Browser(Gtk.Box):
             action = WebKit.NavigationPolicyDecision.get_navigation_action(decision)
             uri = webview.get_uri()
             filename = uri[7:]
-            # ~ self.log.debug("URL intercepted: %s", uri)
-            # ~ self.log.debug("Filename: %s", filename)
+            self.log.debug("URL intercepted: %s", uri)
+            self.log.debug("Filename: %s", filename)
             if not os.path.exists(filename):
-                self.log.error("Page %s not found", os.path.basename(filename))
+                self.log.error("Page '%s' not found", os.path.basename(filename))
                 return True
-            # ~ click = action.get_mouse_button() != 0
-            # ~ if click:
-                # ~ self.log.debug("User clicked in link: %s", uri)
 
     def _on_load_changed(self, webview, event):
         uri = webview.get_uri()

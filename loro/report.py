@@ -87,15 +87,21 @@ class Report(GObject.GObject):
         return tpl.render(var=var)
 
     def get_url(self, workbook: str) -> str:
+        if workbook is None:
+            workbook = ''
         url_default = os.path.join(get_project_target_dir(), 'loro.html')
         if workbook == '':
             url = url_default
+            self.log.warning("No workbook")
         else:
             filepath = os.path.join(get_project_target_workbook_dir(workbook), 'html', 'index.html')
             if not os.path.exists(filepath):
                 url = url_default
+                self.log.warning("Workbook '%s'. Home page not found: '%s'", workbook, filepath)
             else:
                 url = filepath
+                self.log.info("Workbook '%s'. Home page found: '%s'", workbook, filepath)
+        self.log.warning("Url set to: '%s'", url)
         return url
 
     def build_landing_page(self, workbook: str):
