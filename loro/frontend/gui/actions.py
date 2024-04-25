@@ -209,6 +209,7 @@ class WidgetActions(GObject.GObject):
         progressbar.set_text('Workbook compiled successfully')
         time.sleep(1)
         self.update_app()
+        # ~ self.app.browser.load_home_page()
         self.show_browser()
 
     def workbook_compile(self, *args):

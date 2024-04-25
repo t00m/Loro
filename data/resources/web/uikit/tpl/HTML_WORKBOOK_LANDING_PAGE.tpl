@@ -8,7 +8,7 @@
     <meta name="description" content="Loro report">
     <meta name="author" content="github.com/t00m/Loro">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="keywords" content="${var['html']['keywords']}" />
+    <meta name="keywords" content="${var['workbook']['stats']['summary']['topics']}, ${var['workbook']['stats']['summary']['subtopics']}" />
     <link rel="icon" type="image/svg+xml" href="${var['html']['favicon']}">
     <link rel="stylesheet" href="${var['html']['uikit']['css']}" />
     <link rel="stylesheet" href="${var['html']['uikit']['css_print']}" />
@@ -18,14 +18,7 @@
 
 <body>
     <!--======= HEADER =======-->
-    <header id="home" class="header-area">
-        <div class="uk-background-default uk-flex uk-flex-center uk-flex-middle typewriter" uk-height-viewport>
-            <div class="uk-align-center">
-                <h1>${var['html']['title']}</h1>
-                <p class="uk-text-center uk-margin-large-top"><a class="uk-button uk-button-primary" href="#about" uk-scroll="offset:60;">Learn More</a></p>
-            </div>
-
-        </div>
+    <header id="header" class="header-area">
         <div class="uk-position-top" style="z-index: 980;" uk-sticky="show-on-up: true">
             <nav class="uk-background-default uk-navbar" uk-navbar uk-sticky>
                 <div class="uk-navbar-left">
@@ -41,7 +34,7 @@
                     </a>
                     <ul class="uk-navbar-nav uk-visible@m" uk-scrollspy-nav="closest: li; scroll: true;offset:90;">
                         <li class="nav-item uk-active">
-                            <a href="#home" class="nav-link" uk-scroll><span data-hover="home">Home</span></a>
+                            <a href="#home" class="nav-link" uk-scroll="offset:60;"><span data-hover="home">Home</span></a>
                         </li>
                         <li class="nav-item">
                             <a href="#about" class="nav-link" uk-scroll="offset:60;"><span data-hover="about">About</span></a>
@@ -66,6 +59,61 @@
             </nav>
         </div>
     </header>
+    <!--======= HOME ========-->
+    <section id="home" class="home-area" style="min-height: max(0px, 100vh);">
+        <div class="uk-container">
+            <div class="uk-margin-large-top">
+                <h1 class="uk-text-center uk-padding-large">${var['html']['title']}</h1>
+            </div>
+            <div uk-grid>
+                <div class="uk-width-1-2@m">
+                    <h3 class="about-title">About this workbook</h3>
+                    <p>${var['workbook']['stats']['summary']['postags']}</p>
+                </div>
+                <div class="uk-width-1-2@m">
+                    <div class="uk-overflow-hidden">
+                        <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
+                            <h6 class="skill-title">Words translated <span class="uk-float-right">95%</span></h6>
+                            <progress id="" class="uk-progress " value="95" max="100"></progress>
+                        </div>
+                        <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
+                            <h6 class="skill-title">Sentences translated <span class="uk-float-right">60%</span></h6>
+                            <progress id="" class="uk-progress " value="60" max="100"></progress>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+<!--
+    <section id="home" class="home-area" style="min-height: max(0px, 100vh);">
+        <div class="uk-container">
+            <div class="uk-background-default uk-flex uk-flex-center uk-flex-middle typewriter" uk-height-viewport>
+                <div class="uk-align-center">
+                    <h1 class="uk-text-center uk-padding-large">${var['html']['title']}</h1>
+                    <div uk-grid>
+                        <div class="uk-width-1-2@m">
+                            <h3 class="about-title">About this workbook</h3>
+                            <p>${var['workbook']['stats']['summary']['postags']}</p>
+                        </div>
+                        <div class="uk-width-1-2@m">
+                            <div class="uk-overflow-hidden">
+                                <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
+                                    <h6 class="skill-title">Words translated <span class="uk-float-right">95%</span></h6>
+                                    <progress id="" class="uk-progress " value="95" max="100"></progress>
+                                </div>
+                                <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
+                                    <h6 class="skill-title">Sentences translated <span class="uk-float-right">60%</span></h6>
+                                    <progress id="" class="uk-progress " value="60" max="100"></progress>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+-->
     <!--======= ABOUT ========-->
     <section id="about" class="about-area" style="min-height: max(0px, 100vh);">
         <div class="uk-container">
@@ -82,20 +130,12 @@
                 <div class="uk-width-1-2@m">
                     <div class="uk-overflow-hidden">
                         <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
-                            <h6 class="skill-title">HTML\CSS <span class="uk-float-right">95%</span></h6>
+                            <h6 class="skill-title">Words translated <span class="uk-float-right">95%</span></h6>
                             <progress id="" class="uk-progress " value="95" max="100"></progress>
                         </div>
                         <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
-                            <h6 class="skill-title">JS\PHP <span class="uk-float-right">60%</span></h6>
+                            <h6 class="skill-title">Sentences translated <span class="uk-float-right">60%</span></h6>
                             <progress id="" class="uk-progress " value="60" max="100"></progress>
-                        </div>
-                        <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
-                            <h6 class="skill-title">WordPress<span class="uk-float-right">85%</span></h6>
-                            <progress id="" class="uk-progress " value="85" max="100"></progress>
-                        </div>
-                        <div uk-scrollspy="cls: uk-animation-slide-left; delay: 100; repeat: true; offset-top: 0; ; media: @m">
-                            <h6 class="skill-title">Joomla<span class="uk-float-right">85%</span></h6>
-                            <progress id="" class="uk-progress " value="85" max="100"></progress>
                         </div>
                     </div>
                 </div>

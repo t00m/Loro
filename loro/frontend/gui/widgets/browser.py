@@ -42,7 +42,7 @@ class Browser(Gtk.Box):
         logging.getLogger("urllib3").setLevel(logging.CRITICAL)
         self._setup_widget()
         self._connect_signals()
-        self.wv.load_uri('') # webkit-pdfjs-viewer://pdfjs/web/viewer.html?file=)
+        self.load_home_page()
         self.log.debug("Browser initialized")
         # ~ self.app.report.connect('report-finished', self.load_reports)
         # ~ loggers = [logging.getLogger(name) for name in logging.root.manager.loggerDict]
@@ -140,7 +140,12 @@ class Browser(Gtk.Box):
         self.set_vexpand(True)
 
     def load_home_page(self, *args):
-        self.log.debug("Workbook home page")
+        try:
+            workbook = self.app.actions.workbook_get_current().id
+        except:
+            workbook = ''
+        url = self.app.report.get_url(workbook)
+        self.load_url(url)
 
     def print_report(self, *args):
         printOperation = WebKit.PrintOperation.new(self.wv)
@@ -170,7 +175,7 @@ class Browser(Gtk.Box):
         if not url.startswith('file://'):
             url = 'file://%s' % url
         self.wv.load_uri(url)
-        # ~ self.log.debug("URL %s loaded", url)
+        self.log.debug("URL %s loaded", url)
 
     def _get_workbook_html_dir(self):
         ddWorkbooks = self.app.get_widget('dropdown-workbooks')
@@ -246,4 +251,4 @@ class Browser(Gtk.Box):
         self.load_url('file://error_404.html')
 
     def update(self, *args):
-        pass
+        self.load_home_page()
