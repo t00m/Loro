@@ -21,6 +21,7 @@ from loro.backend.core.util import get_default_languages
 
 # UIKIT (getuikit.com)
 DIR_UIKIT = os.path.join(ENV['APP']['PGKDATADIR'], 'resources', 'web', 'uikit')
+DIR_UIKIT_DATATABLES = os.path.join(ENV['APP']['PGKDATADIR'], 'resources', 'web', 'uikit', 'datatables')
 DIR_UIKIT_IMAGES = os.path.join(DIR_UIKIT, 'images')
 DIR_UIKIT_CSS = os.path.join(DIR_UIKIT, 'css')
 UIKIT_CSS = os.path.join(DIR_UIKIT_CSS, 'uikit.min.css')
@@ -46,6 +47,7 @@ TPL_FOOTER_TOKEN = os.path.join(DIR_TPL, 'HTML_FOOTER_TOKEN.tpl')
 TPL_FOOTER_SENTENCE = os.path.join(DIR_TPL, 'HTML_FOOTER_SENTENCE.tpl')
 TPL_PDF_WORKBOOK_REPORT = os.path.join(DIR_TPL, 'PDF_WORKBOOK_REPORT.tpl')
 TPL_HTML_WORKBOOK_LANDING_PAGE = os.path.join(DIR_TPL, 'HTML_WORKBOOK_LANDING_PAGE.tpl')
+TPL_HTML_DICTIONARY = os.path.join(DIR_TPL, 'HTML_DICTIONARY.tpl')
 
 
 class Report(GObject.GObject):
@@ -77,6 +79,8 @@ class Report(GObject.GObject):
         self.templates['FOOTER_SENTENCE'] = Template(filename=TPL_FOOTER_SENTENCE)
         self.templates['PDF_WORKBOOK_REPORT'] = Template(filename=TPL_PDF_WORKBOOK_REPORT)
         self.templates['WORKBOOK_LANDING_PAGE'] = Template(filename=TPL_HTML_WORKBOOK_LANDING_PAGE)
+        self.templates['HTML_DICTIONARY'] = Template(filename=TPL_HTML_DICTIONARY)
+
         self.log.debug("Loro templates added")
 
     def template(self, name: str):
@@ -109,61 +113,43 @@ class Report(GObject.GObject):
         source, target = get_default_languages()
         DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = self._get_var(workbook)
-        # ~ var['app'] = self.app
-        # ~ var['workbook'] = {}
-        # ~ var['workbook']['id'] = workbook
-        # ~ var['workbook']['source'] = source
-        # ~ var['workbook']['target'] = target
-        # ~ var['workbook']['cache'] = self.app.cache.get_cache(workbook)
-        # ~ var['workbook']['stats'] = self.app.stats.get(workbook)
-        # ~ var['html'] = {}
-        # ~ var['html']['title'] = "Workbook %s" % workbook
-        # ~ var['html']['favicon'] = ''
-        # ~ var['html']['keywords'] = ''
-        # ~ var['html']['uikit'] = {}
-        # ~ var['html']['uikit']['css'] = UIKIT_CSS
-        # ~ var['html']['uikit']['css_print'] = PRINT_CSS
-        # ~ var['html']['uikit']['icon'] = UIKIT_ICON_MIN_JS
-        # ~ var['html']['uikit']['js'] = UIKIT_MIN_JS
-        # ~ var['html']['output'] = DIR_HTML
-        # ~ var['html']['index'] = True
         url = os.path.join(var['html']['output'], 'index.html')
         html = self.render_template('WORKBOOK_LANDING_PAGE', var)
         self._write_page(url, html)
         self.log.debug("Landing page created")
         return url
 
-
     def build_web(self, workbook: str) -> str:
         self.log.debug("Building report for workbook '%s'", workbook)
         progressbar = self.app.get_widget('progressbar')
         progressbar.set_text("Creating HTML Report")
         source, target = get_default_languages()
-        DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
-        var = {}
-        var['app'] = self.app
-        var['workbook'] = {}
-        var['workbook']['id'] = workbook
-        var['workbook']['source'] = source
-        var['workbook']['target'] = target
-        var['workbook']['cache'] = self.app.cache.get_cache(workbook)
-        json_save('/tmp/loro.cache.json', var['workbook']['cache'])
 
-        var['workbook']['stats'] = self.app.stats.get(workbook)
-        var['html'] = {}
-        var['html']['uikit'] = {}
-        var['html']['uikit']['css'] = UIKIT_CSS
-        var['html']['uikit']['css_print'] = PRINT_CSS
-        var['html']['uikit']['icon'] = UIKIT_ICON_MIN_JS
-        var['html']['uikit']['js'] = UIKIT_MIN_JS
-        var['html']['output'] = DIR_HTML
-        var['html']['index'] = False
+        var = self._get_var(workbook)
+        # ~ var['app'] = self.app
+        # ~ var['workbook'] = {}
+        # ~ var['workbook']['id'] = workbook
+        # ~ var['workbook']['source'] = source
+        # ~ var['workbook']['target'] = target
+        # ~ var['workbook']['cache'] = self.app.cache.get_cache(workbook)
+        # ~ json_save('/tmp/loro.cache.json', var['workbook']['cache'])
+
+        # ~ var['workbook']['stats'] = self.app.stats.get(workbook)
+        # ~ var['html'] = {}
+        # ~ var['html']['uikit'] = {}
+        # ~ var['html']['uikit']['css'] = UIKIT_CSS
+        # ~ var['html']['uikit']['css_print'] = PRINT_CSS
+        # ~ var['html']['uikit']['icon'] = UIKIT_ICON_MIN_JS
+        # ~ var['html']['uikit']['js'] = UIKIT_MIN_JS
+        # ~ var['html']['output'] = DIR_HTML
+        # ~ var['html']['index'] = False
 
         self._prepare(var)
         self._build_token_pages(var)
         self._build_lemma_pages(var)
         self._build_sentence_pages(var)
         self._build_file_pages(var)
+        self._build_dictionary_page(var)
         self._build_index(var)
         self.build_landing_page(workbook)
         self.copy_resources(var)
@@ -180,6 +166,14 @@ class Report(GObject.GObject):
     def _prepare(self, var: dict) -> bool:
         # ~ delete_directory(var['html']['output'])
         create_directory(var['html']['output'])
+
+    def _build_dictionary_page(self, var: dict):
+        header = ''
+        body = self.render_template('HTML_DICTIONARY', var)
+        footer = ''
+        html = header + body + footer
+        url = os.path.join(var['html']['output'], 'dictionary.html')
+        self._write_page(url, html)
 
     def _build_token_pages(self, var: dict):
         workbook = var['workbook']['id']
@@ -274,7 +268,7 @@ class Report(GObject.GObject):
         workbook = var['workbook']['id']
         var['html']['title'] = "Workbook %s" % workbook
         var['html']['index'] = True
-        url = os.path.join(var['html']['output'], '%s.html' % workbook)
+        url = os.path.join(var['html']['output'], 'workbook.html')
 
         files = self.app.workbooks.get_files(workbook)
         var['workbook']['files'] = files
@@ -312,10 +306,18 @@ class Report(GObject.GObject):
         self.emit('report-finished', workbook)
 
     def _get_var(self, workbook: str) -> {}:
+        DIR_HTML = os.path.join(get_project_target_workbook_dir(workbook), 'html')
         var = {}
         var['app'] = self.app
         var['html'] = {}
         var['workbook'] = {}
+        var['html']['uikit'] = {}
+        var['html']['uikit']['css'] = UIKIT_CSS
+        var['html']['uikit']['css_print'] = PRINT_CSS
+        var['html']['uikit']['icon'] = UIKIT_ICON_MIN_JS
+        var['html']['uikit']['js'] = UIKIT_MIN_JS
+        var['html']['output'] = DIR_HTML
+        var['html']['index'] = False
 
         if workbook != '':
             source, target = get_default_languages()
@@ -339,11 +341,15 @@ class Report(GObject.GObject):
             var['workbook']['id'] = "Loro"
             var['workbook']['title'] = "Loro page"
             var['workbook']['topics'] = ''
+
+        var['html']['favicon'] = 'resources/images/favicon.svg'
         var['html']['uikit'] = {}
         var['html']['uikit']['css'] = UIKIT_CSS
         var['html']['uikit']['css_print'] = PRINT_CSS
         var['html']['uikit']['icon'] = UIKIT_ICON_MIN_JS
         var['html']['uikit']['js'] = UIKIT_MIN_JS
+        var['html']['uikit']['datatables'] = DIR_UIKIT_DATATABLES
+        # ~ json_save('/tmp/loro.cache.json', var['workbook']['cache'])
 
         return var
 

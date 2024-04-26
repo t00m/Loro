@@ -7,6 +7,7 @@ from collections import Counter
 from gi.repository import GObject
 from loro.backend.core.log import get_logger
 from loro.backend.core.util import json_load, json_save
+from loro.backend.core.util import get_default_languages
 
 
 class Stats(GObject.GObject):
@@ -23,6 +24,7 @@ class Stats(GObject.GObject):
         self.get(workbook)
 
     def analyze(self, workbook: str) -> {}:
+        source, target = get_default_languages()
         wbcache = self.app.cache.get_cache(workbook)
         tokens = wbcache['tokens']['data']
         stats = {}
@@ -130,6 +132,23 @@ class Stats(GObject.GObject):
         except KeyError:
             stats['summary']['advs_all'] = 'No adverbs in this workbook'
             stats['summary']['advs_common'] = ''
+
+        # Translations
+        stats['summary']['translations'] = {}
+        stats['summary']['translations']['tokens'] = {}
+        stats['summary']['translations']['sentences'] = 0.0
+
+        workbook_tokens = self.app.cache.get_tokens(workbook)
+        ntot_tokens = len(workbook_tokens)
+        # ~ translated_tokens = self.app.translate.get_cache_tokens()
+        nt = 0
+        for token_id in workbook_tokens:
+            if len(self.app.translate.get_token(token_id, target)) > 0:
+                nt += 1
+        progress_value = round(nt/ntot_tokens*100)
+        progress_text = "%d%% (%d/%d)" % (progress_value, nt, ntot_tokens)
+        stats['summary']['translations']['tokens']['progress_value'] = progress_value
+        stats['summary']['translations']['tokens']['progress_text'] = progress_text
 
         self.log.debug("Workbook '%s' stats generated", workbook)
         self.emit('stats-finished')
