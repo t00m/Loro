@@ -32,7 +32,9 @@ class WidgetActions(GObject.GObject):
 
     def update_app(self, *args):
         editor = self.app.get_widget('editor')
+        translator = self.app.get_widget('translator')
         editor.update()
+        translator.update()
 
     def document_display(self, doc):
         self.log.debug("Displaying %s", doc)

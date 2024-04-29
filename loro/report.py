@@ -168,6 +168,8 @@ class Report(GObject.GObject):
         create_directory(var['html']['output'])
 
     def _build_dictionary_page(self, var: dict):
+        title = "Dictionary for Worbook %s" % var['workbook']['id']
+        var['html']['title'] = title
         header = ''
         body = self.render_template('HTML_DICTIONARY', var)
         footer = ''

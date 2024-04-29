@@ -15,9 +15,9 @@
     <link rel="stylesheet" href="${var['html']['uikit']['datatables']}/dataTables.uikit.css" />
     <script src="${var['html']['uikit']['js']}"></script>
     <script src="${var['html']['uikit']['icon']}"></script>
-    <script src="${var['html']['uikit']['datatables']}/jquery-3.5.1.js"></script>
-    <script src="${var['html']['uikit']['datatables']}/jquery.dataTables.min.js"></script>
-    <script src="${var['html']['uikit']['datatables']}/dataTables.uikit.min.js"></script>
+    <script src="${var['html']['uikit']['datatables']}/jquery-3.7.1.js"></script>
+    <script src="${var['html']['uikit']['datatables']}/jquery.dataTables.js"></script>
+    <script src="${var['html']['uikit']['datatables']}/dataTables.uikit.js"></script>
     <script type="text/javascript" class="init">
         $(document).ready(function() {
             $('#datatable').DataTable( {
@@ -54,14 +54,22 @@
                             </tr>
                         </thead>
                         <tbody class="">
+% for tid in var['workbook']['cache']['tokens']['data']:
+<%
+    token = var['workbook']['cache']['tokens']['data'][tid]['title']
+    trans = var['app'].translate.get_token(tid, var['workbook']['target'])
+%>
                                 <tr class="">
-                                    <td class="">Abend</td>
-                                    <td class="">Evening</td>
+                                    <td class="" data-title="${token}">${token}</td>
+                                    <td class="">${trans}</td>
                                 </tr>
+% endfor
+<!--
                                 <tr class="">
-                                    <td class="">Nacht</td>
+                                    <td class="" data-title="nacht">Nacht</td>
                                     <td class="">Night</td>
                                 </tr>
+-->
                         </tbody>
                         <tfoot class="">
                         </tfoot>
@@ -70,5 +78,26 @@
             </div>
         </div>
     </section>
+<script>
+<!-- Necessary javascript for filtering results -->
+<!-- Hack found in: https://codepen.io/acidrums4/pen/GBpYbO -->
+var input = document.getElementById('text_filter');
+var filter = document.getElementById('filter');
+
+input.addEventListener( 'keyup', function(event)
+{
+    if ( input.value == "" )
+    {
+        filter.setAttribute( 'uk-filter-control', '' );
+    }
+
+    else
+    {
+        filter.setAttribute( 'uk-filter-control', 'filter:[data-title*=\'' + input.value + '\'i]' );
+    }
+
+    filter.click();
+});
+</script>
 </body>
 </html>
